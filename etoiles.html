@@ -1433,13 +1433,9 @@ html.present .cs-when{font-size:18px}html.present .cs-cred{font-size:14px}
 .u-route-cur{display:none;font-size:13.5px;color:#DDE4F7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .u-route-go{flex:none;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid rgba(244,184,96,.7);background:rgba(244,184,96,.1);color:var(--or);font-weight:700;font-size:14.5px;text-decoration:none;white-space:nowrap}
 .u-route-go:hover,.u-route-go:focus-visible{background:rgba(244,184,96,.22)}
-.u-route-next{position:absolute;z-index:7;top:calc(var(--route-h) + 12px);left:50%;transform:translateX(-50%);display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;max-width:calc(100% - 24px);padding:6px 6px 6px 18px;border-radius:26px;border:1px solid rgba(244,184,96,.7);background:rgba(4,8,20,.88);color:#fff;font-size:15px;box-shadow:0 8px 30px rgba(0,0,0,.5);animation:cinIn .6s ease-out}
-.u-route-next em{font-style:normal;color:var(--or);font-weight:700}
-.u-route-y,.u-route-n{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none}
-.u-route-y{background:var(--or);color:#0B0F1E;border:0}.u-route-n{background:transparent;color:#fff;border:1px solid rgba(191,208,255,.35)}
 @media (max-width:1099px){.u-route ol a span{display:none}.u-route ol{height:34px}.u-route ol::before{top:15px}.u-route-cur{display:block;flex:0 1 auto;max-width:26ch}}
 @media (max-width:760px){.u-route-host{--route-h:100px}.u-route{flex-wrap:wrap;padding:2px 6px 6px}.u-route ol{flex:1 1 calc(100% - 104px)}
-  .u-route-cur{flex:1 1 0;max-width:none;padding-left:6px}.u-route-go{padding:0 14px;font-size:14px}.u-route-go span{display:none}.u-route-next{font-size:14px;padding-left:12px}}
+  .u-route-cur{flex:1 1 0;max-width:none;padding-left:6px}.u-route-go{padding:0 14px;font-size:14px}.u-route-go span{display:none}}
 html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17px}
 .u-doors{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;max-width:780px;margin:24px auto 0;text-align:left}
 .u-door{display:flex;flex-direction:column;gap:6px;min-height:44px;padding:18px 20px;border-radius:20px;border:1px solid rgba(191,208,255,.4);background:rgba(4,8,20,.6);color:#fff;text-decoration:none;transition:transform .25s,border-color .25s}
@@ -1450,6 +1446,21 @@ html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17p
 /* voyage retour (voyage.js) : légende courte, numéro d'étape */
 .vy3-cap small.vy3-revn{display:block;margin:0 auto 8px;font-style:normal;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--or)}
 .vy3-rev b{font-size:clamp(24px,3.6vw,44px)}
+/* messages au milieu de la scène (core.js) : « Voulez-vous vous arrêter ici ? », « Reprendre le grand voyage ? » */
+.u-ask{position:absolute;z-index:7;left:50%;top:calc(var(--route-h) + 16%);transform:translateX(-50%);width:min(460px,calc(100% - 24px));padding:18px 18px 16px;border-radius:22px;border:1px solid rgba(244,184,96,.65);background:rgba(4,8,20,.84);text-align:center;color:#fff;box-shadow:0 12px 40px rgba(0,0,0,.55);animation:cinIn .6s ease-out}
+.u-ask small{display:block;color:var(--or);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase}
+.u-ask b{display:block;font-size:23px;line-height:1.2;margin:6px 0 4px}
+.u-ask span{display:block;color:#D6DDF2;font-size:15px;line-height:1.4}
+.u-ask div{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
+.u-ask a,.u-ask button{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;font:inherit;font-weight:700;font-size:15px;text-decoration:none;cursor:pointer}
+.u-ask-y{background:var(--or);color:#0B0F1E;border:0}
+.u-ask-s{background:rgba(191,208,255,.1);color:#fff;border:1px solid rgba(191,208,255,.4)}
+.u-ask-n{background:transparent;color:#BFC9E8;border:1px solid rgba(191,208,255,.2)}
+.u-ask em{font-style:normal;color:var(--or);margin-left:6px}
+@media (max-width:760px){.u-ask{top:calc(var(--route-h) + 6%)}.u-ask b{font-size:20px}}
+html.present .u-ask b{font-size:30px}html.present .u-ask span,html.present .u-ask a,html.present .u-ask button{font-size:18px}
+/* descente finale (voyage.js) : photos aériennes IGN par-dessus la scène, repère du lieu */
+.vy3-photo{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0}
 
 </style>
 </head>
@@ -1589,24 +1600,38 @@ function initRoute(){
   paint(isVoy?1:cur);
   /* film en cours : n° du plan et nombre de plans, quel que soit le moteur */
   function film(){var f=HF._voy||HF._vl||HF._eto||HF._sys||HF._sol||HF._cin;if(!f||!f.state)return null;var s=f.state();
-    return {i:f.stage!=null?f.stage:s.shot,n:f.ids?f.ids.length:f.n,id:s.ids||s.id,playing:s.playing!==false};}
-  /* escale suivante, toute seule, après le dernier plan */
-  /* armé dès que le dernier plan est atteint ; le décompte continue même si le film reboucle ; un geste l'annule
-     (il se réarme au tour suivant du film) */
-  var next=E[cur],toast=null,wait=0,left=0,calm=true,armed=false;
-  function stop(){calm=false;armed=false;wait=0;if(toast){toast.remove();toast=null;}}
-  if(!isVoy&&next){['pointerdown','keydown','wheel'].forEach(function(t){scene.addEventListener(t,stop,{passive:true});});}
-  setInterval(function(){var f=film();if(!f)return;
-    if(isVoy){var n=VOY[f.id];if(n)paint(n);return;}
-    if(!next)return;
+    return {i:f.stage!=null?f.stage:s.shot,n:f.ids?f.ids.length:f.n,id:s.ids||s.id,playing:s.playing!==false,mode:s.mode,rev:!!s.rev};}
+  /* message au milieu de la scène (une question, deux ou trois réponses) */
+  var box=null;
+  function close(){if(box){box.remove();box=null;}}
+  function ask(html){close();box=document.createElement('div');box.className='u-ask';box.setAttribute('role','status');box.innerHTML=html;
+    var n=box.querySelector('.u-ask-n');if(n)n.addEventListener('click',stop);bar.parentNode.insertBefore(box,scene);}
+  /* grand voyage : à chaque escale, « Voulez-vous vous arrêter ici ? » ; sans réponse, le voyage continue seul et le message s'efface.
+     Pas pendant le voyage retour, ni à l'étape où l'on vient de reprendre le voyage (voyage.html#étape). */
+  var skip=decodeURIComponent(location.hash.slice(1)),vid='',askedFor='';
+  function voyTick(f){var n=VOY[f.id];if(n)paint(n);
+    if(f.id!==vid){vid=f.id;close();askedFor='';}
+    var j=RESUME.indexOf(vid);
+    if(f.mode==='hold'&&!f.rev&&j>0&&askedFor!==vid){askedFor=vid;if(vid===skip){skip='';return;}var e=E[j-1];
+      ask('<small>Escale '+e.num+' · '+e.title+'</small><b>Voulez-vous vous arrêter ici ?</b><span>On s’arrête pour voir en détail. Sinon, le voyage continue tout seul.</span>'+
+        '<div><a class="u-ask-y" href="'+e.file+'">⏸ M’arrêter ici</a><button type="button" class="u-ask-n">Continuer le voyage</button></div>');}}
+  /* fin d'une escale : « Reprendre le grand voyage ? », ou l'escale suivante (toute seule après un compte à rebours).
+     Armé dès le dernier plan ; continue même si le film reboucle ; un geste sur la scène l'annule (il se réarme au tour suivant). */
+  var me=E[cur-1],next=E[cur],wait=0,left=0,calm=true,armed=false;
+  function stop(){calm=false;armed=false;wait=0;close();}
+  if(!isVoy)['pointerdown','keydown','wheel'].forEach(function(t){scene.addEventListener(t,stop,{passive:true});});
+  function escTick(f){
     if(f.i<f.n-1&&!armed)calm=true;
     if(f.i===f.n-1&&calm&&f.playing)armed=true;
     if(!armed||!f.playing)return;
     wait+=.5;
-    if(wait>=6&&!toast){left=8;toast=document.createElement('div');toast.className='u-route-next';toast.setAttribute('role','status');
-      toast.innerHTML='<span>Escale suivante : <b>'+next.title+'</b> dans <em>8</em> s</span><a class="u-route-y" href="'+next.file+'">Y aller</a><button type="button" class="u-route-n">Rester ici</button>';
-      toast.querySelector('.u-route-n').addEventListener('click',stop);bar.parentNode.insertBefore(toast,scene);}
-    else if(toast){left-=.5;var em=toast.querySelector('em');if(em)em.textContent=Math.max(0,Math.ceil(left));if(left<=0){toast.remove();toast=null;calm=false;location.href=next.file;}}},500);
+    if(wait>=5&&!box){left=10;
+      ask('<small>Fin de l’escale '+me.num+' · '+me.title+'</small><b>Reprendre le grand voyage ?</b><span>'+(next?'Ou passer directement à l’escale suivante : '+next.title+'.':'C’était la dernière escale.')+'</span>'+
+        '<div><a class="u-ask-y" href="voyage.html#'+RESUME[cur]+'">▶ Reprendre le voyage</a>'+
+        (next?'<a class="u-ask-s" href="'+next.file+'">Escale suivante <em>10 s</em></a>':'<a class="u-ask-s" href="voyage.html#retour">⟲ Revenir au point de départ</a>')+
+        '<button type="button" class="u-ask-n">Rester ici</button></div>');}
+    else if(box&&next){left-=.5;var em=box.querySelector('em');if(em)em.textContent=Math.max(0,Math.ceil(left))+' s';if(left<=0){close();calm=false;armed=false;location.href=next.file;}}}
+  setInterval(function(){var f=film();if(!f)return;if(isVoy)voyTick(f);else escTick(f);},500);
 }
 
 window.HF={store:store,applyTheme:applyTheme,

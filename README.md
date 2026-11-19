@@ -1,0 +1,62 @@
+# Voyage dans l'Univers
+
+Une exploration de l'Univers en français, pour s'émerveiller : de la Terre jusqu'aux confins du cosmos.
+
+**Le site : https://hfahim66.github.io/voyage-univers-site/**
+
+Ce dépôt contient uniquement le site construit (pages, images, données), publié avec GitHub Pages.
+
+## Licences et crédits
+- Textes et animations : [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr) (partage libre, sans usage commercial, en citant la source et en partageant dans les mêmes conditions).
+- Images de la NASA : libres d'usage avec crédit, sans laisser croire à un soutien de la NASA.
+- Planétarium : Stellarium Web Engine, logiciel libre sous AGPL-3.0, non modifié (licence : `assets/stellarium/LICENSE-AGPL-3.0.txt` ; code source : voir la page « À propos » du site).
+
+- [NASA NSSDCA — Earth Fact Sheet (D. R. Williams)](https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html) — Données publiques de la NASA
+- [NASA NSSDCA — Moon Fact Sheet (D. R. Williams)](https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html) — Données publiques de la NASA
+- [NASA Science — Earth’s Moon : en profondeur (éloignement de 3,8 cm par an, mesuré par laser)](https://science.nasa.gov/moon/) — Données publiques de la NASA
+- [USGS — Âge de la Terre (4,54 milliards d’années, ± 1 %)](https://pubs.usgs.gov/gip/geotime/age.html) — Domaine public (gouvernement des États-Unis)
+- J. Meeus, Astronomical Algorithms (2e éd., 1998) — positions du Soleil et de la Lune — Méthodes publiées, réimplémentées
+- [E. M. Standish (NASA JPL) — éléments orbitaux approchés des planètes](https://ssd.jpl.nasa.gov/planets/approx_pos.html) — Données publiques de la NASA
+- [IAU, résolution B2 (2012) — unité astronomique : 149 597 870 700 m](https://www.iau.org/static/resolutions/IAU2012_English.pdf) — Texte officiel
+- [NASA NSSDCA — Sun Fact Sheet (D. R. Williams) : rayon 695 700 km, 333 000 masses terrestres, volume de 1,3 million de Terres](https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html) — Données publiques de la NASA
+- [NASA Science — Sun : facts (5 500 °C en surface, 15 millions de °C au cœur, couronne jusqu’à 2 millions de °C, 4,6 milliards d’années, encore ≈ 5 milliards, 99,8 % de la masse du Système solaire, cycle de 11 ans)](https://science.nasa.gov/sun/facts/) — Données publiques de la NASA
+- [NASA Marshall Space Flight Center, Solar Physics — The Photosphere (granules d’environ 1 000 km, qui durent environ 20 minutes)](https://solarscience.msfc.nasa.gov/feature1.shtml) — Données publiques de la NASA
+- [NASA Science — Eclipse Safety (lunettes et visionneuses conformes à la norme ISO 12312-2, filtres à l’avant des instruments, projection)](https://science.nasa.gov/eclipses/safety/) — Données publiques de la NASA
+- Le Soleil en 3D (surface, taches, protubérances, couronne, éclipse, coupe) : illustration calculée pour ce projet (src/anims/soleil.js), pas une observation — CC BY-NC-SA 4.0 (comme le site)
+- [NASA NSSDCA — Planetary Fact Sheet (D. R. Williams) : rayons équatoriaux, aplatissements, durées de rotation, distances au Soleil, volume de Jupiter (1 321 Terres)](https://nssdc.gsfc.nasa.gov/planetary/factsheet/) — Données publiques de la NASA
+- [NASA NSSDCA — Saturnian Rings Fact Sheet (rayons des anneaux D, C, B, A, F, division de Cassini, lacune d’Encke)](https://nssdc.gsfc.nasa.gov/planetary/factsheet/satringfact.html) — Données publiques de la NASA
+- [UAI, groupe WGCCRE — Archinal et al. (2018), « Report of the IAU Working Group on Cartographic Coordinates and Rotational Elements: 2015 » (pôles nord des planètes)](https://doi.org/10.1007/s10569-017-9805-5) — Article scientifique ; valeurs numériques réutilisées
+- [NASA Science — fiches des planètes (Mars : poussière riche en oxyde de fer ; Jupiter : Grande Tache rouge plus large que la Terre ; Saturne : moins dense que l’eau, anneaux d’environ 10 m d’épaisseur ; Neptune : vents de plus de 2 000 km/h ; Proxima du Centaure à 4,2 années-lumière)](https://science.nasa.gov/solar-system/planets/) — Données publiques de la NASA
+- [NASA/JPL/Space Science Institute — PIA07782, « Cassini’s Best Maps of Jupiter » (carte cylindrique, décembre 2000), réduite à 2048 × 1024, bandes polaires sans données comblées (tools/planetes.py)](https://photojournal.jpl.nasa.gov/catalog/PIA07782) — Image NASA/JPL : usage libre avec crédit « NASA/JPL/Space Science Institute »
+- [NASA 3D Resources — Mars (images des sondes Viking traitées par l’USGS ; NASA/JPL-Caltech), 1440 × 720](https://science.nasa.gov/3d-resources/mars/) — Image NASA : libre de droits, crédit « NASA/JPL-Caltech, USGS »
+- Le Système solaire en 3D (Soleil, Mercure, Vénus, Terre, Saturne et ses anneaux, Uranus, Neptune, petites étoiles du fond) : illustration calculée pour ce projet (src/anims/systeme.js), pas une observation — CC BY-NC-SA 4.0 (comme le site)
+- [ESA Gaia, 3e publication de données (Gaia DR3, Gaia Collaboration, Vallenari et al. 2023) — parallaxe de Proxima du Centaure : 768,07 mas, soit 4,25 années-lumière](https://www.cosmos.esa.int/web/gaia/dr3) — Données publiques de l’ESA (CC BY-SA 3.0 IGO) ; valeur numérique citée
+- P. Kervella et al. (2016), « Parallax and masses of α Centauri revisited », Astronomy & Astrophysics 594, A107 — parallaxe de 747,1 mas, soit 4,37 années-lumière — Article scientifique ; valeur numérique citée
+- [ESA/Hubble, communiqué heic0516 (2005) — Sirius A deux fois plus massive que le Soleil ; Sirius B : 12 000 km de diamètre, 98 % de la masse du Soleil](https://esahubble.org/news/heic0516/) — Texte ESA/Hubble (CC BY 4.0) ; chiffres cités
+- [J. Davis et al. (2011), « The Angular Diameter and Fundamental Parameters of Sirius A », PASA 28, 58 — rayon 1,71 fois celui du Soleil, 9 845 K, 24,7 fois la luminosité du Soleil](https://arxiv.org/abs/1010.3790) — Article scientifique ; valeurs numériques citées
+- [I. Ribas et al. (2017), Astronomy & Astrophysics 603, A58 — Proxima du Centaure : rayon ≈ 0,15 fois celui du Soleil, ≈ 3 000 K](https://arxiv.org/abs/1704.08449) — Article scientifique ; valeurs numériques citées
+- E. Moravveji et al. (2012), « Asteroseismology of the nearby SN-II progenitor: Rigel », The Astrophysical Journal 747, 108 — rayon ≈ 79 fois celui du Soleil, 12 100 K (d’autres études donnent 74 à 115) — Article scientifique ; valeurs numériques citées
+- [M. Joyce et al. (2020), « Standing on the Shoulders of Giants », The Astrophysical Journal 902, 63 — rayon de Bételgeuse ≈ 764 fois celui du Soleil (+116 / −62)](https://doi.org/10.3847/1538-4357/abb8db) — Article scientifique ; valeurs numériques citées
+- [UAI, résolution B3 (2015) — valeurs nominales du Soleil (température effective 5 772 K)](https://www.iau.org/static/resolutions/IAU2015_English.pdf) — Texte officiel
+- [NASA Science — « Our Milky Way Galaxy: How Big is Space? » (environ 100 000 années-lumière, 100 à 400 milliards d’étoiles)](https://science.nasa.gov/universe/exoplanets/our-milky-way-galaxy-how-big-is-space/) — Données publiques de la NASA
+- Les étoiles proches en 3D (halos, figures des constellations, cercles de repère, surfaces et couleurs des étoiles comparées) : illustration calculée pour ce projet (src/anims/etoiles.js), sur les vraies positions du catalogue HYG — CC BY-NC-SA 4.0 (comme le site)
+- [NASA Earth Observatory — Blue Marble Next Generation, avril 2004 (R. Stöckli)](https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-topography-bathymetry/) — Image NASA : libre de droits, crédit « NASA Earth Observatory »
+- [NASA Earth Observatory — Black Marble 2016 (lumières nocturnes, Suomi NPP VIIRS)](https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/) — Image NASA : libre de droits, crédit « NASA Earth Observatory »
+- Nuages de la Terre : illustration calculée pour ce projet (tools/nuages.mjs), pas une observation — CC BY-NC-SA 4.0 (comme le site)
+- [NASA Scientific Visualization Studio — CGI Moon Kit (données LRO/LROC ; E. Wright, N. Petro)](https://svs.gsfc.nasa.gov/4720) — Image NASA : libre de droits, crédit « NASA’s Scientific Visualization Studio »
+- [Catalogue d’étoiles HYG v4.2 (D. Nash, astronexus) — extrait de ≈ 10 000 étoiles (assets/etoiles.bin, tools/etoiles.mjs)](https://www.astronexus.com/projects/hyg) — CC BY-SA 4.0 ; l’extrait reste sous CC BY-SA 4.0
+- [NASA/Goddard Space Flight Center Scientific Visualization Studio — Deep Star Maps 2020, panorama de la Voie lactée (Gaia DR2 : ESA/Gaia/DPAC)](https://svs.gsfc.nasa.gov/4851) — Image NASA, crédit « NASA/Goddard Space Flight Center Scientific Visualization Studio. Gaia DR2 : ESA/Gaia/DPAC »
+- [NASA Goddard (StarChild) — le Soleil fait le tour de la galaxie en ≈ 230 millions d’années, à ≈ 828 000 km/h (d’autres mesures donnent 220 à 250 millions d’années)](https://starchild.gsfc.nasa.gov/docs/StarChild/questions/question18.html) — Données publiques de la NASA
+- [Collaboration GRAVITY (2019), Astronomy & Astrophysics 625, L10 — distance du centre galactique : 8 178 parsecs (≈ 26 700 années-lumière) ; masse de Sagittarius A* : 4,15 millions de masses solaires](https://arxiv.org/abs/1904.05721) — Article scientifique ; valeurs numériques citées
+- [ESO, communiqué eso2208 (12 mai 2022) — première image de Sagittarius A* par l’Event Horizon Telescope : ≈ 4 millions de fois la masse du Soleil, à ≈ 27 000 années-lumière](https://www.eso.org/public/news/eso2208/) — Texte ESO (CC BY 4.0) ; chiffres cités, image non reproduite
+- [ESO, communiqué eso1825 (2018) — l’étoile S2 fait le tour du trou noir en 16 ans et passe au plus près à plus de 25 millions de km/h](https://www.eso.org/public/news/eso1825/) — Texte ESO (CC BY 4.0) ; chiffres cités
+- [Collaboration GRAVITY (2020), Astronomy & Astrophysics 636, L5 — éléments de l’orbite de S2 (demi-grand axe 0,1251″, excentricité 0,8846, période 16,05 ans)](https://arxiv.org/abs/2004.07187) — Article scientifique ; valeurs numériques citées
+- [ESA — Gaia DR3 (13 juin 2022) : près de 2 milliards d’étoiles de notre galaxie](https://www.esa.int/Science_Exploration/Space_Science/Gaia/Gaia_sees_strange_stars_in_most_detailed_Milky_Way_survey_to_date) — Texte ESA ; chiffres cités
+- [Disposition des bras, de la barre et du Soleil : M. J. Reid et al. (2019), The Astrophysical Journal 885, 131 ; E. Churchwell et al. (2009), PASP 121, 213 (Spitzer GLIMPSE) — repris de façon simplifiée](https://arxiv.org/abs/1910.03357) — Articles scientifiques ; disposition générale reprise
+- [Distances des Nuages de Magellan : G. Pietrzyński et al. (2019), Nature 567, 200 (49,6 kpc) ; D. Graczyk et al. (2020), ApJ 904, 13 (62,4 kpc)](https://arxiv.org/abs/1903.08096) — Articles scientifiques ; valeurs numériques citées
+- La Voie lactée vue de l’extérieur (carte vue de dessus calculée une fois par tools/voielactee.py, étoiles semées sur le même modèle, Nuages de Magellan, ombre du trou noir) : illustration calculée pour ce projet (src/anims/voielactee.js), pas une observation — CC BY-NC-SA 4.0 (comme le site)
+- [NASA/JPL-Caltech — NASA’s Eyes on the Solar System (vue intégrée, en ligne)](https://eyes.nasa.gov/apps/solar-system/) — Service public de la NASA, intégré sans modification ; crédit NASA/JPL-Caltech
+- [Stellarium Web Engine (© Stellarium Labs SRL) — planétarium « le ciel de ce soir » du chapitre 4, compilé sans modification depuis le dépôt officiel, commit 2103935 du 5 novembre 2026](https://github.com/Stellarium/stellarium-web-engine/tree/2103935134e09ba1715171241769fce03cebebe4) — GNU AGPL v3 (code source au lien indiqué)
+- [Données du ciel du planétarium, distribuées avec Stellarium Web Engine (commit 2103935) : constellations occidentales, texture de la Lune (Oleg Pluton, d’après la NASA), étoiles et objets du ciel profond (données d’essai du moteur), Soleil, paysage de Guéreins (assets/ciel, LICENCES.md)](https://github.com/Stellarium/stellarium-web-engine/tree/2103935134e09ba1715171241769fce03cebebe4/apps/test-skydata) — Constellations : CC BY-SA, illustrations Licence Art Libre ; Lune : CC BY 4.0 ; le reste : AGPL-3.0 (origine des catalogues d’étoiles [À VÉRIFIER])
+- [three.js r128 — moteur 3D](https://github.com/mrdoob/three.js) — Licence MIT
+- [Police Roboto (Google)](https://fonts.google.com/specimen/Roboto) — SIL Open Font License 1.1

@@ -1427,7 +1427,7 @@ html.present .cs-when{font-size:18px}html.present .cs-cred{font-size:14px}
 <nav class="u-menu" id="chapitres" aria-label="Chapitres du voyage" hidden><div class="u-menu-in">
 <div class="u-menu-top"><b>Le voyage</b><button type="button" class="u-btn" data-close>✕ Fermer</button></div>
 <a class="u-menu-big" href="index.html">Accueil</a><a class="u-menu-big" href="voyage.html" aria-current="page">Le grand voyage <small>en puissances de dix</small></a>
-<div class="u-menu-ch"><a href="terre-lune.html"><span class="n">1</span><span><b>La Terre et la Lune</b><small>1,3 seconde-lumière</small></span></a><a href="soleil.html"><span class="n">2</span><span><b>Le Soleil</b><small>8 minutes-lumière</small></span></a><a href="systeme-solaire.html"><span class="n">3</span><span><b>Le Système solaire</b><small>4 heures-lumière</small></span></a><a href="etoiles.html"><span class="n">4</span><span><b>Les étoiles proches</b><small>4,2 années-lumière</small></span></a><a href="voie-lactee.html"><span class="n">5</span><span><b>La Voie lactée</b><small>100 000 années-lumière</small></span></a><span class="soon"><span class="n">6</span><span><b>Le Groupe local</b><small>bientôt</small></span></span><span class="soon"><span class="n">7</span><span><b>Les grandes structures</b><small>bientôt</small></span></span><span class="soon"><span class="n">8</span><span><b>L’Univers observable</b><small>bientôt</small></span></span></div><a class="u-menu-big" href="a-propos.html">À propos, sources et crédits</a></div></nav>
+<div class="u-menu-ch"><a href="terre-lune.html"><span class="n">1</span><span><b>La Terre et la Lune</b><small>1,3 seconde-lumière</small></span></a><a href="soleil.html"><span class="n">2</span><span><b>Le Soleil</b><small>8 minutes-lumière</small></span></a><a href="systeme-solaire.html"><span class="n">3</span><span><b>Le Système solaire</b><small>4 heures-lumière</small></span></a><a href="etoiles.html"><span class="n">4</span><span><b>Les étoiles proches</b><small>4,2 années-lumière</small></span></a><a href="voie-lactee.html"><span class="n">5</span><span><b>La Voie lactée</b><small>100 000 années-lumière</small></span></a><a href="groupe-local.html"><span class="n">6</span><span><b>Le Groupe local</b><small>2,5 millions d’années-lumière</small></span></a><a href="structures.html"><span class="n">7</span><span><b>Les grandes structures</b><small>500 millions d’années-lumière</small></span></a><a href="univers.html"><span class="n">8</span><span><b>L’Univers observable</b><small>13,8 milliards d’années</small></span></a></div><a class="u-menu-big" href="a-propos.html">À propos, sources et crédits</a></div></nav>
 <section class="vy-wrap" aria-label="Le grand voyage, de la Terre aux confins de l’Univers"><h1 class="sr-only">Le grand voyage : de la Terre aux confins de l’Univers</h1><div id="voyage" class="cin cin-full"></div></section>
 <main id="contenu">
 <section class="vy-sec"><div class="u-eyebrow">Le grand voyage</div><h2 class="u-h2" style="margin-top:8px">De la Terre au bord de l’univers observable</h2>
@@ -1820,10 +1820,11 @@ const fPano='uniform sampler2D uT;uniform float uA;varying vec3 vD;void main(){v
 const vSun='varying vec3 vO;varying vec3 vN;varying vec3 vP;void main(){vO=position;vN=normalize(mat3(modelMatrix)*normal);vec4 w=modelMatrix*vec4(position,1.);vP=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}';
 const fSun=NOISE+'uniform float uT;varying vec3 vO;varying vec3 vN;varying vec3 vP;void main(){vec3 n=normalize(vO);float mu=max(dot(normalize(vN),normalize(cameraPosition-vP)),0.);float g=n3(n*55.+uT*.06)*.6+n3(n*140.-uT*.09)*.4;float s=smoothstep(.62,.8,n3(n*7.+3.))*.25;vec3 c=mix(vec3(.95,.33,.06),vec3(1.,.84,.58),pow(mu,.6))*(.68+.45*g)*(1.-s*mu);gl_FragColor=vec4(c,1.);}';
 /* fond diffus cosmologique (illustration) : bulle aux taches chaudes et froides */
-const fCmb=NOISE+'uniform float uA;varying vec3 vD;varying vec3 vV;void main(){vec3 n=normalize(vD);float v=n3(n*7.)*.45+n3(n*16.)*.33+n3(n*38.)*.22;vec3 c=v<.5?mix(vec3(.05,.12,.55),vec3(.55,.8,1.),smoothstep(.25,.5,v)):mix(vec3(1.,.85,.55),vec3(.9,.25,.1),smoothstep(.5,.75,v));float rim=pow(1.-abs(dot(normalize(vV),n)),1.6);gl_FragColor=vec4(c,uA*(.12+.88*rim*rim));}';
+const fCmb=NOISE+'uniform float uA,uIn;varying vec3 vD;varying vec3 vV;void main(){vec3 n=normalize(vD);float v=n3(n*7.)*.45+n3(n*16.)*.33+n3(n*38.)*.22;vec3 c=v<.5?mix(vec3(.05,.12,.55),vec3(.55,.8,1.),smoothstep(.25,.5,v)):mix(vec3(1.,.85,.55),vec3(.9,.25,.1),smoothstep(.5,.75,v));float rim=pow(1.-abs(dot(normalize(vV),n)),1.6);gl_FragColor=vec4(c,uA*mix(.12+.88*rim*rim,.6,uIn));}';
 const vCmb='varying vec3 vD;varying vec3 vV;void main(){vD=position;vec4 w=modelMatrix*vec4(position,1.);vV=cameraPosition-w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}';
 
-HF.voyage=function(host){
+HF.voyage=function(host,opt){
+  opt=opt||{};const CHAP=opt.chap||'';                 /* chapitres 6 à 8 : mêmes décors, autres plans ('groupe', 'structures', 'univers') */
   const T=window.THREE;host.classList.add('cin','vy3');host.innerHTML='';
   const reduce=HF.reduced(),coarse=HF.coarse();
   let R;try{R=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});}catch(e){R=null;}
@@ -1924,6 +1925,10 @@ HF.voyage=function(host){
     gr.addColorStop(0,'rgba(255,246,228,1)');gr.addColorStop(.12,'rgba(255,232,200,.75)');gr.addColorStop(.4,'rgba(190,205,255,.18)');gr.addColorStop(1,'rgba(160,180,255,0)');g.fillStyle=gr;g.fillRect(0,0,128,128);return new T.CanvasTexture(c);})();
   const HALOS=[{c:V3(0,0,0),R:15,px:30},{c:null,g:0,R:24,px:34},{c:null,g:1,R:8.5,px:16}].map(h=>{const m=new T.SpriteMaterial({map:haloTex,transparent:true,opacity:0,depthTest:false,depthWrite:false,blending:T.AdditiveBlending});
     const sp=new T.Sprite(m);sp.position.copy(h.c||kp(GXY[h.g].p));galL.root.add(sp);return {sp,m,R:h.R,px:h.px};});
+  /* flèche d'Andromède vers nous (chapitre 6, illustration du mouvement) */
+  const arrowA={value:0};
+  {const a=kp(M31),b=a.clone().lerp(V3(0,0,0),.32),g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(new Float32Array([a.x,a.y,a.z,b.x,b.y,b.z]),3));
+    galL.root.add(new T.LineSegments(g,new T.ShaderMaterial({uniforms:{uA:arrowA},vertexShader:'void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'uniform float uA;void main(){gl_FragColor=vec4(1.,.75,.4,uA);}',transparent:true,depthTest:false,depthWrite:false,blending:T.AdditiveBlending})));}
   const NMW=coarse?45000:90000;
   const JOBS=[];
   JOBS.push(function*(){const b=cloud(NMW);
@@ -1957,14 +1962,20 @@ HF.voyage=function(host){
     const fixed=[{p:V3(0,0,0),w:.2}].concat(CLU.map((c,i)=>({p:mp(c.p),w:i===7?5:i===6||i===4?3:2})));
     yield* web(b,{seed:5,n,nodes:coarse?600:900,R:420,hole:6,fixed,links:[[0,1],[1,5],[1,7]],sig:1.5,fil:.74,size:1.5,col:[.95,.86,.74],col2:[1,.9,.8]});
     webL.root.add(new T.Points(geo(b),webMat));});
+  /* chapitre 7 : les galaxies des amas nommés, une à une (illustration : nombre et taille du cœur approchés) */
+  const cluMat=cloudMat(.05,5);
+  if(CHAP==='structures')JOBS.push(function*(){const NC=[1500,400,600,600,800,1000,1500,2500],SC=[1.1,.5,.8,.8,1.4,1.1,1.2,3],tot=NC.reduce((a,b)=>a+b,0),b=cloud(tot),r=rng(77);
+    CLU.forEach((c,i)=>{const o=mp(c.p);for(let q=0;q<NC[i];q++){const s=SC[i]*(r()<.55?.35:1),w=.5+.5*r(),big=r()<.02;
+      push(b,o.x+gauss(r)*s,o.y+gauss(r)*s,o.z+gauss(r)*s,w,w*.86,w*.68,big?.07:.025+.02*r());}});
+    yield;webL.root.add(new T.Points(geo(b),cluMat));});
 
   /* ===== Couche 4 : l'univers observable (Gpc) — toile et fond diffus illustrés ===== */
-  const uniL=layer('univers',GPC,SUNP,1e-4,1e3),uniMat=cloudMat(.6,6),cmbA={value:0};
+  const uniL=layer('univers',GPC,SUNP,1e-4,1e3),uniMat=cloudMat(.6,6),cmbA={value:0},cmbIn={value:0};let cmbM=null;
   JOBS.push(function*(){const n=coarse?35000:70000,b=cloud(n);
     yield* web(b,{seed:9,n,nodes:coarse?900:1400,R:R_OBS/GPC*.985,hole:0,fixed:[],sig:.09,size:.11,col:[.72,.74,1],col2:[.9,.82,1]});
     uniL.root.add(new T.Points(geo(b),uniMat));
-    const m=new T.ShaderMaterial({uniforms:{uA:cmbA},vertexShader:vCmb,fragmentShader:fCmb,transparent:true,depthTest:false,depthWrite:false,blending:T.AdditiveBlending});
-    uniL.root.add(new T.Mesh(new T.SphereGeometry(R_OBS/GPC,96,48),m));});
+    const m=new T.ShaderMaterial({uniforms:{uA:cmbA,uIn:cmbIn},vertexShader:vCmb,fragmentShader:fCmb,transparent:true,depthTest:false,depthWrite:false,blending:T.AdditiveBlending});
+    cmbM=m;uniL.root.add(new T.Mesh(new T.SphereGeometry(R_OBS/GPC,96,48),m));});
 
   /* ===== Couche 5 : le Système solaire (unités astronomiques, origine au Soleil) ===== */
   const solL=layer('soleil',AU,SUNP,1e-7,1e6);
@@ -1991,6 +2002,7 @@ HF.voyage=function(host){
   PL.forEach(p=>lab('p-'+p.k,p.n,()=>p.p));lab('voyager','Voyager 1',()=>VOY);
   lab('ici','Vous êtes ici',()=>SUNP,'gold');lab('centre','Centre de la galaxie',()=>GC);lab('mw','La Voie lactée',()=>GC,'gold');
   GXY.forEach((g,i)=>lab('g'+i,g.n,()=>g.p));CLU.forEach((c,i)=>lab('c'+i,c.n,()=>c.p));
+  lab('fleche','Vers nous, ≈ 110 km/s',()=>M31.clone().lerp(GC,.2));
   lab('nous','Nous, au centre',()=>SUNP,'gold');lab('nous2','Notre galaxie',()=>SUNP,'gold');lab('cmb','Fond diffus cosmologique',()=>camQ?SUNP.clone().add(V3(1,0,0).applyQuaternion(camQ).multiplyScalar(R_OBS*.99)):SUNP);
   function labelsFromStars(){NAMED.forEach((s,i)=>{if(s)lab('s'+i,i===1?'Alpha et Proxima du Centaure':s.n,()=>s.p,i===1?'':null);});}
   const sid=nm=>'s'+NAMED.findIndex(s=>s&&s.n===nm);
@@ -2009,7 +2021,7 @@ HF.voyage=function(host){
     return {p,d,up,fov,z:lg(L/2*(m||1.3)*(land?1:1.45)/Math.max(th,tv))};}
   function q0(st){const m=new T.Matrix4().lookAt(st.d.clone(),V3(0,0,0),st.up);return new T.Quaternion().setFromRotationMatrix(m);}
   const moonKm=MOON.length()/1000,sunS=SUNP.length()/C,nep=PL[7].p.length()/C/3600;
-  const ST=[
+  let ST=[
     {id:'terre',hold:11,f:()=>({p:V3(0,0,0),d:dirLatRel(76,24),up:N,fov:38,z0:lg(1.85*RE),z:lg(3.4*RE)}),
       t:'La Terre, en ce moment',l:'Ici, maintenant',s:'Éclairée par le vrai Soleil, à l’heure de votre appareil. Reculons…',labs:[]},
     {id:'terre-lune',hold:10,f:()=>{const s=lineShot(MOON.clone().multiplyScalar(.5),perp(perp(SU,MD).multiplyScalar(.92).add(N.clone().multiplyScalar(.38)),MD),MD,MOON.length(),40,1.32);s.z0=s.z+.06;return s;},
@@ -2039,17 +2051,76 @@ HF.voyage=function(host){
         return {p:GC,d,up:perp(GZ,d),fov:40,z0:lg(dist*.85),z:lg(dist)};},
       t:'La Voie lactée',l:'26 700 années-lumière jusqu’au centre',s:'Notre galaxie : des centaines de milliards d’étoiles. Le Soleil en fait le tour en ≈ 230 millions d’années.',i:'Illustration : forme et bras d’après les observations.',ch:['voie-lactee.html','Chapitre 5 : la Voie lactée'],labs:['ici','centre']},
     {id:'groupe',hold:11,f:()=>{const v=unit(M31.clone().sub(GC));const s=lineShot(GC.clone().lerp(M31,.5),perp(GZ.clone().add(GX.clone().multiplyScalar(.4)),v),v,M31.distanceTo(GC),40,1.55);s.z0=s.z-.12;return s;},
-      t:'Le Groupe local',l:'Andromède : 2,5 millions d’années-lumière',s:'Notre grande voisine se voit à l’œil nu sous un ciel noir. Sa lumière est partie il y a 2,5 millions d’années.',i:'Galaxies : illustrations, à leur vraie place et à leur vraie taille.',labs:['mw','g0','g1']},
+      t:'Le Groupe local',l:'Andromède : 2,5 millions d’années-lumière',s:'Notre grande voisine se voit à l’œil nu sous un ciel noir. Sa lumière est partie il y a 2,5 millions d’années.',i:'Galaxies : illustrations, à leur vraie place et à leur vraie taille.',ch:['groupe-local.html','Chapitre 6 : le Groupe local'],labs:['mw','g0','g1']},
     {id:'toile',hold:12,f:()=>{const tgt=unit(CLU[0].p.clone().sub(SUNP).add(CLU[4].p.clone().sub(SUNP))),sg=galDir(47.37,6.32),d=perp(sg,tgt),[th,tv]=tans(40),dist=230*MPC/Math.min(th,tv);
         return {p:SUNP.clone().sub(tgt.clone().multiplyScalar(25*MPC)),d,up:perp(tgt,d),fov:40,z0:lg(dist*.8),z:lg(dist)};},
-      t:'La toile cosmique',l:'Des centaines de millions d’années-lumière',s:'Les galaxies se rassemblent en amas et en filaments, autour de grands vides. Notre galaxie est l’un de ces points.',i:'Filaments : illustration ; amas nommés à leur vraie place.',labs:['nous2','c0','c6','c7','c5']},
+      t:'La toile cosmique',l:'Des centaines de millions d’années-lumière',s:'Les galaxies se rassemblent en amas et en filaments, autour de grands vides. Notre galaxie est l’un de ces points.',i:'Filaments : illustration ; amas nommés à leur vraie place.',ch:['structures.html','Chapitre 7 : les grandes structures'],labs:['nous2','c0','c6','c7','c5']},
     {id:'univers',hold:13,f:()=>{const [th,tv]=tans(40),dist=R_OBS*1.12/Math.min(th,tv),d=perp(GZ.clone().add(GY),N.clone());return {p:SUNP,d:d.lengthSq()>.5?d:GZ.clone(),up:N,fov:40,z0:lg(dist*.62),z:lg(dist)};},
-      t:'L’univers observable',l:'13,8 milliards d’années',s:'Aussi loin que la lumière a pu venir depuis le Big Bang. Au bord, la plus vieille lumière : le fond diffus cosmologique.',i:'Illustration : la toile et le fond diffus sont dessinés.',labs:['nous','cmb']}];
+      t:'L’univers observable',l:'13,8 milliards d’années',s:'Aussi loin que la lumière a pu venir depuis le Big Bang. Au bord, la plus vieille lumière : le fond diffus cosmologique.',i:'Illustration : la toile et le fond diffus sont dessinés.',ch:['univers.html','Chapitre 8 : l’Univers observable'],labs:['nous','cmb']}];
   function oriDir(){const v=V3();let k=0;ORI.forEach(n=>{const s=NAMED[NAMED.findIndex(x=>x&&x.n===n)];if(s){v.add(unit(s.p.clone().sub(SUNP)));k++;}});return k?v.normalize():radec(5.6,-1.2);}
   const r10=x=>x<1000?Math.round(x/10)*10:Math.round(x/100)*100;
   function oriLy(n){const s=NAMED[NAMED.findIndex(x=>x&&x.n===n)];return s?nf(r10(s.ly)):'?';}
   function oriRange(){const L=ORI.map(n=>{const s=NAMED[NAMED.findIndex(x=>x&&x.n===n)];return s?s.ly:0;}).filter(x=>x>0);return L.length?'≈ '+nf(r10(Math.min(...L)))+' à ≈ '+nf(r10(Math.max(...L))):'250 à 2 000';}
   const val=x=>typeof x==='function'?x():x;
+
+  /* ===== Chapitres 6 à 8 : les mêmes décors, d'autres plans ===== */
+  const ST_V=ST,SV=id=>ST_V.find(s=>s.id===id).f;
+  const aim=(p,d,R,k0,fov)=>{fov=fov||40;d=unit(d);const [th,tv]=tans(fov),dd=R/Math.min(th,tv);const up=Math.abs(d.dot(N))>.97?perp(GZ,d):perp(N,d);return {p,d,up,fov,z0:lg(dd*(k0||1.25)),z:lg(dd)};};
+  const mixd=(a,b,t)=>a.clone().multiplyScalar(Math.cos(t*D)).add(b.clone().multiplyScalar(Math.sin(t*D))).normalize();
+  const W1=(F,w,o)=>{for(const q in o)F[q]=Math.max(F[q],o[q]*w);};
+  const SG=galDir(47.37,6.32),dV=unit(CLU[0].p.clone().sub(SUNP)),side=v=>unit(V3().crossVectors(v,N));
+  const near=(n,c)=>(F,w)=>{F.near=F.near+(n-F.near)*w;W1(F,w,{clu:c||0});};
+  const CHAPS={
+  groupe:()=>{const MC=GXY[2].p.clone().lerp(GXY[3].p,.5),f31=frameOf(GXY[0]),f33=frameOf(GXY[1]),vA=unit(M31.clone().sub(GC)),dA=GXY[0].dir,ill='Galaxies : illustrations, à leur vraie place et à leur vraie taille.';
+    return [
+    {id:'ici',hold:11,drift:0,f:()=>({p:dA.clone().multiplyScalar(1e18),d:dA.clone().negate(),up:perp(N,dA),fov:32,z0:lg(1e18-1e8),z:lg(1e18-1e8)}),
+      ov:(F,w)=>{W1(F,w,{lg:.6});F.h[1]=Math.max(F.h[1],.9*w);F.h[2]=Math.max(F.h[2],.5*w);},
+      t:'Andromède, vue d’ici',l:'2,5 millions d’années-lumière',s:'Par une nuit d’automne sans Lune, loin des villes : une petite tache floue près de Cassiopée. C’est une autre galaxie.',i:'Galaxie : illustration, à sa vraie place dans le ciel. À l’œil nu, on n’en voit que le cœur.',labs:['g0','g1']},
+    {id:'mw',hold:10,f:()=>aim(GC,mixd(GZ,GX,48),20*KPC,1.3),t:'Notre galaxie, vue de loin',l:'≈ 100 000 années-lumière',s:'Quittons la Voie lactée : autour d’elle, d’autres galaxies.',i:'Illustration : forme et bras d’après les observations.',labs:['mw','ici']},
+    {id:'magellan',hold:11,f:()=>{const v=unit(MC.clone().sub(GC)),s=lineShot(GC.clone().lerp(MC,.45),perp(GZ.clone().add(GY.clone().multiplyScalar(.6)),v),v,GC.distanceTo(MC)+30*KPC,40,1.25);s.z0=s.z+.1;return s;},
+      ov:(F,w)=>W1(F,w,{lg:.55}),t:'Les Nuages de Magellan',l:'160 000 et 200 000 années-lumière',s:'Deux petites galaxies qui accompagnent la nôtre. On les voit à l’œil nu… depuis l’hémisphère Sud seulement.',i:ill,labs:['mw','g2','g3']},
+    {id:'route',hold:11,f:()=>{const s=lineShot(GC.clone().lerp(M31,.5),perp(GZ.clone().add(GX.clone().multiplyScalar(.4)),vA),vA,M31.distanceTo(GC),40,1.45);s.z0=s.z-.12;return s;},
+      t:'En route vers Andromède',l:'2,5 millions d’années-lumière',s:'Entre les deux galaxies, presque rien. La lumière que nous recevons d’Andromède est partie il y a 2,5 millions d’années.',i:ill,labs:['mw','g0']},
+    {id:'andromede',hold:12,f:()=>{const s=lineShot(M31,mixd(f31.Z,f31.Y,38),f31.X,52*KPC,40,1.2);s.z0=s.z+.15;return s;},
+      t:'Andromède',l:'≈ 1 000 milliards d’étoiles',s:'La plus grande galaxie du Groupe local : une spirale comme la nôtre, plus étendue encore.',i:'Illustration, à sa vraie place et à sa vraie taille.',labs:['g0']},
+    {id:'triangle',hold:10,f:()=>{const s=lineShot(GXY[1].p,mixd(f33.Z,f33.Y,30),f33.X,19*KPC,40,1.2);s.z0=s.z+.15;return s;},
+      t:'La galaxie du Triangle',l:'2,7 millions d’années-lumière',s:'La troisième grande spirale du Groupe local, avec quelque 40 milliards d’étoiles.',i:'Illustration, à sa vraie place et à sa vraie taille.',labs:['g1']},
+    {id:'groupe',hold:12,f:()=>{const s=lineShot(GC.clone().lerp(M31,.5),perp(GZ.clone().add(GY.clone().multiplyScalar(.5)),vA),vA,M31.distanceTo(GC)*2.6,40,1.15);s.z0=s.z-.15;return s;},
+      t:'Le Groupe local',l:'≈ 10 millions d’années-lumière',s:'Trois grandes spirales et des dizaines de petites galaxies naines, tenues ensemble par la gravité.',i:'Seules les plus grandes galaxies sont dessinées.',labs:['mw','g0','g1','g2']},
+    {id:'approche',hold:13,f:()=>{const s=lineShot(GC.clone().lerp(M31,.5),perp(GZ.clone().negate().add(GY.clone().multiplyScalar(.8)),vA),vA,M31.distanceTo(GC),40,1.3);s.z0=s.z+.1;return s;},
+      ov:(F,w)=>W1(F,w,{arrow:.75}),t:'Andromède se rapproche',l:'≈ 110 km/s',s:'Environ 400 000 km/h, vers nous. Une rencontre est possible dans quelques milliards d’années, mais pas certaine : environ une chance sur deux d’ici 10 milliards d’années.',
+      i:'Flèche : sens du mouvement (illustration).',ch:['structures.html','Chapitre 7 : les grandes structures'],labs:['mw','g0','fleche']}];},
+  structures:()=>{const ill='Galaxies et filaments : illustrations ; amas nommés à leur vraie place.',dC=unit(CLU[6].p.clone().sub(SUNP)),dS=unit(CLU[7].p.clone().sub(SUNP));
+    return [
+    {id:'groupe',hold:11,f:()=>aim(GC.clone().lerp(M31,.5),mixd(SG,dV,30),5*MPC,1.5),ov:near(2,.6),
+      t:'Le Groupe local, vu de loin',l:'≈ 10 millions d’années-lumière',s:'Notre galaxie et Andromède ne sont plus que deux taches. Tout autour, d’autres groupes de galaxies.',i:ill,labs:['mw','g0']},
+    {id:'vierge',hold:12,f:()=>aim(CLU[0].p,mixd(dV.clone().negate(),side(dV),55),6*MPC),ov:near(1.5,.7),
+      t:'L’amas de la Vierge',l:'54 millions d’années-lumière',s:'Plus de 1 000 galaxies serrées les unes contre les autres. En son cœur, la géante M87, dont le trou noir a été photographié en 2019.',i:ill,labs:['c0']},
+    {id:'voisinage',hold:11,f:()=>{const s=lineShot(SUNP.clone().lerp(CLU[0].p,.5),perp(SG,dV),dV,CLU[0].p.distanceTo(SUNP)+14*MPC,40,1.3);s.z0=s.z-.1;return s;},ov:near(2,.6),
+      t:'Notre voisinage',l:'Le superamas local',s:'Notre Groupe local est en bordure d’un ensemble plus vaste, dont l’amas de la Vierge est le cœur.',i:ill,labs:['nous2','c0','c1']},
+    {id:'laniakea',hold:13,f:()=>aim(SUNP.clone().lerp(CLU[4].p,.55),SG,95*MPC,1.3),ov:near(8,.6),
+      t:'Laniakea, notre superamas',l:'≈ 520 millions d’années-lumière',s:'« Ciel immense » en hawaïen : environ 100 000 galaxies, dont les mouvements convergent vers une même région, le Grand Attracteur.',i:'Limites de Laniakea non dessinées. '+ill,labs:['nous2','c0','c2','c3','c4']},
+    {id:'coma',hold:12,f:()=>aim(CLU[6].p,mixd(dC.clone().negate(),side(dC),60),8*MPC),ov:near(2,.7),
+      t:'L’amas de Coma',l:'321 millions d’années-lumière',s:'Plus de 1 000 galaxies. En l’étudiant, en 1933, Fritz Zwicky a soupçonné qu’une masse invisible les retenait : la « matière noire ».',i:ill,labs:['c6']},
+    {id:'shapley',hold:11,f:()=>aim(CLU[7].p,mixd(dS.clone().negate(),side(dS),50),22*MPC),ov:near(4,.7),
+      t:'Le superamas de Shapley',l:'≈ 650 millions d’années-lumière',s:'La plus grande concentration de galaxies de notre voisinage cosmique : plusieurs amas géants, des milliers de galaxies.',i:ill,labs:['c7']},
+    {id:'toile',hold:12,f:SV('toile'),ov:near(10,.5),
+      t:'La toile cosmique',l:'Des centaines de millions d’années-lumière',s:'Amas et filaments de galaxies, autour de grands vides : à cette échelle, l’Univers ressemble à une éponge.',i:ill,labs:['nous2','c0','c6','c7','c5']},
+    {id:'vides',hold:13,drift:14,f:()=>aim(SUNP,mixd(SG,dV,70),260*MPC,1.3),ov:near(10,.5),
+      t:'Les grands vides',l:'Des centaines de millions d’années-lumière',s:'Entre les filaments, d’immenses régions presque sans galaxies. Chaque point de lumière est une galaxie, avec ses milliards d’étoiles.',i:'Illustration.',ch:['univers.html','Chapitre 8 : l’Univers observable'],labs:['nous2']}];},
+  univers:()=>{const ill='Illustration : la toile et le fond diffus sont dessinés.';
+    return [
+    {id:'toile',hold:10,f:()=>aim(SUNP,mixd(SG,dV,35),300*MPC,1.4),t:'Au-delà des amas',l:'Des centaines de millions d’années-lumière',s:'La toile des galaxies, tout autour de nous. Continuons à reculer.',i:'Filaments : illustration.',labs:['nous2']},
+    {id:'profond',hold:11,drift:10,f:()=>aim(SUNP,mixd(SG,dV,80),2.2*GPC,1.5),t:'Plus loin, plus tôt',l:'Des milliards d’années-lumière',s:'Regarder loin, c’est voir le passé : la lumière des galaxies les plus lointaines est partie il y a plus de 13 milliards d’années.',i:ill,labs:['nous']},
+    {id:'bulle',hold:12,f:SV('univers'),t:'L’univers observable',l:'≈ 93 milliards d’années-lumière de diamètre',s:'Tout ce dont la lumière a pu nous parvenir depuis le Big Bang : des centaines de milliards de galaxies.',i:'Point de vue imaginaire. '+ill,labs:['nous','cmb']},
+    {id:'expansion',hold:13,drift:12,f:()=>aim(SUNP,mixd(N,SG,60),R_OBS*1.15,1.15),t:'13,8 milliards d’années, 46 milliards d’années-lumière',l:'L’espace s’étire',s:'La plus vieille lumière voyage depuis 13,8 milliards d’années. Pendant ce temps, l’espace s’est étiré : sa source est aujourd’hui à ≈ 46 milliards d’années-lumière.',i:'Point de vue imaginaire. '+ill,labs:['nous','cmb']},
+    {id:'fond',hold:14,drift:30,f:()=>aim(SUNP,mixd(SG,dV,20),30*MPC,1.6),ov:(F,w)=>W1(F,w,{cmb:.3,uni:.45,cin:1}),
+      t:'Le fond diffus cosmologique',l:'380 000 ans après le Big Bang',s:'La plus vieille lumière, venue de toutes les directions. Elle s’est refroidie : 2,7 degrés au-dessus du zéro absolu (−270 °C), avec des écarts d’à peine un cent-millième.',
+      i:'Illustration : taches et couleurs exagérées. La vraie carte a été dressée par le satellite Planck (ESA).',labs:[]},
+    {id:'centre',hold:11,f:()=>aim(SUNP,mixd(SG.clone().negate(),N,40),R_OBS*1.2,1.1),t:'Chacun au centre',l:'Un univers sans centre',s:'Nous sommes au centre de notre univers observable, comme le serait n’importe quel observateur, dans n’importe quelle galaxie.',i:'Point de vue imaginaire.',labs:['nous']},
+    {id:'point-bleu',hold:13,f:()=>({p:V3(0,0,0),d:dirLatRel(76,24),up:N,fov:38,z0:lg(5*RE),z:lg(3.4*RE)}),t:'Retour au point bleu pâle',l:'Ici, maintenant',
+      s:'En 1990, à 6 milliards de km, Voyager 1 a photographié la Terre : un point minuscule dans un rayon de Soleil. C’est là que nous vivons tous.',ch:['voyage.html','Revoir le grand voyage'],labs:[]}];}};
+  if(CHAP&&CHAPS[CHAP])ST=CHAPS[CHAP]();
   function stState(kk,at){const k=kk;const s=ST[k].f(),u=at==null?1:at;const z=s.z0+(s.z-s.z0)*sm(u);return {p:s.p.clone(),z,q:q0(s),fov:s.fov,yaw:(reduce?0:(ST[k].drift!=null?ST[k].drift:5))*u};}
 
   /* ===== Le fil du voyage : tenue d'un plan, puis trajet vers le suivant ===== */
@@ -2060,7 +2131,7 @@ HF.voyage=function(host){
   function travel(from,to,fast){const A=from,B=apply(stState(to,0)),dist=A.p.distanceTo(B.p);
     let peak=Math.max(A.z,B.z);if(dist>0)peak=Math.max(peak,lg(dist)+.35);const bump=peak>Math.max(A.z,B.z)+.05;
     const span=bump?(peak-A.z)+(peak-B.z):Math.abs(B.z-A.z),dur=reduce?.01:cl(2.6+1.15*span,4,12)*(fast?.55:1);
-    tr={A,B,peak,bump,dur,to,fast};mode='travel';t=0;}
+    tr={A,B,peak,bump,dur,to,fast,from:k};mode='travel';t=0;}
   function travelState(u){const {A,B,peak,bump}=tr,e=sm(u);let z,f;
     const gA=Math.pow(10,A.z),gB=Math.pow(10,B.z);
     if(bump){const gP=Math.pow(10,peak);if(u<.5){z=A.z+(peak-A.z)*sm(u*2);f=.5*(Math.pow(10,z)-gA)/(gP-gA);}else{z=peak+(B.z-peak)*sm(u*2-1);f=.5+.5*(gP-Math.pow(10,z))/(gP-gB);}}
@@ -2116,7 +2187,7 @@ HF.voyage=function(host){
     if(ptr.size===2){const [a,b]=[...ptr.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);if(pinch0)offZ=cl(offZ+lg(pinch0/d)*1.6,-1.2,3);pinch0=d;}user=8;});
   const up=e=>{ptr.delete(e.pointerId);pinch0=0;};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
   el.addEventListener('wheel',e=>{e.preventDefault();offZ=cl(offZ+e.deltaY*.0016,-1.2,3);user=8;wake();},{passive:false});
-  host.tabIndex=0;host.setAttribute('role','region');host.setAttribute('aria-label','Le grand voyage en 3D : ← → pour changer d’étape, Espace pour la pause');
+  host.tabIndex=0;host.setAttribute('role','region');host.setAttribute('aria-label',(opt.label||'Le grand voyage en 3D')+' : ← → pour changer d’étape, Espace pour la pause');
   host.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='PageDown'){go(curIdx()+1);e.preventDefault();}
     else if(e.key==='ArrowLeft'||e.key==='PageUp'){go(curIdx()-1);e.preventDefault();}
     else if(e.key==='Home'){go(0);e.preventDefault();}
@@ -2156,17 +2227,23 @@ HF.voyage=function(host){
     panoA.value=.62*(1-smr(18.6,19.6,lS));
     starU.uA.value=1-smr(20.4,21.1,lS);sunStarU.uA.value=smr(13.9,14.7,lS)*(1-smr(20.4,21.1,lS));
     const want=ST[k].lines&&mode==='hold'?.55:0;lineA.value+=(want-lineA.value)*Math.min(1,dt*2.2);
-    mwMat.uniforms.uA.value=.5*smr(19.3,20.3,lS)*(1-smr(25.1,25.9,lS));lgMat.uniforms.uA.value=.55*smr(21.0,21.9,lS)*(1-smr(25.1,25.9,lS));
-    webMat.uniforms.uA.value=.5*smr(22.8,23.8,lS)*(1-smr(26.5,27.1,lS));uniMat.uniforms.uA.value=.42*smr(25.2,26.1,lS);cmbA.value=.55*smr(26.0,26.7,lS);
+    const aH=smr(21.8,22.5,lS)*(1-smr(25.1,25.9,lS));
+    const F={mw:.5*smr(19.3,20.3,lS)*(1-smr(25.1,25.9,lS)),lg:.55*smr(21.0,21.9,lS)*(1-smr(25.1,25.9,lS)),web:.5*smr(22.8,23.8,lS)*(1-smr(26.5,27.1,lS)),uni:.42*smr(25.2,26.1,lS),cmb:.55*smr(26.0,26.7,lS),
+      h:[aH,aH,aH],near:80,clu:0,arrow:0,cin:0};
+    /* réglages propres à un plan (chapitres), fondus pendant les trajets */
+    {const e=mode==='travel'?sm(cl(t/tr.dur,0,1)):1,ws=mode==='travel'?[[tr.from,1-e],[tr.to,e]]:[[k,1]];
+     for(const [i,w] of ws){const S=ST[(i+ST.length)%ST.length];if(S&&S.ov&&w>0)S.ov(F,w);}}
+    mwMat.uniforms.uA.value=F.mw;lgMat.uniforms.uA.value=F.lg;webMat.uniforms.uA.value=F.web;webMat.uniforms.uNear.value=F.near;uniMat.uniforms.uA.value=F.uni;cmbA.value=F.cmb;
+    cluMat.uniforms.uA.value=F.clu*(1-smr(26,26.6,lS));arrowA.value=F.arrow;cmbIn.value=F.cin;if(cmbM)cmbM.side=F.cin>.01&&camPos.distanceTo(SUNP)<R_OBS?T.BackSide:T.FrontSide;
     const aSol=1-smr(14.6,15.4,lS),dS=camPos.distanceTo(SUNP);
     dotU.uA.value=aSol*smr(9.4,9.9,lE);earthDotU.uA.value=aSol*smr(9.0,9.7,lE);
     orbits.forEach(o=>{const la=lg(o.a*AU);o.m.opacity=.32*aSol*smr(9.5,10.4,lE)*smr(la-.6,la+.2,lS)*(1-smr(la+1.1,la+1.7,lS));});
-    {const aH=smr(21.8,22.5,lS)*(1-smr(25.1,25.9,lS));HALOS.forEach(h=>{h.m.opacity=aH*.8;if(aH>0){const dk=camPos.distanceTo(h.sp.position.clone().multiplyScalar(KPC).add(GC))/KPC,w=Math.max(h.R*2.4,h.px*dk/Math.max(uPx.value/DPR,1));h.sp.scale.set(w,w,1);}});}
+    {HALOS.forEach((h,i)=>{const a=F.h[i];h.m.opacity=a*.8;if(a>0){const dk=camPos.distanceTo(h.sp.position.clone().multiplyScalar(KPC).add(GC))/KPC,w=Math.max(h.R*2.4,h.px*dk/Math.max(uPx.value/DPR,1));h.sp.scale.set(w,w,1);}});}
     const gs=Math.max(RS*7,60*dS/Math.max(uPx.value/DPR,1));sunG.scale.set(gs/AU,gs/AU,1);
     sunM.visible=dS<RS*4000;
     earthL.on=lE<10.7;solL.on=aSol>0;panoL.on=panoA.value>.002;starL.on=starU.uA.value>0||sunStarU.uA.value>0;
-    galL.on=mwMat.uniforms.uA.value>0||lgMat.uniforms.uA.value>0;webL.on=webMat.uniforms.uA.value>0;uniL.on=uniMat.uniforms.uA.value>0||cmbA.value>0;
-    if((galL.on||webL.on||uniL.on)&&(JOBS.length||job))runJobs(60);
+    galL.on=mwMat.uniforms.uA.value>0||lgMat.uniforms.uA.value>0;webL.on=webMat.uniforms.uA.value>0||cluMat.uniforms.uA.value>0;uniL.on=uniMat.uniforms.uA.value>0||cmbA.value>0;
+    if((galL.on||webL.on||uniL.on)&&(JOBS.length||job))runJobs(CHAP?14:60);
     /* rendu, du plus lointain au plus proche */
     R.clear();
     render(panoL,.1,100,fv);render(starL,0,0,fv);render(uniL,0,0,fv);render(webL,0,0,fv);render(galL,0,0,fv);{const a=dS/AU;render(solL,Math.max(a*.005,1e-9),a*100+300,fv);}

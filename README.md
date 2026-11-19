@@ -2,9 +2,8 @@
 
 Une exploration de l'Univers en français, pour s'émerveiller : de la Terre jusqu'aux confins du cosmos.
 
-**Le site : https://hfahim66.github.io/voyage-univers-site/**
-
 Ce dépôt contient uniquement le site construit (pages, images, données), publié avec GitHub Pages.
+Le site est volontairement discret : il demande aux moteurs de recherche de ne pas l'indexer, et son adresse n'est pas affichée ici.
 
 ## Licences et crédits
 - Textes et animations : [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr) (partage libre, sans usage commercial, en citant la source et en partageant dans les mêmes conditions).

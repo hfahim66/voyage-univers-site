@@ -1413,24 +1413,63 @@ html.present .eto-scale{font-size:16px}
 button.vy3-ch{font:inherit;font-weight:700;font-size:15px;cursor:pointer}
 html.present .cs-when{font-size:18px}html.present .cs-cred{font-size:14px}
 
+/* ===== Un voyage, huit escales : barre de route (core.js, initRoute), portes de l'accueil, menu ===== */
+.u-route-host{position:relative;--route-h:52px}
+.u-route-host .cin-full{height:calc(100svh - var(--u-top) - var(--route-h))}
+.u-route{position:relative;z-index:6;display:flex;align-items:center;gap:6px;min-height:52px;padding:2px 8px;background:linear-gradient(180deg,#060A18,#03060F);border-bottom:1px solid rgba(191,208,255,.12)}
+.u-route ol{position:relative;flex:1;min-width:0;display:flex;list-style:none;margin:0;padding:0;height:48px}
+.u-route ol::before{content:'';position:absolute;left:4%;right:4%;top:15px;height:2px;background:rgba(191,208,255,.2)}
+.u-route li{flex:1;min-width:0;display:flex}
+.u-route ol a{position:relative;flex:1;min-width:30px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;padding-top:9px;color:#9FAED8;text-decoration:none;font-size:11.5px;line-height:1.1;text-align:center}
+.u-route ol a i{width:12px;height:12px;border-radius:50%;background:#0B1330;border:2px solid rgba(191,208,255,.55);transition:transform .3s,background .3s}
+.u-route ol a span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.u-route ol a.past i{background:#BFD0FF;border-color:#BFD0FF}
+.u-route ol a.on i{background:var(--or);border-color:var(--or);transform:scale(1.35);box-shadow:0 0 12px rgba(244,184,96,.8)}
+.u-route ol a.on{color:#fff;font-weight:700}
+.u-route ol a:hover i,.u-route ol a:focus-visible i{border-color:var(--or)}
+.u-route-b{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid rgba(191,208,255,.25);background:transparent;color:#fff;font-size:15px;cursor:pointer}
+.u-route-b:disabled{opacity:.3;cursor:default}
+.u-route-b:not(:disabled):hover{border-color:var(--or);color:var(--or)}
+.u-route-cur{display:none;font-size:13.5px;color:#DDE4F7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.u-route-go{flex:none;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid rgba(244,184,96,.7);background:rgba(244,184,96,.1);color:var(--or);font-weight:700;font-size:14.5px;text-decoration:none;white-space:nowrap}
+.u-route-go:hover,.u-route-go:focus-visible{background:rgba(244,184,96,.22)}
+.u-route-next{position:absolute;z-index:7;top:calc(var(--route-h) + 12px);left:50%;transform:translateX(-50%);display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;max-width:calc(100% - 24px);padding:6px 6px 6px 18px;border-radius:26px;border:1px solid rgba(244,184,96,.7);background:rgba(4,8,20,.88);color:#fff;font-size:15px;box-shadow:0 8px 30px rgba(0,0,0,.5);animation:cinIn .6s ease-out}
+.u-route-next em{font-style:normal;color:var(--or);font-weight:700}
+.u-route-y,.u-route-n{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none}
+.u-route-y{background:var(--or);color:#0B0F1E;border:0}.u-route-n{background:transparent;color:#fff;border:1px solid rgba(191,208,255,.35)}
+@media (max-width:1099px){.u-route ol a span{display:none}.u-route ol{height:34px}.u-route ol::before{top:15px}.u-route-cur{display:block;flex:0 1 auto;max-width:26ch}}
+@media (max-width:760px){.u-route-host{--route-h:100px}.u-route{flex-wrap:wrap;padding:2px 6px 6px}.u-route ol{flex:1 1 calc(100% - 104px)}
+  .u-route-cur{flex:1 1 0;max-width:none;padding-left:6px}.u-route-go{padding:0 14px;font-size:14px}.u-route-go span{display:none}.u-route-next{font-size:14px;padding-left:12px}}
+html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17px}
+.u-doors{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;max-width:780px;margin:24px auto 0;text-align:left}
+.u-door{display:flex;flex-direction:column;gap:6px;min-height:44px;padding:18px 20px;border-radius:20px;border:1px solid rgba(191,208,255,.4);background:rgba(4,8,20,.6);color:#fff;text-decoration:none;transition:transform .25s,border-color .25s}
+.u-door b{font-size:21px;font-weight:900}.u-door span{color:#D6DDF2;font-size:15px;line-height:1.45}
+.u-door.main{background:var(--or);border-color:var(--or);color:#0B0F1E}.u-door.main span{color:#2B2414}
+.u-door:hover,.u-door:focus-visible{transform:translateY(-2px);border-color:var(--or)}
+.u-menu-h{display:block;margin:18px 4px 8px;color:var(--or);font-size:16px}.u-menu-h small{color:var(--muted);font-weight:400;font-size:13.5px;margin-left:6px}
+/* voyage retour (voyage.js) : légende courte, numéro d'étape */
+.vy3-cap small.vy3-revn{display:block;margin:0 auto 8px;font-style:normal;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--or)}
+.vy3-rev b{font-size:clamp(24px,3.6vw,44px)}
+
 </style>
 </head>
-<body class="">
+<body class="" data-escale="3">
 <a class="skip" href="#contenu">Aller au contenu</a>
 <header class="u-top">
  <a class="u-brand" href="index.html" aria-label="Voyage dans l’Univers — accueil"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2230%22%20fill%3D%22%23060A18%22%2F%3E%3Cellipse%20cx%3D%2232%22%20cy%3D%2232%22%20rx%3D%2225%22%20ry%3D%229%22%20fill%3D%22none%22%20stroke%3D%22%23BFD0FF%22%20stroke-width%3D%222.5%22%20transform%3D%22rotate(-24%2032%2032)%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%229%22%20fill%3D%22%234f7fe0%22%2F%3E%3Ccircle%20cx%3D%2252%22%20cy%3D%2222%22%20r%3D%224%22%20fill%3D%22%23F4B860%22%2F%3E%3C%2Fsvg%3E" alt="" width="30" height="30"><span>Voyage dans l’Univers</span></a>
  <div class="u-actions">
   <button class="u-btn" id="presentBtn" type="button" aria-pressed="false" title="Textes agrandis et plein écran, pour une salle"><span aria-hidden="true">⛶</span><span class="lbl"> Présentation</span></button>
-  <button class="u-btn" id="menuBtn" type="button" aria-controls="chapitres" aria-expanded="false"><span aria-hidden="true">☰</span><span class="lbl"> Chapitres</span></button>
+  <button class="u-btn" id="menuBtn" type="button" aria-controls="chapitres" aria-expanded="false"><span aria-hidden="true">☰</span><span class="lbl"> Escales</span></button>
  </div>
 </header>
-<nav class="u-menu" id="chapitres" aria-label="Chapitres du voyage" hidden><div class="u-menu-in">
+<nav class="u-menu" id="chapitres" aria-label="Le grand voyage et ses escales" hidden><div class="u-menu-in">
 <div class="u-menu-top"><b>Le voyage</b><button type="button" class="u-btn" data-close>✕ Fermer</button></div>
-<a class="u-menu-big" href="index.html">Accueil</a><a class="u-menu-big" href="voyage.html">Le grand voyage <small>en puissances de dix</small></a>
+<a class="u-menu-big" href="index.html">Accueil</a><a class="u-menu-big" href="voyage.html">▶ Le grand voyage <small>tout l’Univers d’un seul trait</small></a><b class="u-menu-h">Les 8 escales <small>s’arrêter pour voir en détail</small></b>
 <div class="u-menu-ch"><a href="terre-lune.html"><span class="n">1</span><span><b>La Terre et la Lune</b><small>1,3 seconde-lumière</small></span></a><a href="soleil.html"><span class="n">2</span><span><b>Le Soleil</b><small>8 minutes-lumière</small></span></a><a href="systeme-solaire.html" aria-current="page"><span class="n">3</span><span><b>Le Système solaire</b><small>4 heures-lumière</small></span></a><a href="etoiles.html"><span class="n">4</span><span><b>Les étoiles proches</b><small>4,2 années-lumière</small></span></a><a href="voie-lactee.html"><span class="n">5</span><span><b>La Voie lactée</b><small>100 000 années-lumière</small></span></a><a href="groupe-local.html"><span class="n">6</span><span><b>Le Groupe local</b><small>2,5 millions d’années-lumière</small></span></a><a href="structures.html"><span class="n">7</span><span><b>Les grandes structures</b><small>500 millions d’années-lumière</small></span></a><a href="univers.html"><span class="n">8</span><span><b>L’Univers observable</b><small>13,8 milliards d’années</small></span></a></div><a class="u-menu-big" href="a-propos.html">À propos, sources et crédits</a></div></nav>
+<script type="application/json" id="escales">[{"num":1,"file":"terre-lune.html","title":"La Terre et la Lune","nom":"Terre et Lune"},{"num":2,"file":"soleil.html","title":"Le Soleil","nom":"Soleil"},{"num":3,"file":"systeme-solaire.html","title":"Le Système solaire","nom":"Planètes"},{"num":4,"file":"etoiles.html","title":"Les étoiles proches","nom":"Étoiles"},{"num":5,"file":"voie-lactee.html","title":"La Voie lactée","nom":"Voie lactée"},{"num":6,"file":"groupe-local.html","title":"Le Groupe local","nom":"Groupe local"},{"num":7,"file":"structures.html","title":"Les grandes structures","nom":"Structures"},{"num":8,"file":"univers.html","title":"L’Univers observable","nom":"Univers"}]</script>
 <section aria-label="Le Système solaire en 3D"><h1 class="sr">Le Système solaire</h1><div id="systeme" class="cin cin-full"></div></section>
 <main id="contenu">
-<header class="u-ch-head"><div class="u-eyebrow">Chapitre 3 · à 4 heures-lumière</div><h2 class="u-h2" style="margin-top:6px">Le Système solaire</h2>
+<header class="u-ch-head"><div class="u-eyebrow">Escale 3 · à 4 heures-lumière</div><h2 class="u-h2" style="margin-top:6px">Le Système solaire</h2>
 <p class="u-lead">Huit planètes autour d’une étoile, et entre elles, surtout du vide. Ici, chacune est à sa vraie place d’aujourd’hui.</p></header>
 <h2 class="u-h2">En quelques chiffres</h2>
 <div class="u-kpis reveal"><div class="u-kpi"><strong>8 planètes</strong><span>Mercure, Vénus, la Terre, Mars, Jupiter, Saturne, Uranus, Neptune</span></div><div class="u-kpi"><strong>4,5 milliards de km</strong><span>du Soleil à Neptune, en moyenne</span></div><div class="u-kpi"><strong>4 h 10 min</strong><span>pour que la lumière du Soleil atteigne Neptune</span></div><div class="u-kpi"><strong>1 321 Terres</strong><span>tiendraient dans Jupiter</span></div><div class="u-kpi"><strong>9 h 56 min</strong><span>pour un tour de Jupiter sur elle-même</span></div><div class="u-kpi"><strong>88 jours</strong><span>pour une année de Mercure</span></div></div>
@@ -1442,7 +1481,7 @@ html.present .cs-when{font-size:18px}html.present .cs-cred{font-size:14px}
 <section class="sol-danger" aria-labelledby="obs"><h3 id="obs">⚠ Observer les planètes sans danger</h3><ul>
 <li>Vénus, Jupiter, Saturne et Mars se voient à l’œil nu, comme des « étoiles » qui ne scintillent presque pas. Des jumelles montrent déjà les lunes de Jupiter.</li>
 <li>Mercure et Vénus restent près du Soleil. <b>Attendez que le Soleil soit entièrement couché</b> (ou avant son lever) pour pointer jumelles ou télescope : le Soleil dans un instrument, même un instant, peut rendre aveugle.</li></ul></section>
-<nav class="u-next" aria-label="Chapitres voisins"><a href="soleil.html"><small>← Chapitre 2</small><b>Le Soleil</b></a><a href="etoiles.html" style="text-align:right"><small>Chapitre 4 →</small><b>Les étoiles proches</b></a></nav>
+<nav class="u-next" aria-label="Escales voisines"><a href="soleil.html"><small>← Escale 2</small><b>Le Soleil</b></a><a href="etoiles.html" style="text-align:right"><small>Escale 4 →</small><b>Les étoiles proches</b></a></nav>
 <details class="u-src"><summary>Sources de cette page</summary><ul><li><a href="https://ssd.jpl.nasa.gov/planets/approx_pos.html" rel="noopener" target="_blank">E. M. Standish (NASA JPL) — éléments orbitaux approchés des planètes</a><small> · Données publiques de la NASA</small></li><li><a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/" rel="noopener" target="_blank">NASA NSSDCA — Planetary Fact Sheet (D. R. Williams) : rayons équatoriaux, aplatissements, durées de rotation, distances au Soleil, volume de Jupiter (1 321 Terres)</a><small> · Données publiques de la NASA</small></li><li><a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/satringfact.html" rel="noopener" target="_blank">NASA NSSDCA — Saturnian Rings Fact Sheet (rayons des anneaux D, C, B, A, F, division de Cassini, lacune d’Encke)</a><small> · Données publiques de la NASA</small></li><li><a href="https://doi.org/10.1007/s10569-017-9805-5" rel="noopener" target="_blank">UAI, groupe WGCCRE — Archinal et al. (2018), « Report of the IAU Working Group on Cartographic Coordinates and Rotational Elements: 2015 » (pôles nord des planètes)</a><small> · Article scientifique ; valeurs numériques réutilisées</small></li><li><a href="https://www.iau.org/static/resolutions/IAU2012_English.pdf" rel="noopener" target="_blank">IAU, résolution B2 (2012) — unité astronomique : 149 597 870 700 m</a><small> · Texte officiel</small></li><li><a href="https://science.nasa.gov/solar-system/planets/" rel="noopener" target="_blank">NASA Science — fiches des planètes (Mars : poussière riche en oxyde de fer ; Jupiter : Grande Tache rouge plus large que la Terre ; Saturne : moins dense que l’eau, anneaux d’environ 10 m d’épaisseur ; Neptune : vents de plus de 2 000 km/h ; Proxima du Centaure à 4,2 années-lumière)</a><small> · Données publiques de la NASA</small></li><li><a href="https://science.nasa.gov/eclipses/safety/" rel="noopener" target="_blank">NASA Science — Eclipse Safety (lunettes et visionneuses conformes à la norme ISO 12312-2, filtres à l’avant des instruments, projection)</a><small> · Données publiques de la NASA</small></li><li><a href="https://photojournal.jpl.nasa.gov/catalog/PIA07782" rel="noopener" target="_blank">NASA/JPL/Space Science Institute — PIA07782, « Cassini’s Best Maps of Jupiter » (carte cylindrique, décembre 2000), réduite à 2048 × 1024, bandes polaires sans données comblées (tools/planetes.py)</a><small> · Image NASA/JPL : usage libre avec crédit « NASA/JPL/Space Science Institute »</small></li><li><a href="https://science.nasa.gov/3d-resources/mars/" rel="noopener" target="_blank">NASA 3D Resources — Mars (images des sondes Viking traitées par l’USGS ; NASA/JPL-Caltech), 1440 × 720</a><small> · Image NASA : libre de droits, crédit « NASA/JPL-Caltech, USGS »</small></li><li>Le Système solaire en 3D (Soleil, Mercure, Vénus, Terre, Saturne et ses anneaux, Uranus, Neptune, petites étoiles du fond) : illustration calculée pour ce projet (src/anims/systeme.js), pas une observation<small> · CC BY-NC-SA 4.0 (comme le site)</small></li><li><a href="https://svs.gsfc.nasa.gov/4851" rel="noopener" target="_blank">NASA/Goddard Space Flight Center Scientific Visualization Studio — Deep Star Maps 2020, panorama de la Voie lactée (Gaia DR2 : ESA/Gaia/DPAC)</a><small> · Image NASA, crédit « NASA/Goddard Space Flight Center Scientific Visualization Studio. Gaia DR2 : ESA/Gaia/DPAC »</small></li><li><a href="https://github.com/mrdoob/three.js" rel="noopener" target="_blank">three.js r128 — moteur 3D</a><small> · Licence MIT</small></li></ul></details>
 <footer class="u-foot"><span>Voyage dans l’Univers · version 0.1 · textes sous licence <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr" rel="license noopener">CC BY-NC-SA 4.0</a></span><span>Images : NASA. Détail des sources et licences dans <a href="a-propos.html">À propos</a>.</span></footer>
 </main>
@@ -1518,12 +1557,61 @@ function initOnline(){
   });
 }
 
+/* ----- La route : « un voyage, huit escales » -----
+   Barre au-dessus du film (grand voyage et escales) : points des 8 escales, ◀ ▶, et le passage entre les deux
+   (« S'arrêter ici » dans le grand voyage, « Reprendre le grand voyage » à cet endroit dans une escale).
+   À la fin d'une escale, l'escale suivante s'ouvre seule après un compte à rebours (sauf si l'on touche à quelque chose). */
+/* étapes du grand voyage → escale ; escale → étape où reprendre le voyage */
+var VOY={terre:1,'terre-lune':1,lune:1,soleil:2,planetes:3,voyager:3,voisines:4,orion:4,'orion-cote':4,galaxie:5,groupe:6,toile:7,univers:8};
+var RESUME=['','terre-lune','soleil','planetes','voisines','galaxie','groupe','toile','univers'];
+function initRoute(){
+  var dj=document.getElementById('escales'),scene=document.querySelector('.cin-full');if(!dj||!scene)return;
+  var E=JSON.parse(dj.textContent),cur=+document.body.dataset.escale,isVoy=cur===0;
+  var bar=document.createElement('nav');bar.className='u-route';bar.setAttribute('aria-label','La route du voyage : les 8 escales');
+  bar.innerHTML='<button type="button" class="u-route-b" data-d="-1" aria-label="Escale précédente">◀</button><ol>'+E.map(function(e){
+      return '<li><a href="'+e.file+'" data-n="'+e.num+'" title="Escale '+e.num+' : '+e.title+'"><i aria-hidden="true"></i><span aria-hidden="true">'+e.nom+'</span><b class="sr">Escale '+e.num+' : '+e.title+'</b></a></li>';}).join('')+
+    '</ol><button type="button" class="u-route-b" data-d="1" aria-label="Escale suivante">▶</button><span class="u-route-cur" aria-live="polite"></span><a class="u-route-go" href="voyage.html"></a>';
+  scene.parentNode.insertBefore(bar,scene);scene.parentNode.classList.add('u-route-host');
+  var links=[].slice.call(bar.querySelectorAll('ol a')),go=bar.querySelector('.u-route-go'),txt=bar.querySelector('.u-route-cur'),shown=-1;
+  function paint(n){if(n===shown)return;shown=n;
+    links.forEach(function(a,i){a.classList.toggle('on',i+1===n);a.classList.toggle('past',i+1<n);if(i+1===n)a.setAttribute('aria-current','step');else a.removeAttribute('aria-current');});
+    var e=E[n-1];txt.textContent=e?(isVoy?'Grand voyage · ':'')+'Escale '+e.num+' · '+e.title:'';
+    if(isVoy){go.href=e.file;go.innerHTML='⏸ S’arrêter ici<span> : '+e.title+'</span>';}
+    else{go.href='voyage.html#'+RESUME[n];go.innerHTML='▶ Reprendre le grand voyage';}
+    [].forEach.call(bar.querySelectorAll('.u-route-b'),function(b){var t=n+(+b.dataset.d);b.disabled=t<1||t>E.length;});}
+  function voyTo(n){var v=HF._voy;if(!v)return;var i=v.ids.indexOf(RESUME[n]);if(i>=0)v.go(i);}
+  bar.addEventListener('click',function(ev){var b=ev.target.closest('.u-route-b'),a=ev.target.closest('ol a');
+    if(b){var t=shown+(+b.dataset.d);if(t<1||t>E.length)return;if(isVoy)voyTo(t);else location.href=E[t-1].file;}
+    else if(a&&isVoy){ev.preventDefault();voyTo(+a.dataset.n);}});
+  paint(isVoy?1:cur);
+  /* film en cours : n° du plan et nombre de plans, quel que soit le moteur */
+  function film(){var f=HF._voy||HF._vl||HF._eto||HF._sys||HF._sol||HF._cin;if(!f||!f.state)return null;var s=f.state();
+    return {i:f.stage!=null?f.stage:s.shot,n:f.ids?f.ids.length:f.n,id:s.ids||s.id,playing:s.playing!==false};}
+  /* escale suivante, toute seule, après le dernier plan */
+  /* armé dès que le dernier plan est atteint ; le décompte continue même si le film reboucle ; un geste l'annule
+     (il se réarme au tour suivant du film) */
+  var next=E[cur],toast=null,wait=0,left=0,calm=true,armed=false;
+  function stop(){calm=false;armed=false;wait=0;if(toast){toast.remove();toast=null;}}
+  if(!isVoy&&next){['pointerdown','keydown','wheel'].forEach(function(t){scene.addEventListener(t,stop,{passive:true});});}
+  setInterval(function(){var f=film();if(!f)return;
+    if(isVoy){var n=VOY[f.id];if(n)paint(n);return;}
+    if(!next)return;
+    if(f.i<f.n-1&&!armed)calm=true;
+    if(f.i===f.n-1&&calm&&f.playing)armed=true;
+    if(!armed||!f.playing)return;
+    wait+=.5;
+    if(wait>=6&&!toast){left=8;toast=document.createElement('div');toast.className='u-route-next';toast.setAttribute('role','status');
+      toast.innerHTML='<span>Escale suivante : <b>'+next.title+'</b> dans <em>8</em> s</span><a class="u-route-y" href="'+next.file+'">Y aller</a><button type="button" class="u-route-n">Rester ici</button>';
+      toast.querySelector('.u-route-n').addEventListener('click',stop);bar.parentNode.insertBefore(toast,scene);}
+    else if(toast){left-=.5;var em=toast.querySelector('em');if(em)em.textContent=Math.max(0,Math.ceil(left));if(left<=0){toast.remove();toast=null;calm=false;location.href=next.file;}}},500);
+}
+
 window.HF={store:store,applyTheme:applyTheme,
   coarse:function(){return root.classList.contains('coarse');},
   reduced:function(){try{return window.matchMedia('(prefers-reduced-motion:reduce)').matches;}catch(e){return false;}},
   fr:function(n,d){d=d==null?0:d;return Number(n).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});}
 };
-document.addEventListener('DOMContentLoaded',function(){initMenu();initPresent();initReveal();initOnline();});
+document.addEventListener('DOMContentLoaded',function(){initMenu();initPresent();initReveal();initOnline();initRoute();});
 })();
 
 </script>

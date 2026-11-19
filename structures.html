@@ -1413,24 +1413,63 @@ html.present .eto-scale{font-size:16px}
 button.vy3-ch{font:inherit;font-weight:700;font-size:15px;cursor:pointer}
 html.present .cs-when{font-size:18px}html.present .cs-cred{font-size:14px}
 
+/* ===== Un voyage, huit escales : barre de route (core.js, initRoute), portes de l'accueil, menu ===== */
+.u-route-host{position:relative;--route-h:52px}
+.u-route-host .cin-full{height:calc(100svh - var(--u-top) - var(--route-h))}
+.u-route{position:relative;z-index:6;display:flex;align-items:center;gap:6px;min-height:52px;padding:2px 8px;background:linear-gradient(180deg,#060A18,#03060F);border-bottom:1px solid rgba(191,208,255,.12)}
+.u-route ol{position:relative;flex:1;min-width:0;display:flex;list-style:none;margin:0;padding:0;height:48px}
+.u-route ol::before{content:'';position:absolute;left:4%;right:4%;top:15px;height:2px;background:rgba(191,208,255,.2)}
+.u-route li{flex:1;min-width:0;display:flex}
+.u-route ol a{position:relative;flex:1;min-width:30px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;padding-top:9px;color:#9FAED8;text-decoration:none;font-size:11.5px;line-height:1.1;text-align:center}
+.u-route ol a i{width:12px;height:12px;border-radius:50%;background:#0B1330;border:2px solid rgba(191,208,255,.55);transition:transform .3s,background .3s}
+.u-route ol a span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.u-route ol a.past i{background:#BFD0FF;border-color:#BFD0FF}
+.u-route ol a.on i{background:var(--or);border-color:var(--or);transform:scale(1.35);box-shadow:0 0 12px rgba(244,184,96,.8)}
+.u-route ol a.on{color:#fff;font-weight:700}
+.u-route ol a:hover i,.u-route ol a:focus-visible i{border-color:var(--or)}
+.u-route-b{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid rgba(191,208,255,.25);background:transparent;color:#fff;font-size:15px;cursor:pointer}
+.u-route-b:disabled{opacity:.3;cursor:default}
+.u-route-b:not(:disabled):hover{border-color:var(--or);color:var(--or)}
+.u-route-cur{display:none;font-size:13.5px;color:#DDE4F7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.u-route-go{flex:none;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid rgba(244,184,96,.7);background:rgba(244,184,96,.1);color:var(--or);font-weight:700;font-size:14.5px;text-decoration:none;white-space:nowrap}
+.u-route-go:hover,.u-route-go:focus-visible{background:rgba(244,184,96,.22)}
+.u-route-next{position:absolute;z-index:7;top:calc(var(--route-h) + 12px);left:50%;transform:translateX(-50%);display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;max-width:calc(100% - 24px);padding:6px 6px 6px 18px;border-radius:26px;border:1px solid rgba(244,184,96,.7);background:rgba(4,8,20,.88);color:#fff;font-size:15px;box-shadow:0 8px 30px rgba(0,0,0,.5);animation:cinIn .6s ease-out}
+.u-route-next em{font-style:normal;color:var(--or);font-weight:700}
+.u-route-y,.u-route-n{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none}
+.u-route-y{background:var(--or);color:#0B0F1E;border:0}.u-route-n{background:transparent;color:#fff;border:1px solid rgba(191,208,255,.35)}
+@media (max-width:1099px){.u-route ol a span{display:none}.u-route ol{height:34px}.u-route ol::before{top:15px}.u-route-cur{display:block;flex:0 1 auto;max-width:26ch}}
+@media (max-width:760px){.u-route-host{--route-h:100px}.u-route{flex-wrap:wrap;padding:2px 6px 6px}.u-route ol{flex:1 1 calc(100% - 104px)}
+  .u-route-cur{flex:1 1 0;max-width:none;padding-left:6px}.u-route-go{padding:0 14px;font-size:14px}.u-route-go span{display:none}.u-route-next{font-size:14px;padding-left:12px}}
+html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17px}
+.u-doors{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;max-width:780px;margin:24px auto 0;text-align:left}
+.u-door{display:flex;flex-direction:column;gap:6px;min-height:44px;padding:18px 20px;border-radius:20px;border:1px solid rgba(191,208,255,.4);background:rgba(4,8,20,.6);color:#fff;text-decoration:none;transition:transform .25s,border-color .25s}
+.u-door b{font-size:21px;font-weight:900}.u-door span{color:#D6DDF2;font-size:15px;line-height:1.45}
+.u-door.main{background:var(--or);border-color:var(--or);color:#0B0F1E}.u-door.main span{color:#2B2414}
+.u-door:hover,.u-door:focus-visible{transform:translateY(-2px);border-color:var(--or)}
+.u-menu-h{display:block;margin:18px 4px 8px;color:var(--or);font-size:16px}.u-menu-h small{color:var(--muted);font-weight:400;font-size:13.5px;margin-left:6px}
+/* voyage retour (voyage.js) : légende courte, numéro d'étape */
+.vy3-cap small.vy3-revn{display:block;margin:0 auto 8px;font-style:normal;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--or)}
+.vy3-rev b{font-size:clamp(24px,3.6vw,44px)}
+
 </style>
 </head>
-<body class="">
+<body class="" data-escale="7">
 <a class="skip" href="#contenu">Aller au contenu</a>
 <header class="u-top">
  <a class="u-brand" href="index.html" aria-label="Voyage dans l’Univers — accueil"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2230%22%20fill%3D%22%23060A18%22%2F%3E%3Cellipse%20cx%3D%2232%22%20cy%3D%2232%22%20rx%3D%2225%22%20ry%3D%229%22%20fill%3D%22none%22%20stroke%3D%22%23BFD0FF%22%20stroke-width%3D%222.5%22%20transform%3D%22rotate(-24%2032%2032)%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%229%22%20fill%3D%22%234f7fe0%22%2F%3E%3Ccircle%20cx%3D%2252%22%20cy%3D%2222%22%20r%3D%224%22%20fill%3D%22%23F4B860%22%2F%3E%3C%2Fsvg%3E" alt="" width="30" height="30"><span>Voyage dans l’Univers</span></a>
  <div class="u-actions">
   <button class="u-btn" id="presentBtn" type="button" aria-pressed="false" title="Textes agrandis et plein écran, pour une salle"><span aria-hidden="true">⛶</span><span class="lbl"> Présentation</span></button>
-  <button class="u-btn" id="menuBtn" type="button" aria-controls="chapitres" aria-expanded="false"><span aria-hidden="true">☰</span><span class="lbl"> Chapitres</span></button>
+  <button class="u-btn" id="menuBtn" type="button" aria-controls="chapitres" aria-expanded="false"><span aria-hidden="true">☰</span><span class="lbl"> Escales</span></button>
  </div>
 </header>
-<nav class="u-menu" id="chapitres" aria-label="Chapitres du voyage" hidden><div class="u-menu-in">
+<nav class="u-menu" id="chapitres" aria-label="Le grand voyage et ses escales" hidden><div class="u-menu-in">
 <div class="u-menu-top"><b>Le voyage</b><button type="button" class="u-btn" data-close>✕ Fermer</button></div>
-<a class="u-menu-big" href="index.html">Accueil</a><a class="u-menu-big" href="voyage.html">Le grand voyage <small>en puissances de dix</small></a>
+<a class="u-menu-big" href="index.html">Accueil</a><a class="u-menu-big" href="voyage.html">▶ Le grand voyage <small>tout l’Univers d’un seul trait</small></a><b class="u-menu-h">Les 8 escales <small>s’arrêter pour voir en détail</small></b>
 <div class="u-menu-ch"><a href="terre-lune.html"><span class="n">1</span><span><b>La Terre et la Lune</b><small>1,3 seconde-lumière</small></span></a><a href="soleil.html"><span class="n">2</span><span><b>Le Soleil</b><small>8 minutes-lumière</small></span></a><a href="systeme-solaire.html"><span class="n">3</span><span><b>Le Système solaire</b><small>4 heures-lumière</small></span></a><a href="etoiles.html"><span class="n">4</span><span><b>Les étoiles proches</b><small>4,2 années-lumière</small></span></a><a href="voie-lactee.html"><span class="n">5</span><span><b>La Voie lactée</b><small>100 000 années-lumière</small></span></a><a href="groupe-local.html"><span class="n">6</span><span><b>Le Groupe local</b><small>2,5 millions d’années-lumière</small></span></a><a href="structures.html" aria-current="page"><span class="n">7</span><span><b>Les grandes structures</b><small>500 millions d’années-lumière</small></span></a><a href="univers.html"><span class="n">8</span><span><b>L’Univers observable</b><small>13,8 milliards d’années</small></span></a></div><a class="u-menu-big" href="a-propos.html">À propos, sources et crédits</a></div></nav>
+<script type="application/json" id="escales">[{"num":1,"file":"terre-lune.html","title":"La Terre et la Lune","nom":"Terre et Lune"},{"num":2,"file":"soleil.html","title":"Le Soleil","nom":"Soleil"},{"num":3,"file":"systeme-solaire.html","title":"Le Système solaire","nom":"Planètes"},{"num":4,"file":"etoiles.html","title":"Les étoiles proches","nom":"Étoiles"},{"num":5,"file":"voie-lactee.html","title":"La Voie lactée","nom":"Voie lactée"},{"num":6,"file":"groupe-local.html","title":"Le Groupe local","nom":"Groupe local"},{"num":7,"file":"structures.html","title":"Les grandes structures","nom":"Structures"},{"num":8,"file":"univers.html","title":"L’Univers observable","nom":"Univers"}]</script>
 <section aria-label="Les grandes structures en 3D"><h1 class="sr">Les grandes structures</h1><div id="structures" class="cin cin-full"></div></section>
 <main id="contenu">
-<header class="u-ch-head"><div class="u-eyebrow">Chapitre 7 · 500 millions d’années-lumière</div><h2 class="u-h2" style="margin-top:6px">Les grandes structures</h2>
+<header class="u-ch-head"><div class="u-eyebrow">Escale 7 · 500 millions d’années-lumière</div><h2 class="u-h2" style="margin-top:6px">Les grandes structures</h2>
 <p class="u-lead">Plus loin, les galaxies se rassemblent en amas, les amas en superamas, le long de filaments immenses : la toile cosmique.</p></header>
 <h2 class="u-h2">En quelques chiffres</h2>
 <div class="u-kpis reveal"><div class="u-kpi"><strong>54 millions d’années-lumière</strong><span>jusqu’à l’amas de la Vierge, plus de 1 000 galaxies</span></div><div class="u-kpi"><strong>≈ 520 millions d’années-lumière</strong><span>la taille de Laniakea, notre superamas</span></div><div class="u-kpi"><strong>≈ 100 000</strong><span>galaxies dans Laniakea</span></div><div class="u-kpi"><strong>321 millions d’années-lumière</strong><span>jusqu’à l’amas de Coma</span></div><div class="u-kpi"><strong>1933</strong><span>Fritz Zwicky soupçonne la « matière noire » en étudiant Coma</span></div><div class="u-kpi"><strong>2019</strong><span>première image d’un trou noir, au cœur de M87 (amas de la Vierge)</span></div></div>
@@ -1440,7 +1479,7 @@ html.present .cs-when{font-size:18px}html.present .cs-cred{font-size:14px}
 <div class="u-fact"><b>Comment regarder</b><p>Tout se déroule seul, en 8 plans. <b>Glisser</b> pour tourner, <b>molette</b> ou <b>pincement</b> pour s’approcher : le film reprend seul. Au clavier : ← → pour les plans, Espace pour la pause.</p></div>
 </div>
 <details class="u-src"><summary>Sources de cette page</summary><ul><li>Distances des amas nommés (Vierge, Fourneau, Hydre, Centaure, Grand Attracteur, Persée, Coma, Shapley) : valeurs usuelles arrondies, utilisées pour les placer en 3D [À VÉRIFIER une à une]<small> · Valeurs numériques citées</small></li><li>R. B. Tully et al. (2014), « The Laniakea supercluster of galaxies », Nature 513, 71 (≈ 520 millions d’années-lumière, ≈ 100 000 galaxies)<small> · Article scientifique ; valeurs numériques citées</small></li><li><a href="https://eventhorizontelescope.org/" rel="noopener" target="_blank">Event Horizon Telescope (2019) — première image du trou noir de M87, au cœur de l’amas de la Vierge</a><small> · Résultat cité</small></li><li>F. Zwicky (1933), Helvetica Physica Acta 6, 110 — masse manquante dans l’amas de Coma<small> · Article scientifique ; résultat cité</small></li><li>A. W. McConnachie (2012), « The observed properties of dwarf galaxies in and around the Local Group », AJ 144, 4 (galaxies du Groupe local)<small> · Article scientifique ; valeurs numériques citées</small></li><li>Galaxies du Groupe local, toile cosmique, amas et fond diffus (chapitres 6 à 8 et grand voyage) : illustrations calculées pour ce projet (src/anims/voyage.js), pas des observations ; galaxies et amas nommés à leur vraie place<small> · CC BY-NC-SA 4.0 (comme le site)</small></li><li><a href="https://github.com/mrdoob/three.js" rel="noopener" target="_blank">three.js r128 — moteur 3D</a><small> · Licence MIT</small></li></ul></details>
-<nav class="u-next" aria-label="Chapitres voisins"><a href="groupe-local.html"><small>← Chapitre 6</small><b>Le Groupe local</b></a><a href="univers.html" style="text-align:right"><small>Chapitre 8 →</small><b>L’Univers observable</b></a></nav>
+<nav class="u-next" aria-label="Escales voisines"><a href="groupe-local.html"><small>← Escale 6</small><b>Le Groupe local</b></a><a href="univers.html" style="text-align:right"><small>Escale 8 →</small><b>L’Univers observable</b></a></nav>
 <footer class="u-foot"><span>Voyage dans l’Univers · version 0.1 · textes sous licence <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr" rel="license noopener">CC BY-NC-SA 4.0</a></span><span>Images : NASA. Détail des sources et licences dans <a href="a-propos.html">À propos</a>.</span></footer>
 </main>
 <noscript><p style="padding:24px">Activez JavaScript pour voir les animations.</p></noscript>
@@ -1515,12 +1554,61 @@ function initOnline(){
   });
 }
 
+/* ----- La route : « un voyage, huit escales » -----
+   Barre au-dessus du film (grand voyage et escales) : points des 8 escales, ◀ ▶, et le passage entre les deux
+   (« S'arrêter ici » dans le grand voyage, « Reprendre le grand voyage » à cet endroit dans une escale).
+   À la fin d'une escale, l'escale suivante s'ouvre seule après un compte à rebours (sauf si l'on touche à quelque chose). */
+/* étapes du grand voyage → escale ; escale → étape où reprendre le voyage */
+var VOY={terre:1,'terre-lune':1,lune:1,soleil:2,planetes:3,voyager:3,voisines:4,orion:4,'orion-cote':4,galaxie:5,groupe:6,toile:7,univers:8};
+var RESUME=['','terre-lune','soleil','planetes','voisines','galaxie','groupe','toile','univers'];
+function initRoute(){
+  var dj=document.getElementById('escales'),scene=document.querySelector('.cin-full');if(!dj||!scene)return;
+  var E=JSON.parse(dj.textContent),cur=+document.body.dataset.escale,isVoy=cur===0;
+  var bar=document.createElement('nav');bar.className='u-route';bar.setAttribute('aria-label','La route du voyage : les 8 escales');
+  bar.innerHTML='<button type="button" class="u-route-b" data-d="-1" aria-label="Escale précédente">◀</button><ol>'+E.map(function(e){
+      return '<li><a href="'+e.file+'" data-n="'+e.num+'" title="Escale '+e.num+' : '+e.title+'"><i aria-hidden="true"></i><span aria-hidden="true">'+e.nom+'</span><b class="sr">Escale '+e.num+' : '+e.title+'</b></a></li>';}).join('')+
+    '</ol><button type="button" class="u-route-b" data-d="1" aria-label="Escale suivante">▶</button><span class="u-route-cur" aria-live="polite"></span><a class="u-route-go" href="voyage.html"></a>';
+  scene.parentNode.insertBefore(bar,scene);scene.parentNode.classList.add('u-route-host');
+  var links=[].slice.call(bar.querySelectorAll('ol a')),go=bar.querySelector('.u-route-go'),txt=bar.querySelector('.u-route-cur'),shown=-1;
+  function paint(n){if(n===shown)return;shown=n;
+    links.forEach(function(a,i){a.classList.toggle('on',i+1===n);a.classList.toggle('past',i+1<n);if(i+1===n)a.setAttribute('aria-current','step');else a.removeAttribute('aria-current');});
+    var e=E[n-1];txt.textContent=e?(isVoy?'Grand voyage · ':'')+'Escale '+e.num+' · '+e.title:'';
+    if(isVoy){go.href=e.file;go.innerHTML='⏸ S’arrêter ici<span> : '+e.title+'</span>';}
+    else{go.href='voyage.html#'+RESUME[n];go.innerHTML='▶ Reprendre le grand voyage';}
+    [].forEach.call(bar.querySelectorAll('.u-route-b'),function(b){var t=n+(+b.dataset.d);b.disabled=t<1||t>E.length;});}
+  function voyTo(n){var v=HF._voy;if(!v)return;var i=v.ids.indexOf(RESUME[n]);if(i>=0)v.go(i);}
+  bar.addEventListener('click',function(ev){var b=ev.target.closest('.u-route-b'),a=ev.target.closest('ol a');
+    if(b){var t=shown+(+b.dataset.d);if(t<1||t>E.length)return;if(isVoy)voyTo(t);else location.href=E[t-1].file;}
+    else if(a&&isVoy){ev.preventDefault();voyTo(+a.dataset.n);}});
+  paint(isVoy?1:cur);
+  /* film en cours : n° du plan et nombre de plans, quel que soit le moteur */
+  function film(){var f=HF._voy||HF._vl||HF._eto||HF._sys||HF._sol||HF._cin;if(!f||!f.state)return null;var s=f.state();
+    return {i:f.stage!=null?f.stage:s.shot,n:f.ids?f.ids.length:f.n,id:s.ids||s.id,playing:s.playing!==false};}
+  /* escale suivante, toute seule, après le dernier plan */
+  /* armé dès que le dernier plan est atteint ; le décompte continue même si le film reboucle ; un geste l'annule
+     (il se réarme au tour suivant du film) */
+  var next=E[cur],toast=null,wait=0,left=0,calm=true,armed=false;
+  function stop(){calm=false;armed=false;wait=0;if(toast){toast.remove();toast=null;}}
+  if(!isVoy&&next){['pointerdown','keydown','wheel'].forEach(function(t){scene.addEventListener(t,stop,{passive:true});});}
+  setInterval(function(){var f=film();if(!f)return;
+    if(isVoy){var n=VOY[f.id];if(n)paint(n);return;}
+    if(!next)return;
+    if(f.i<f.n-1&&!armed)calm=true;
+    if(f.i===f.n-1&&calm&&f.playing)armed=true;
+    if(!armed||!f.playing)return;
+    wait+=.5;
+    if(wait>=6&&!toast){left=8;toast=document.createElement('div');toast.className='u-route-next';toast.setAttribute('role','status');
+      toast.innerHTML='<span>Escale suivante : <b>'+next.title+'</b> dans <em>8</em> s</span><a class="u-route-y" href="'+next.file+'">Y aller</a><button type="button" class="u-route-n">Rester ici</button>';
+      toast.querySelector('.u-route-n').addEventListener('click',stop);bar.parentNode.insertBefore(toast,scene);}
+    else if(toast){left-=.5;var em=toast.querySelector('em');if(em)em.textContent=Math.max(0,Math.ceil(left));if(left<=0){toast.remove();toast=null;calm=false;location.href=next.file;}}},500);
+}
+
 window.HF={store:store,applyTheme:applyTheme,
   coarse:function(){return root.classList.contains('coarse');},
   reduced:function(){try{return window.matchMedia('(prefers-reduced-motion:reduce)').matches;}catch(e){return false;}},
   fr:function(n,d){d=d==null?0:d;return Number(n).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});}
 };
-document.addEventListener('DOMContentLoaded',function(){initMenu();initPresent();initReveal();initOnline();});
+document.addEventListener('DOMContentLoaded',function(){initMenu();initPresent();initReveal();initOnline();initRoute();});
 })();
 
 </script>
@@ -2028,14 +2116,14 @@ HF.voyage=function(host,opt){
       i:'Surface : illustration. Ne jamais regarder le Soleil sans protection adaptée.',labs:[]},
     {id:'planetes',hold:11,f:()=>{const hp=perp(SU.clone().negate(),EN),d=EN.clone().multiplyScalar(Math.sin(32*D)).add(hp.multiplyScalar(Math.cos(32*D))).normalize(),[th,tv]=tans(40),R=30.1*AU,dist=Math.max(R/th,.75*R/tv)*1.1;
         return {p:SUNP,d,up:perp(EN,d),fov:40,z0:lg(dist*.92),z:lg(dist)};},
-      t:'Les planètes, à leur place aujourd’hui',l:'Neptune : '+nf(nep,1)+' heures-lumière',s:'Huit planètes autour du Soleil, et la Terre parmi elles.',i:'Planètes agrandies pour rester visibles.',ch:['systeme-solaire.html','Chapitre 3 : le Système solaire'],labs:['p-terre','p-jupiter','p-saturne','p-uranus','p-neptune']},
+      t:'Les planètes, à leur place aujourd’hui',l:'Neptune : '+nf(nep,1)+' heures-lumière',s:'Huit planètes autour du Soleil, et la Terre parmi elles.',i:'Planètes agrandies pour rester visibles.',labs:['p-terre','p-jupiter','p-saturne','p-uranus','p-neptune']},
     {id:'voyager',hold:10,f:()=>{const vd=unit(VOY.clone().sub(SUNP)),d=perp(EN.clone().multiplyScalar(.6).add(unit(V3().crossVectors(vd,EN)).multiplyScalar(.8)),vd);
         const s=lineShot(SUNP.clone().lerp(VOY,.55),d,vd,VOY.distanceTo(SUNP),40,1.5);s.z0=s.z-.15;return s;},
       t:'Voyager 1',l:'1 jour-lumière',s:'Lancée en 1977, la sonde la plus lointaine. En novembre 2026, elle a franchi un jour-lumière.',i:'Position approchée ; sonde agrandie.',labs:['voyager','soleil']},
     {id:'voisines',hold:11,f:()=>{const a=NAMED[1]?unit(NAMED[1].p.clone().sub(SUNP)):radec(14.66,-60.8),b=NAMED[3]?unit(NAMED[3].p.clone().sub(SUNP)):radec(6.75,-16.7);let d=V3().crossVectors(a,b).normalize();if(d.dot(N)<0)d.negate();
         const [th,tv]=tans(40),dist=9.6*LY/Math.min(th,tv);return {p:SUNP,d,up:perp(a.clone().add(b),d),fov:40,z0:lg(dist*.7),z:lg(dist)};},
       t:'Les étoiles voisines',l:(NAMED[0]?nf(NAMED[0].ly,1):'4,2')+' années-lumière',s:'Proxima du Centaure est la plus proche. À la vitesse de Voyager 1, il faudrait plus de 70 000 ans pour l’atteindre.',
-      i:'Étoiles : vraies positions (catalogue HYG).',ch:['etoiles.html','Chapitre 4 : les étoiles proches'],labs:()=>['soleil',sid('Alpha du Centaure'),sid('Sirius'),sid('Étoile de Barnard'),sid('Procyon')]},
+      i:'Étoiles : vraies positions (catalogue HYG).',labs:()=>['soleil',sid('Alpha du Centaure'),sid('Sirius'),sid('Étoile de Barnard'),sid('Procyon')]},
     {id:'orion',hold:10,f:()=>{const dO=oriDir();return {p:SUNP.clone().add(dO.clone().multiplyScalar(5e17)),d:dO.clone().negate(),up:perp(N,dO),fov:46,z0:lg(5e17-3e13),z:lg(5e17-3e13)};},
       drift:0,t:'Orion, vu d’ici',l:'Le ciel d’hiver',s:'Le chasseur, sa ceinture de trois étoiles, Bételgeuse la rouge et Rigel la bleue.',labs:()=>ORI.map(sid),lines:true},
     {id:'orion-cote',hold:11,f:()=>{const dO=oriDir(),far=Math.max(...ORI.map(n=>{const s=NAMED[NAMED.findIndex(x=>x&&x.n===n)];return s?s.ly:2000;}))*LY,d=perp(V3().crossVectors(dO,N).normalize().add(N.clone().multiplyScalar(.3)),dO);
@@ -2044,14 +2132,14 @@ HF.voyage=function(host,opt){
       labs:()=>['soleil'].concat(ORI.map(sid)),lines:true},
     {id:'galaxie',hold:12,f:()=>{const d=GZ.clone().multiplyScalar(Math.cos(52*D)).add(GX.clone().multiplyScalar(Math.sin(52*D))).normalize(),[th,tv]=tans(40),R=15*KPC,dist=Math.max(.85*R/th,.72*R/tv)*1.12;
         return {p:GC,d,up:perp(GZ,d),fov:40,z0:lg(dist*.85),z:lg(dist)};},
-      t:'La Voie lactée',l:'26 700 années-lumière jusqu’au centre',s:'Notre galaxie : des centaines de milliards d’étoiles. Le Soleil en fait le tour en ≈ 230 millions d’années.',i:'Illustration : forme et bras d’après les observations.',ch:['voie-lactee.html','Chapitre 5 : la Voie lactée'],labs:['ici','centre']},
+      t:'La Voie lactée',l:'26 700 années-lumière jusqu’au centre',s:'Notre galaxie : des centaines de milliards d’étoiles. Le Soleil en fait le tour en ≈ 230 millions d’années.',i:'Illustration : forme et bras d’après les observations.',labs:['ici','centre']},
     {id:'groupe',hold:11,f:()=>{const v=unit(M31.clone().sub(GC));const s=lineShot(GC.clone().lerp(M31,.5),perp(GZ.clone().add(GX.clone().multiplyScalar(.4)),v),v,M31.distanceTo(GC),40,1.55);s.z0=s.z-.12;return s;},
-      t:'Le Groupe local',l:'Andromède : 2,5 millions d’années-lumière',s:'Notre grande voisine se voit à l’œil nu sous un ciel noir. Sa lumière est partie il y a 2,5 millions d’années.',i:'Galaxies : illustrations, à leur vraie place et à leur vraie taille.',ch:['groupe-local.html','Chapitre 6 : le Groupe local'],labs:['mw','g0','g1']},
+      t:'Le Groupe local',l:'Andromède : 2,5 millions d’années-lumière',s:'Notre grande voisine se voit à l’œil nu sous un ciel noir. Sa lumière est partie il y a 2,5 millions d’années.',i:'Galaxies : illustrations, à leur vraie place et à leur vraie taille.',labs:['mw','g0','g1']},
     {id:'toile',hold:12,f:()=>{const tgt=unit(CLU[0].p.clone().sub(SUNP).add(CLU[4].p.clone().sub(SUNP))),sg=galDir(47.37,6.32),d=perp(sg,tgt),[th,tv]=tans(40),dist=230*MPC/Math.min(th,tv);
         return {p:SUNP.clone().sub(tgt.clone().multiplyScalar(25*MPC)),d,up:perp(tgt,d),fov:40,z0:lg(dist*.8),z:lg(dist)};},
-      t:'La toile cosmique',l:'Des centaines de millions d’années-lumière',s:'Les galaxies se rassemblent en amas et en filaments, autour de grands vides. Notre galaxie est l’un de ces points.',i:'Filaments : illustration ; amas nommés à leur vraie place.',ch:['structures.html','Chapitre 7 : les grandes structures'],labs:['nous2','c0','c6','c7','c5']},
+      t:'La toile cosmique',l:'Des centaines de millions d’années-lumière',s:'Les galaxies se rassemblent en amas et en filaments, autour de grands vides. Notre galaxie est l’un de ces points.',i:'Filaments : illustration ; amas nommés à leur vraie place.',labs:['nous2','c0','c6','c7','c5']},
     {id:'univers',hold:13,f:()=>{const [th,tv]=tans(40),dist=R_OBS*1.12/Math.min(th,tv),d=perp(GZ.clone().add(GY),N.clone());return {p:SUNP,d:d.lengthSq()>.5?d:GZ.clone(),up:N,fov:40,z0:lg(dist*.62),z:lg(dist)};},
-      t:'L’univers observable',l:'13,8 milliards d’années',s:'Aussi loin que la lumière a pu venir depuis le Big Bang. Au bord, la plus vieille lumière : le fond diffus cosmologique.',i:'Illustration : la toile et le fond diffus sont dessinés.',ch:['univers.html','Chapitre 8 : l’Univers observable'],labs:['nous','cmb']}];
+      t:'L’univers observable',l:'13,8 milliards d’années',s:'Aussi loin que la lumière a pu venir depuis le Big Bang. Au bord, la plus vieille lumière : le fond diffus cosmologique.',i:'Illustration : la toile et le fond diffus sont dessinés.',labs:['nous','cmb']}];
   function oriDir(){const v=V3();let k=0;ORI.forEach(n=>{const s=NAMED[NAMED.findIndex(x=>x&&x.n===n)];if(s){v.add(unit(s.p.clone().sub(SUNP)));k++;}});return k?v.normalize():radec(5.6,-1.2);}
   const r10=x=>x<1000?Math.round(x/10)*10:Math.round(x/100)*100;
   function oriLy(n){const s=NAMED[NAMED.findIndex(x=>x&&x.n===n)];return s?nf(r10(s.ly)):'?';}
@@ -2084,7 +2172,7 @@ HF.voyage=function(host,opt){
       t:'Le Groupe local',l:'≈ 10 millions d’années-lumière',s:'Trois grandes spirales et des dizaines de petites galaxies naines, tenues ensemble par la gravité.',i:'Seules les plus grandes galaxies sont dessinées.',labs:['mw','g0','g1','g2']},
     {id:'approche',hold:13,f:()=>{const s=lineShot(GC.clone().lerp(M31,.5),perp(GZ.clone().negate().add(GY.clone().multiplyScalar(.8)),vA),vA,M31.distanceTo(GC),40,1.3);s.z0=s.z+.1;return s;},
       ov:(F,w)=>W1(F,w,{arrow:.75}),t:'Andromède se rapproche',l:'≈ 110 km/s',s:'Environ 400 000 km/h, vers nous. Une rencontre est possible dans quelques milliards d’années, mais pas certaine : environ une chance sur deux d’ici 10 milliards d’années.',
-      i:'Flèche : sens du mouvement (illustration).',ch:['structures.html','Chapitre 7 : les grandes structures'],labs:['mw','g0','fleche']}];},
+      i:'Flèche : sens du mouvement (illustration).',ch:['structures.html','Escale suivante : les grandes structures'],labs:['mw','g0','fleche']}];},
   structures:()=>{const ill='Galaxies et filaments : illustrations ; amas nommés à leur vraie place.',dC=unit(CLU[6].p.clone().sub(SUNP)),dS=unit(CLU[7].p.clone().sub(SUNP));
     return [
     {id:'groupe',hold:11,f:()=>aim(GC.clone().lerp(M31,.5),mixd(SG,dV,30),5*MPC,1.5),ov:near(2,.6),
@@ -2102,7 +2190,7 @@ HF.voyage=function(host,opt){
     {id:'toile',hold:12,f:SV('toile'),ov:near(10,.5),
       t:'La toile cosmique',l:'Des centaines de millions d’années-lumière',s:'Amas et filaments de galaxies, autour de grands vides : à cette échelle, l’Univers ressemble à une éponge.',i:ill,labs:['nous2','c0','c6','c7','c5']},
     {id:'vides',hold:13,drift:14,f:()=>aim(SUNP,mixd(SG,dV,70),260*MPC,1.3),ov:near(10,.5),
-      t:'Les grands vides',l:'Des centaines de millions d’années-lumière',s:'Entre les filaments, d’immenses régions presque sans galaxies. Chaque point de lumière est une galaxie, avec ses milliards d’étoiles.',i:'Illustration.',ch:['univers.html','Chapitre 8 : l’Univers observable'],labs:['nous2']}];},
+      t:'Les grands vides',l:'Des centaines de millions d’années-lumière',s:'Entre les filaments, d’immenses régions presque sans galaxies. Chaque point de lumière est une galaxie, avec ses milliards d’étoiles.',i:'Illustration.',ch:['univers.html','Escale suivante : l’Univers observable'],labs:['nous2']}];},
   univers:()=>{const ill='Illustration : la toile et le fond diffus sont dessinés.';
     return [
     {id:'toile',hold:10,f:()=>aim(SUNP,mixd(SG,dV,35),300*MPC,1.4),t:'Au-delà des amas',l:'Des centaines de millions d’années-lumière',s:'La toile des galaxies, tout autour de nous. Continuons à reculer.',i:'Filaments : illustration.',labs:['nous2']},
@@ -2114,7 +2202,7 @@ HF.voyage=function(host,opt){
       i:'Illustration : taches et couleurs exagérées. La vraie carte a été dressée par le satellite Planck (ESA).',labs:[]},
     {id:'centre',hold:11,f:()=>aim(SUNP,mixd(SG.clone().negate(),N,40),R_OBS*1.2,1.1),t:'Chacun au centre',l:'Un univers sans centre',s:'Nous sommes au centre de notre univers observable, comme le serait n’importe quel observateur, dans n’importe quelle galaxie.',i:'Point de vue imaginaire.',labs:['nous']},
     {id:'point-bleu',hold:13,f:()=>({p:V3(0,0,0),d:dirLatRel(76,24),up:N,fov:38,z0:lg(5*RE),z:lg(3.4*RE)}),t:'Retour au point bleu pâle',l:'Ici, maintenant',
-      s:'En 1990, à 6 milliards de km, Voyager 1 a photographié la Terre : un point minuscule dans un rayon de Soleil. C’est là que nous vivons tous.',ch:['voyage.html','Revoir le grand voyage'],labs:[]}];}};
+      s:'En 1990, à 6 milliards de km, Voyager 1 a photographié la Terre : un point minuscule dans un rayon de Soleil. C’est là que nous vivons tous.',ch:['voyage.html#retour','⟲ Revoir tout le chemin, de l’Univers à la Terre'],labs:[]}];}};
   if(CHAP&&CHAPS[CHAP])ST=CHAPS[CHAP]();
   function stState(kk,at){const k=kk;const s=ST[k].f(),u=at==null?1:at;const z=s.z0+(s.z-s.z0)*sm(u);return {p:s.p.clone(),z,q:q0(s),fov:s.fov,yaw:(reduce?0:(ST[k].drift!=null?ST[k].drift:5))*u};}
 
@@ -2133,7 +2221,7 @@ HF.voyage=function(host,opt){
     else{z=A.z+(B.z-A.z)*e;f=Math.abs(B.z-A.z)<.05?e:(Math.pow(10,z)-gA)/(gB-gA);}
     return {p:A.p.clone().lerp(B.p,cl(f,0,1)),z,q:A.q.clone().slerp(B.q,e),fov:A.fov+(B.fov-A.fov)*e};}
   let cur=holdState();
-  function go(n,instant){n=(n+ST.length)%ST.length;const s0=snap();offY=offP=offZ=0;user=0;
+  function go(n,instant){n=(n+ST.length)%ST.length;rev=false;home=false;const s0=snap();offY=offP=offZ=0;user=0;
     if(instant||reduce){k=n;mode='hold';t=instant?Math.min(1.6,ST[n].hold*.2):0;showStage();return;}
     travel(s0,n,true);hideStage();}
   function snap(){const c=eff(cur);return {p:c.p.clone(),z:c.z,q:c.q.clone(),fov:c.fov};}
@@ -2142,6 +2230,10 @@ HF.voyage=function(host,opt){
 
   /* ===== Interface : légende, distance, commandes, progression ===== */
   const cap=document.createElement('div');cap.className='cin-cap vy3-cap';cap.setAttribute('aria-live','polite');host.appendChild(cap);
+  /* le voyage retour : toutes les étapes à l'envers, d'une traite, jusqu'à la Terre (tenues courtes, trajets à vitesse normale) */
+  let rev=false,home=false;const REV_HOLD=4.5;
+  function startRev(){if(k<1)return;const s0=snap();offY=offP=offZ=0;user=0;playing=true;paintUI();rev=true;home=false;travel(s0,k-1);hideStage();}
+  cap.addEventListener('click',e=>{if(e.target.closest('[data-retour]'))startRev();else if(e.target.closest('[data-encore]'))go(1);});
   const dist=document.createElement('div');dist.className='cin-clock vy3-dist';host.appendChild(dist);
   const prog=document.createElement('div');prog.className='vy3-prog';prog.setAttribute('aria-hidden','true');prog.innerHTML=ST.map(()=>'<i></i>').join('');host.appendChild(prog);
   const ui=document.createElement('div');ui.className='cin-ui';
@@ -2155,7 +2247,10 @@ HF.voyage=function(host,opt){
   const curIdx=()=>mode==='travel'?tr.to:k;
   let shown=-1;
   function showStage(){const S=ST[k];shown=k;
-    cap.innerHTML='<div class="vy3-ci"><b>'+val(S.t)+'</b><em>'+val(S.l)+'</em><span>'+val(S.s)+'</span>'+(S.i?'<small>'+S.i+'</small>':'')+(S.ch?'<a class="vy3-ch" href="'+S.ch[0]+'">'+S.ch[1]+' →</a>':'')+'</div>';
+    if(rev)cap.innerHTML='<div class="vy3-ci vy3-rev"><small class="vy3-revn">Retour vers la Terre · '+(ST.length-k)+' / '+ST.length+'</small><b>'+val(S.t)+'</b><em>'+val(S.l)+'</em></div>';
+    else if(home)cap.innerHTML='<div class="vy3-ci"><b>De retour sur Terre</b><em>Le point de départ</em><span>Tout ce chemin a été parcouru, et mesuré, depuis cette petite planète.</span><button type="button" class="vy3-ch" data-encore>▶ Repartir pour le grand voyage</button></div>';
+    else cap.innerHTML='<div class="vy3-ci"><b>'+val(S.t)+'</b><em>'+val(S.l)+'</em><span>'+val(S.s)+'</span>'+(S.i?'<small>'+S.i+'</small>':'')+(S.ch?'<a class="vy3-ch" href="'+S.ch[0]+'">'+S.ch[1]+' →</a>':'')+
+      (!CHAP&&k===ST.length-1?'<button type="button" class="vy3-ch" data-retour>⟲ Revenir au point de départ</button>':'')+'</div>';
     cap.classList.remove('in');void cap.offsetWidth;cap.classList.add('in');
     const LL=val(S.labs)||[];for(const id in LAB){LAB[id].on=LL.includes(id);LAB[id].pri=LL.indexOf(id);}layT=0;
     [...prog.children].forEach((e,i)=>e.classList.toggle('on',i<=k));}
@@ -2207,8 +2302,8 @@ HF.voyage=function(host,opt){
     /* fil du voyage */
     if(user>0)user-=dt;else{offY*=Math.exp(-dt*.7);offP*=Math.exp(-dt*.7);offZ*=Math.exp(-dt*.7);if(Math.abs(offY)+Math.abs(offP)+Math.abs(offZ)<.01)offY=offP=offZ=0;}
     const adv=playing&&user<=0;
-    if(mode==='hold'){if(adv&&!reduce)t+=dt;if(t>=ST[k].hold){const s0=snap();offY=offP=offZ=0;travel(s0,k+1);hideStage();}}
-    if(mode==='travel'){if(user<=0&&(playing||tr.fast))t+=dt;if(t>=tr.dur){k=(tr.to+ST.length)%ST.length;mode='hold';t=0;showStage();}}
+    if(mode==='hold'){if(adv&&!reduce)t+=dt;if(t>=(rev?REV_HOLD:ST[k].hold)){const s0=snap();offY=offP=offZ=0;if(home)home=false;travel(s0,rev?k-1:k+1);hideStage();}}
+    if(mode==='travel'){if(user<=0&&(playing||tr.fast))t+=dt;if(t>=tr.dur){k=(tr.to+ST.length)%ST.length;mode='hold';t=0;if(rev&&k===0){rev=false;home=true;}showStage();}}
     cur=mode==='hold'?holdState():travelState(cl(t/tr.dur,0,1));
     const c=eff(cur);camQ.copy(c.q);const back=V3(0,0,1).applyQuaternion(camQ);
     camPos.copy(c.p).add(back.multiplyScalar(Math.pow(10,c.z)));
@@ -2259,9 +2354,11 @@ HF.voyage=function(host,opt){
   try{new IntersectionObserver(es=>{visible=es[0].isIntersecting&&!document.hidden;kick();}).observe(host);}catch(e){}
   document.addEventListener('visibilitychange',()=>{visible=!document.hidden;kick();});
   showStage();kick();
+  /* reprise du grand voyage à une étape précise (voyage.html#galaxie), depuis une escale */
+  if(!CHAP){const fromHash=()=>{const h=decodeURIComponent(location.hash.slice(1));if(h==='retour'){go(ST.length-1,true);startRev();return;}const hi=ST.findIndex(s=>s.id===h);if(hi>0)go(hi,true);};fromHash();window.addEventListener('hashchange',fromHash);}
   /* pour les captures : figer le trajet vers le plan n à la fraction u (pause) */
   function seek(n,u){k=(n-1+ST.length)%ST.length;offY=offP=offZ=0;user=0;travel(apply(stState(k,1)),n);t=u*tr.dur;playing=false;paintUI();hideStage();}
-  return {go,seek,get stage(){return curIdx();},ids:ST.map(s=>s.id),state:()=>({k,mode,t,ids:ST[curIdx()].id,cap:cap.textContent,dist:dist.textContent,lE:lg(camPos.length())}),renderer:R,finish(){while(JOBS.length||job)runJobs(1000);}};
+  return {go,seek,get stage(){return curIdx();},ids:ST.map(s=>s.id),state:()=>({k,mode,t,playing,rev,home,ids:ST[curIdx()].id,cap:cap.textContent,dist:dist.textContent,lE:lg(camPos.length())}),renderer:R,finish(){while(JOBS.length||job)runJobs(1000);}};
 };
 })();
 

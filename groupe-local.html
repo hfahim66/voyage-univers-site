@@ -1447,7 +1447,7 @@ html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17p
 .vy3-cap small.vy3-revn{display:block;margin:0 auto 8px;font-style:normal;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--or)}
 .vy3-rev b{font-size:clamp(24px,3.6vw,44px)}
 /* descente finale (voyage.js) : photos aériennes IGN par-dessus la scène, repère du lieu */
-.vy3-photo{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0}
+.vy3-photo{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;transform-origin:50% 100%}
 /* immersion (core.js) : la page devient un cadre plein écran dans lequel on navigue sans quitter le plein écran */
 .u-imm-body{margin:0;background:#000;overflow:hidden}.u-imm{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:#000}
 
@@ -1618,29 +1618,34 @@ function initFresh(){
 }
 
 
-/* ----- Bande-son : effets spéciaux d'espace, sans musique (aucune note, aucune mélodie) -----
-   Tout est calculé dans le navigateur à partir de bruit, et rien ne se répète à l'identique (événements tirés au hasard).
+/* ----- Bande-son : ambiances d'espace, sans musique (aucune note, aucune mélodie) -----
+   Fond principal : une ambiance enregistrée par endroit (nappes, grondements, vents : Freesound CC0, boucles sans coupure
+   préparées par tools/sons.mjs dans assets/sons/, intégrées à la page en « data: » : HF.SONS[clé]). Décodée seulement
+   quand on en a besoin ; celles qui ne servent plus sont libérées (mémoire des téléphones).
+   Par-dessous, en liant discret (plus fort si aucun enregistrement n'est disponible), le bruit calculé ci-dessous ;
+   rien ne s'y répète à l'identique (événements tirés au hasard).
    Couches continues : grondement (bruit brun filtré bas), souffle (bruit rose filtré, qui ondule), neige (bruit blanc aigu),
    souffle des déplacements (filtre qui s'ouvre avec la vitesse de la caméra).
    Événements : crépitements (plasma), étincelles, détonations sourdes, grésillements radio — avec un long écho (réverbération calculée).
    Une ambiance par endroit (son.scene), en fondu ; démarre au premier geste ; interrupteur « Son » (HF.store 'son'). */
 var SCENES={   /* g : grondement [volume, fréquence] ; a : souffle [volume, fréquence, Q, vitesse d'ondulation, ampleur] ; h : neige ;
-                  c : crépitements [par seconde, volume, fréquence basse, haute] ; s : étincelles [par s, volume] ; t : détonations [par s, volume] ; r : radio [par s, volume] */
-  terre:     {g:[.22,90], a:[.34,480,.7,.09,.65],h:.015,c:[0,0,0,0],        s:[0,0],    t:[0,0],    r:[0,0]},
-  soleil:    {g:[.7,62], a:[.22,320,.8,.17,.5], h:.04, c:[22,.5,1400,7000],s:[0,0],    t:[.35,.42],r:[0,0]},
-  eclipse:   {g:[.18,50], a:[.06,700,.9,.05,.4], h:.01, c:[.6,.12,2000,5000], s:[.4,.05], t:[0,0],    r:[0,0]},
-  systeme:   {g:[.28,58], a:[.14,900,1.6,.05,.45],h:.045,c:[0,0,0,0],        s:[3,.11],  t:[0,0],    r:[.22,.13]},
-  anneaux:   {g:[.25,58], a:[.12,1100,1.6,.05,.45],h:.05,c:[0,0,0,0],        s:[11,.1],  t:[0,0],    r:[.1,.1]},
-  sonde:     {g:[.18,48], a:[.07,1300,2,.05,.3], h:.06, c:[0,0,0,0],         s:[1,.06],  t:[0,0],    r:[1.3,.2]},
-  etoiles:   {g:[.25,55], a:[.12,2400,3,.06,.5], h:.065,c:[0,0,0,0],         s:[6,.11],  t:[.14,.24],r:[0,0]},
-  nuit:      {g:[.2,70],  a:[.28,380,.6,.07,.5], h:.02, c:[0,0,0,0],         s:[1,.05],  t:[0,0],    r:[0,0]},
-  galaxie:   {g:[.5,44],  a:[.3,400,.6,.03,.7],  h:.03, c:[0,0,0,0],         s:[2,.07],  t:[.05,.25],r:[0,0]},
-  groupe:    {g:[.55,38], a:[.22,260,.5,.02,.6], h:.02, c:[0,0,0,0],         s:[.8,.06], t:[.08,.32],r:[0,0]},
-  structures:{g:[.62,32], a:[.2,200,.5,.015,.7], h:.02, c:[0,0,0,0],         s:[.4,.05], t:[.06,.38],r:[0,0]},
-  univers:   {g:[.45,30], a:[.1,600,.7,.02,.5],  h:.11, c:[0,0,0,0],         s:[0,0],    t:[.03,.3], r:[1.6,.12]},
-  fond:      {g:[.3,30],  a:[.06,700,.7,.02,.4], h:.2,  c:[0,0,0,0],         s:[0,0],    t:[0,0],    r:[4,.14]},
-  entree:    {g:[.65,85], a:[.85,650,.5,.35,.35],h:.11, c:[0,0,0,0],         s:[0,0],    t:[0,0],    r:[0,0]},
-  arrivee:   {g:[.25,90], a:[.32,420,.6,.1,.6],  h:.02, c:[0,0,0,0],         s:[0,0],    t:[0,0],    r:[0,0]}};
+                  c : crépitements [par seconde, volume, fréquence basse, haute] ; s : étincelles [par s, volume] ; t : détonations [par s, volume] ; r : radio [par s, volume] ;
+                  l : ambiance enregistrée [clé de HF.SONS, volume] */
+  terre:     {g:[.22,90], a:[.34,480,.7,.09,.65],h:.015,c:[0,0,0,0],        s:[0,0],    t:[0,0],    r:[0,0],l:['terre',.75]},
+  soleil:    {g:[.7,62], a:[.22,320,.8,.17,.5], h:.04, c:[22,.5,1400,7000],s:[0,0],    t:[.35,.42],r:[0,0],l:['soleil',.8]},
+  eclipse:   {g:[.18,50], a:[.06,700,.9,.05,.4], h:.01, c:[.6,.12,2000,5000], s:[.4,.05], t:[0,0],    r:[0,0],l:['aerien',.6]},
+  systeme:   {g:[.28,58], a:[.14,900,1.6,.05,.45],h:.045,c:[0,0,0,0],        s:[3,.11],  t:[0,0],    r:[.22,.13],l:['planete',.6]},
+  anneaux:   {g:[.25,58], a:[.12,1100,1.6,.05,.45],h:.05,c:[0,0,0,0],        s:[11,.1],  t:[0,0],    r:[.1,.1],l:['planete',.7]},
+  sonde:     {g:[.18,48], a:[.07,1300,2,.05,.3], h:.06, c:[0,0,0,0],         s:[1,.06],  t:[0,0],    r:[1.3,.2],l:['sonde',.6]},
+  etoiles:   {g:[.25,55], a:[.12,2400,3,.06,.5], h:.065,c:[0,0,0,0],         s:[6,.11],  t:[.14,.24],r:[0,0],l:['aerien',.7]},
+  nuit:      {g:[.2,70],  a:[.28,380,.6,.07,.5], h:.02, c:[0,0,0,0],         s:[1,.05],  t:[0,0],    r:[0,0],l:['soir',.6]},
+  galaxie:   {g:[.5,44],  a:[.3,400,.6,.03,.7],  h:.03, c:[0,0,0,0],         s:[2,.07],  t:[.05,.25],r:[0,0],l:['espace',.7]},
+  groupe:    {g:[.55,38], a:[.22,260,.5,.02,.6], h:.02, c:[0,0,0,0],         s:[.8,.06], t:[.08,.32],r:[0,0],l:['espace',.75]},
+  structures:{g:[.62,32], a:[.2,200,.5,.015,.7], h:.02, c:[0,0,0,0],         s:[.4,.05], t:[.06,.38],r:[0,0],l:['espace',.8]},
+  univers:   {g:[.45,30], a:[.1,600,.7,.02,.5],  h:.11, c:[0,0,0,0],         s:[0,0],    t:[.03,.3], r:[1.6,.12],l:['espace',.65]},
+  fond:      {g:[.3,30],  a:[.06,700,.7,.02,.4], h:.2,  c:[0,0,0,0],         s:[0,0],    t:[0,0],    r:[4,.14],l:['aerien',.6]},
+  entree:    {g:[.65,85], a:[.85,650,.5,.35,.35],h:.11, c:[0,0,0,0],         s:[0,0],    t:[0,0],    r:[0,0],l:['entree',.85]},
+  arrivee:   {g:[.25,90], a:[.32,420,.6,.1,.6],  h:.02, c:[0,0,0,0],         s:[0,0],    t:[0,0],    r:[0,0],l:['soir',.75]}};
 var son={ctx:null,on:store.get('son')!==false,cur:null,S:SCENES.terre,
   start:function(){if(this.ctx||!this.on)return;var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
     try{var c=this.ctx=new AC();}catch(e){return;}
@@ -1672,12 +1677,28 @@ var son={ctx:null,on:store.get('son')!==false,cur:null,S:SCENES.terre,
     this.wh=c.createGain();this.wh.gain.value=0;loop(this.B.blanc).connect(this.whF).connect(this.wh).connect(this.master);this.wh.connect(this.rev);
     this.master.gain.setTargetAtTime(.55,c.currentTime,1.5);this.apply(this.S,.1);
     setInterval(function(){self.events();},100);},
-  /* une ambiance : tous les réglages glissent vers elle (≈ 2 s) */
+  /* une ambiance : tous les réglages glissent vers elle (≈ 2 s) ; le bruit calculé s'efface sous l'enregistrement quand il est là */
   apply:function(S,k){var c=this.ctx;if(!c)return;var t=c.currentTime;k=k||1.2;
-    this.gG.gain.setTargetAtTime(S.g[0],t,k);this.gF.frequency.setTargetAtTime(S.g[1],t,k);
-    this.aG.gain.setTargetAtTime(S.a[0],t,k);this.aF.frequency.setTargetAtTime(S.a[1],t,k);this.aF.Q.setTargetAtTime(S.a[2],t,k);
-    this.lfo.frequency.setTargetAtTime(S.a[3],t,k);this.lfoG.gain.setTargetAtTime(S.a[0]*S.a[4],t,k);this.hG.gain.setTargetAtTime(S.h,t,k);},
+    var lp=S.l&&this.L[S.l[0]]&&this.L[S.l[0]].src,q=this.pk=lp?.3:1;
+    this.gG.gain.setTargetAtTime(S.g[0]*q,t,k);this.gF.frequency.setTargetAtTime(S.g[1],t,k);
+    this.aG.gain.setTargetAtTime(S.a[0]*q,t,k);this.aF.frequency.setTargetAtTime(S.a[1],t,k);this.aF.Q.setTargetAtTime(S.a[2],t,k);
+    this.lfo.frequency.setTargetAtTime(S.a[3],t,k);this.lfoG.gain.setTargetAtTime(S.a[0]*S.a[4]*q,t,k);this.hG.gain.setTargetAtTime(S.h*q,t,k);
+    this.loops(S,k*1.6);},
   scene:function(key){if(key===this.cur||!SCENES[key])return;this.cur=key;this.S=SCENES[key];this.apply(this.S);},
+  /* ambiances enregistrées : L[clé] = {g : volume, src : lecture en boucle, ld : décodage en cours} */
+  L:{},
+  loops:function(S,k){var c=this.ctx,t=c.currentTime,want=S.l&&HF.SONS&&HF.SONS[S.l[0]]?S.l[0]:null,self=this;
+    if(want&&!this.L[want])this.load(want);
+    Object.keys(this.L).forEach(function(key){var o=self.L[key];if(!o.g)return;
+      o.g.gain.cancelScheduledValues(t);o.g.gain.setTargetAtTime(key===want?S.l[1]:0,t,k);
+      clearTimeout(o.off);if(key!==want)o.off=setTimeout(function(){if(self.S.l&&self.S.l[0]===key)return;   /* libérée après le fondu */
+        try{o.src.stop();}catch(e){}o.src.disconnect();delete self.L[key];},k*6000+1000);});},
+  load:function(key){var c=this.ctx,self=this,o=this.L[key]={ld:true};
+    var done=function(b){if(self.L[key]!==o)return;o.ld=false;var s=o.src=c.createBufferSource();s.buffer=b;s.loop=true;
+        o.g=c.createGain();o.g.gain.value=0;s.connect(o.g).connect(self.master);s.start(0,Math.random()*b.duration);self.apply(self.S,.6);},
+      fail=function(){if(self.L[key]===o)delete self.L[key];};
+    fetch(HF.SONS[key]).then(function(r){return r.arrayBuffer();}).then(function(ab){
+      var p=c.decodeAudioData(ab,done,fail);if(p&&p.catch)p.catch(fail);}).catch(fail);},
   /* un événement bref : bruit filtré, enveloppe, part dans l'écho */
   shot:function(t,dur,type,f,q,vol,send){var c=this.ctx,s=c.createBufferSource();s.buffer=Math.random()<.5?this.B.blanc:this.B.rose;
     var fl=c.createBiquadFilter();fl.type=type;fl.frequency.value=f;fl.Q.value=q;var g=c.createGain();g.gain.setValueAtTime(0,t);
@@ -1685,15 +1706,16 @@ var son={ctx:null,on:store.get('son')!==false,cur:null,S:SCENES.terre,
     s.connect(fl).connect(g).connect(this.master);if(send){var sg=c.createGain();sg.gain.value=send;g.connect(sg).connect(this.rev);}
     s.start(t,Math.random()*5,dur+.05);},
   events:function(){var c=this.ctx;if(!c||!this.on||c.state!=='running')return;var S=this.S,t0=c.currentTime+.05,self=this,R=Math.random;
+    var q=this.pk<1?.5:1;   /* sous un enregistrement : étincelles et radio plus discrètes */
     var each=function(rate,fn){var n=rate*.1;while(n>0){if(R()<Math.min(n,1))fn(t0+R()*.1);n-=1;}};
     /* crépitements : grappes de petits claquements secs, d'éclat inégal */
     each(S.c[0],function(t){var k=1+Math.floor(R()*R()*6);for(var i=0;i<k;i++)self.shot(t+i*(.006+R()*.03),.004+R()*.025,'bandpass',S.c[2]+R()*(S.c[3]-S.c[2]),1.5+R()*3,S.c[1]*(.25+R()*R()*1.5),.25);});
     /* étincelles : tintements de bruit très aigus, lointains */
-    each(S.s[0],function(t){self.shot(t,.015+R()*.05,'highpass',6500+R()*4500,.7,S.s[1]*(.3+R()),1.1);});
+    each(S.s[0],function(t){self.shot(t,.015+R()*.05,'highpass',6500+R()*4500,.7,S.s[1]*q*(.3+R()),1.1);});
     /* détonations : coups sourds et longs, avec écho */
     each(S.t[0],function(t){self.shot(t,.9+R()*1.6,'lowpass',70+R()*90,.8,S.t[1]*(.6+R()*.6),.9);});
     /* radio : grésillements hachés */
-    each(S.r[0],function(t){var f=1200+R()*2600,d=.12+R()*.5,k=3+Math.floor(R()*8);for(var i=0;i<k;i++)self.shot(t+i*d/k,d/k*1.6,'bandpass',f*(.9+R()*.2),3+R()*6,S.r[1]*(.4+R()*.8),.3);});},
+    each(S.r[0],function(t){var f=1200+R()*2600,d=.12+R()*.5,k=3+Math.floor(R()*8);for(var i=0;i<k;i++)self.shot(t+i*d/k,d/k*1.6,'bandpass',f*(.9+R()*.2),3+R()*6,S.r[1]*q*(.4+R()*.8),.3);});},
   set:function(on){this.on=on;store.set('son',on);if(on){this.start();if(this.ctx){this.ctx.resume();this.master.gain.setTargetAtTime(.55,this.ctx.currentTime,.4);}}
     else if(this.ctx)this.master.gain.setTargetAtTime(0,this.ctx.currentTime,.2);},
   /* m : mouvement de 0 (immobile) à 1 (trajet rapide) */
@@ -1706,7 +1728,7 @@ var son={ctx:null,on:store.get('son')!==false,cur:null,S:SCENES.terre,
 var SC_ETAPE=['','terre','soleil','systeme','etoiles','galaxie','groupe','structures','univers'];
 var SC_VOY={terre:'terre',soleil:'soleil',planetes:'systeme',voyager:'sonde',voisines:'etoiles',galaxie:'galaxie',groupe:'groupe',toile:'structures',univers:'univers'};
 var SC_PLAN={couronne:'eclipse',saturne:'anneaux',anneaux:'anneaux',ciel:'nuit',fond:'fond'};
-function sceneOf(isVoy,cur,f){if(isVoy){if(f.desc)return f.desc>=3?'arrivee':'entree';return SC_VOY[f.id]||'terre';}
+function sceneOf(isVoy,cur,f){if(isVoy){if(f.desc)return f.desc<3||f.desc===8?'entree':'arrivee';   /* descente et zoom arrière du départ : vent ; photo et scène de Garges : soirée */return SC_VOY[f.id]||'terre';}
   return (SC_PLAN[f.id]&&!(cur===5&&f.id==='ciel'))?SC_PLAN[f.id]:SC_ETAPE[cur];}
 
 /* ----- La route : « un voyage, huit escales » -----
@@ -1826,6 +1848,7 @@ document.addEventListener('DOMContentLoaded',function(){initMenu();initPresent()
 
 </script>
 
+<script>HF.SONS={espace:'assets/sons/espace.mp3',aerien:'assets/sons/aerien.mp3'};</script>
 <script>HF.MOON_SRC='assets/moon2k.jpg';HF.EARTH_SRC='assets/terre-jour.jpg';HF.EARTH_NIGHT_SRC='assets/terre-nuit.jpg';HF.CLOUDS_SRC='assets/nuages.jpg';</script>
 <script>HF.STARS_SRC='assets/etoiles.bin';HF.MW_SRC='assets/voie-lactee.jpg';</script>
 <script src="assets/three.min.js"></script><script>
@@ -2061,6 +2084,114 @@ HF.terre3d=function(T,R,sc,opt){
 
 /* Généré par tools/etoiles.mjs : noms des étoiles rangées en tête de assets/etoiles.bin (catalogue HYG v4.2, CC BY-SA 4.0). */
 HF.ETOILES_NOMS=["Proxima du Centaure","Alpha du Centaure","Étoile de Barnard","Sirius","Procyon","Altaïr","Véga","Arcturus","Capella","Aldébaran","Bételgeuse","Rigel","Bellatrix","Mintaka","Alnilam","Alnitak","Saïph","Étoile polaire","Deneb","Antarès","Spica","Régulus","Pollux","Castor","Fomalhaut","Dubhé","Mérak","Phecda","Megrez","Alioth","Mizar","Alkaïd"];
+
+/* Scène illustrée de Garges-lès-Gonesse : départ et retour du grand voyage (voyage.js).
+   Ciel du soir, quelques étoiles (la ville éclaire le ciel), la mosquée de la Muette en silhouette (d'après des photos de la façade :
+   tour de briques à gauche avec sa fente vitrée, bloc clair au portail vitré, petites fenêtres carrées en arcs, aile en briques,
+   bâtiment voisin, grille à piliers), et au premier plan, de dos, cinq observateurs : télescope sur trépied, jumelles,
+   un enfant qui montre le ciel. Tout est dessiné par le code (aucune vraie personne), et signalé à l'écran comme illustré.
+   HF.garges() → {draw(g, W, H, DPR, temps, décalage vertical)} ; l'image est toujours la même (tirages à graine fixe). */
+(function(){
+'use strict';
+window.HF=window.HF||{};
+HF.garges=function(){
+  const rng=s=>()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};
+  let fg=null,key='',stars=[];
+  /* mise en page : u = taille d'une unité ; cx, y0 = centre et ligne du sol de la mosquée ; f = resserrement en portrait */
+  function lay(W,H){const asp=W/H,u=asp>=1?Math.min(W/1000,H/700):W/620;return {u,cx:W/2,y0:H*(asp>=1?.45:.47),f:asp>=1?1:.72,mx:W/2+(asp>=1?40*u:-20*u)};}
+  function sky(g,W,H,L){const gr=g.createLinearGradient(0,0,0,L.y0);
+    gr.addColorStop(0,'#030716');gr.addColorStop(.45,'#0a1434');gr.addColorStop(.78,'#22244d');gr.addColorStop(.93,'#45325a');gr.addColorStop(1,'#66404f');
+    g.fillStyle=gr;g.fillRect(0,0,W,L.y0+2);
+    /* halo orangé de la ville sur l'horizon (ellipse aplatie, sans bord) */
+    const h=g.createRadialGradient(0,0,0,0,0,W*.7);h.addColorStop(0,'rgba(255,150,90,.18)');h.addColorStop(1,'rgba(255,150,90,0)');
+    g.save();g.translate(L.cx,L.y0);g.scale(1,.3);g.fillStyle=h;g.fillRect(-W,-W*.75,2*W,W*.75);g.restore();
+    const gd=g.createLinearGradient(0,L.y0,0,H);gd.addColorStop(0,'#1a1b27');gd.addColorStop(.35,'#121320');gd.addColorStop(1,'#0b0c14');g.fillStyle=gd;g.fillRect(0,L.y0,W,H-L.y0);}
+  function makeStars(W,L){const r=rng(7),n=Math.min(240,Math.round(W*L.y0/5200));stars=[];
+    for(let i=0;i<n;i++){const y=Math.pow(r(),1.5)*(L.y0-30*L.u),m=r();stars.push({x:r()*W,y,s:m>.97?2.1:m>.85?1.4:.9,a:(m>.85?.95:.45+r()*.4)*(1-sm(.5,.95,y/L.y0)),f:.6+r()*2.2,p:r()*7});}}
+  const sm=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
+  /* tout ce qui ne bouge pas : ville au loin, mosquée, grille, arbre, observateurs */
+  function drawFG(g,W,H,L){const {u,y0}=L,R=rng(3);
+    const box=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h);};
+    /* ville au loin : immeubles bas, deux tours, arbres */
+    for(let x=-20;x<W+20;){const w=(22+R()*55)*u,tall=R()<.07,h=(tall?85+R()*40:8+R()*38)*u;box(x,y0-h,w,h+2,tall?'#0b0e1f':'#0d1022');
+      const n=Math.floor(w*h/(u*u*60));for(let i=0;i<n;i++)if(R()<.35)box(x+R()*(w-3*u),y0-h+R()*(h-4*u),1.6*u,1.6*u,R()<.8?'rgba(255,196,120,.55)':'rgba(200,215,255,.45)');x+=w+R()*14*u;}
+    g.fillStyle='#0a0d17';for(let i=0;i<26;i++){const x=R()*W,r=(10+R()*22)*u;g.beginPath();g.arc(x,y0-r*.45,r,0,7);g.fill();}
+    /* trottoir et lampadaires (lumière chaude sur la façade) */
+    box(0,y0,W,14*u,'#10121b');
+    for(const dx of [-330,330]){const x=L.cx+dx*u*L.f;box(x-1.2*u,y0-78*u,2.4*u,78*u,'#05060a');box(x-6*u,y0-80*u,12*u,3*u,'#05060a');
+      const gl=g.createRadialGradient(x,y0-76*u,0,x,y0-76*u,90*u);gl.addColorStop(0,'rgba(255,190,120,.55)');gl.addColorStop(.08,'rgba(255,180,110,.22)');gl.addColorStop(1,'rgba(255,170,100,0)');g.fillStyle=gl;g.fillRect(x-90*u,y0-170*u,180*u,190*u);}
+    /* ----- la mosquée (unités relatives au centre mx et au sol y0) ----- */
+    const mx=L.mx,X=v=>mx+v*u,Y=v=>y0-v*u;
+    const vg=(top,bot,c0,c1)=>{const gr=g.createLinearGradient(0,Y(top),0,Y(bot));gr.addColorStop(0,c0);gr.addColorStop(1,c1);return gr;};
+    const rect=(x0,x1,b,t,c)=>{g.fillStyle=c;g.fillRect(X(x0),Y(t),(x1-x0)*u,(t-b)*u);};
+    const glow=(c,bl,fn)=>{g.save();g.shadowColor=c;g.shadowBlur=bl*u;fn();g.restore();};
+    /* bâtiment voisin (à droite) */
+    rect(150,262,0,100,vg(100,0,'#262a3a','#3b3e4c'));rect(150,262,99,101,'#4a4d5c');
+    for(let r=0;r<2;r++)for(let i=0;i<5;i++){const lit=R()<.3;rect(158+i*21,172+i*21,62-r*34,80-r*34,lit?'rgba(210,222,255,.55)':'#161927');}
+    g.strokeStyle='rgba(150,160,190,.35)';g.lineWidth=.8*u;g.beginPath();g.moveTo(X(160),Y(108));g.lineTo(X(260),Y(108));g.stroke();
+    /* aile en briques (droite) */
+    rect(85,152,0,112,vg(112,0,'#191416','#2c2224'));rect(84,153,110,114,'#231b1d');rect(108,128,22,92,'#121726');
+    /* bloc clair : façade, portail en retrait, panneau calligraphié (sans texte), fenêtre-portail vitrée et éclairée */
+    rect(-86,86,0,130,vg(130,0,'#34343f','#6a6470'));rect(-87,87,128,131,'#3e3d48');
+    rect(-30,30,0,117,vg(117,0,'#3c3b47','#77717c'));rect(-24,24,0,111,'#22212b');
+    rect(-18,18,103,111,'#7d6a3e');
+    glow('rgba(255,200,120,.9)',14,()=>rect(-17,17,4,99,vg(99,4,'#e8b868','#ffd892')));
+    g.fillStyle='#2a2430';for(let y=12;y<99;y+=8.5)g.fillRect(X(-17),Y(y+.9),34*u,1.8*u);g.fillRect(X(-6.5),Y(99),1.6*u,95*u);g.fillRect(X(5),Y(99),1.6*u,95*u);
+    rect(-17,17,4,8,'#1d1a22');
+    /* petites fenêtres carrées en arcs, de part et d'autre du portail */
+    glow('rgba(255,205,130,.8)',6,()=>{g.fillStyle='#ffd58a';for(const sd of [-1,1])for(let i=0;i<10;i++){const a=(-62+i*124/9)*Math.PI/180,x=sd*(36+30*Math.cos(a)),y=72+46*Math.sin(a);g.fillRect(X(x-2.6),Y(y+2.6),5.2*u,5.2*u);}});
+    /* portes vitrées de part et d'autre, en bas */
+    rect(-74,-46,0,20,'#3b3343');rect(46,74,0,20,'#3b3343');
+    /* tour de briques (gauche) avec sa fente vitrée, corniche, édicule */
+    rect(-142,-86,0,168,vg(168,0,'#171214','#2b2123'));rect(-145,-83,164,172,'#211a1c');rect(-132,-104,172,180,'#1d1719');
+    glow('rgba(240,205,150,.7)',8,()=>rect(-120,-108,24,156,vg(156,24,'#9a8a78','#e8c993')));
+    g.fillStyle='#2a2226';for(let y=36;y<156;y+=13)g.fillRect(X(-120),Y(y+.8),12*u,1.6*u);
+    /* mât d'éclairage sur le toit */
+    rect(66,67.4,130,160,'#0c0c12');rect(62,72,158,162,'#0c0c12');
+    /* grille et piliers de granit, muret à droite */
+    for(const p of [-205,-128,-60,60,128,205]){rect(p-5,p+5,0,30,vg(30,0,'#4a4b55','#30313a'));rect(p-6,p+6,29,32,'#55565f');}
+    g.strokeStyle='#08090e';g.lineWidth=1.1*u;g.beginPath();for(let x=-228;x<=228;x+=3.6){if(Math.abs(x)<1)continue;g.moveTo(X(x),Y(0));g.lineTo(X(x),Y(24));}g.stroke();
+    g.fillStyle='#08090e';g.fillRect(X(-228),Y(25),456*u,2*u);g.fillRect(X(-228),Y(4),456*u,1.6*u);rect(212,262,0,14,'#1b1517');
+    /* arbre à droite */
+    rect(188,190.5,0,52,'#07080c');g.fillStyle='#0b120f';for(let i=0;i<14;i++){const a=R()*6.28,d=R()*26;g.beginPath();g.arc(X(189+Math.cos(a)*d),Y(82+Math.sin(a)*d*.8),(10+R()*10)*u,0,7);g.fill();}
+    /* ----- les observateurs, de dos ----- */
+    const ink='#03040a',rim='rgba(255,196,140,.30)',f=L.f,cx=L.cx;
+    const P=(x,yy)=>[cx+x*u*f,y0+yy*u];
+    function body(x,yh,s,o){const r=13*s*u,ys=yh+r*1.75,sw=r*(o.child?2:2.35);
+      const shape=()=>{g.beginPath();g.ellipse(x,yh,r*.9,r*1.05,0,0,7);
+        if(o.hijab){g.ellipse(x,yh+r*.15,r*1.12,r*1.22,0,0,7);g.moveTo(x-r*1.05,yh+r*.4);g.quadraticCurveTo(x-r*1.3,ys,x-sw*.9,ys+r*.2);g.lineTo(x+sw*.9,ys+r*.2);g.quadraticCurveTo(x+r*1.3,ys,x+r*1.05,yh+r*.4);}
+        if(o.kufi){g.rect(x-r*.82,yh-r*1.02,r*1.64,r*.55);}
+        g.rect(x-r*.4,yh+r*.6,r*.8,r*1.3);
+        g.moveTo(x-sw,ys+r*.9);g.quadraticCurveTo(x-sw,ys,x-sw*.55,ys-r*.05);g.lineTo(x+sw*.55,ys-r*.05);g.quadraticCurveTo(x+sw,ys,x+sw,ys+r*.9);
+        g.lineTo(x+sw*1.08,H+20);g.lineTo(x-sw*1.08,H+20);g.closePath();};
+      const arms=()=>{for(const a of o.arms||[]){g.beginPath();g.moveTo(x+a[0][0]*r,ys+a[0][1]*r);for(let i=1;i<a.length;i++)g.lineTo(x+a[i][0]*r,yh+a[i][1]*r);g.stroke();}};
+      g.lineCap=g.lineJoin='round';
+      g.strokeStyle=rim;g.lineWidth=2.4*u;shape();g.stroke();g.lineWidth=r*.95+2.4*u;arms();
+      g.fillStyle=ink;shape();g.fill();g.strokeStyle=ink;g.lineWidth=r*.95;arms();
+      if(o.binoc){g.fillStyle=ink;for(const sd of [-1,1]){g.save();g.translate(x+sd*r*.55,yh-r*.75);g.rotate(sd*-.25);g.fillRect(-r*.28,-r*.9,r*.56,r*1.1);g.restore();}}}
+    /* 1. télescope sur trépied, et son observateur penché */
+    {const [ax,ay]=P(-322,40);g.strokeStyle=rim;g.lineWidth=5*u;g.beginPath();for(const dx of [-58,52,-8]){g.moveTo(ax,ay);g.lineTo(ax+dx*u*f,H+10);}g.stroke();
+     g.strokeStyle=ink;g.lineWidth=3*u;g.beginPath();for(const dx of [-58,52,-8]){g.moveTo(ax,ay);g.lineTo(ax+dx*u*f,H+10);}g.stroke();
+     g.save();g.translate(ax,ay-6*u);g.rotate(-.78);g.fillStyle=rim;g.fillRect(-34*u,-10*u,118*u,20*u);g.fillStyle=ink;g.fillRect(-33*u,-9*u,116*u,18*u);g.fillRect(70*u,-11*u,16*u,22*u);
+     g.fillRect(10*u,-15*u,30*u,5*u);g.fillRect(-42*u,-3.5*u,10*u,7*u);g.restore();g.fillStyle=ink;g.fillRect(ax-7*u,ay-8*u,14*u,12*u);
+     const [hx,hy]=P(-372,34);body(hx,hy,1.05,{arms:[[[2.1,.2],[3.1,1.4],[3.9,.7]]]});}
+    /* 2. jumelles */
+    {const [x,y]=P(-196,14);body(x,y,1,{binoc:true,arms:[[[-2.2,.3],[-2.5,.7],[-.75,-.35]],[[2.2,.3],[2.5,.7],[.75,-.35]]]});}
+    /* 4. adulte (foulard), la main sur l'épaule de l'enfant */
+    {const [x,y]=P(42,22);body(x,y,1.03,{hijab:true,arms:[[[-2.1,.4],[-4.2,4.6],[-6.6,5.2]]]});}
+    /* 3. enfant qui montre le ciel */
+    {const [x,y]=P(-52,64);body(x,y,.72,{child:true,arms:[[[1.8,.3],[2.6,-.6],[4,-4.4]]]});
+     const r=13*.72*u;g.fillStyle=ink;g.beginPath();g.ellipse(x+4.05*r,y-4.75*r,r*.32,r*.6,.3,0,7);g.fill();}
+    /* 5. adulte (calotte), debout, tête levée */
+    {const [x,y]=P(252,16);body(x,y,1.08,{kufi:true});}
+    /* (la légende dit « scène illustrée ») */}
+  return {draw(g,W,H,DPR,t,dy){const L=lay(W,H),k=W+'x'+H+'x'+DPR;
+    if(k!==key){key=k;makeStars(W,L);fg=document.createElement('canvas');fg.width=Math.round(W*DPR);fg.height=Math.round(H*DPR);const c=fg.getContext('2d');c.setTransform(DPR,0,0,DPR,0,0);drawFG(c,W,H,L);}
+    g.save();g.translate(0,dy||0);sky(g,W,H,L);
+    for(const s of stars){const a=s.a*(.72+.28*Math.sin(t*s.f+s.p));if(a<.02)continue;g.globalAlpha=a;g.fillStyle='#e8eeff';g.fillRect(s.x-s.s/2,s.y-s.s/2,s.s,s.s);}
+    g.globalAlpha=1;g.setTransform(1,0,0,1,0,(dy||0)*DPR);g.drawImage(fg,0,0);g.restore();}};
+};
+})();
 
 /* voyage.js — « Le grand voyage » en vraie 3D continue (three.js r128), plein écran, façon documentaire.
    Zoom continu de la Terre jusqu'à l'univers observable, sur 27 ordres de grandeur, à l'instant présent (horloge de l'appareil) :
@@ -2453,32 +2584,49 @@ HF.voyage=function(host,opt){
   const REV_KEYS=['galaxie','terre'];
   function revNext(i){for(const id of REV_KEYS){const j=ST.findIndex(s=>s.id===id);if(j>=0&&j<i)return j;}return 0;}
   function startRev(){if(k<1)return;const s0=snap();offY=offP=offZ=0;user=0;playing=true;paintUI();rev=true;home=false;travel(s0,revNext(k),false);showStage();}
-  cap.addEventListener('click',e=>{if(e.target.closest('[data-retour]'))startRev();else if(e.target.closest('[data-encore]'))go(1);});
+  cap.addEventListener('click',e=>{if(e.target.closest('[data-retour]'))startRev();else if(e.target.closest('[data-encore]')){if(desc===5)depart();else go(0);}});
 
   /* ===== Descente finale du voyage retour : la Terre → la France → Garges-lès-Gonesse → la mosquée de la Muette.
      1. la caméra plonge à la verticale du lieu (≈ 1 200 km d'altitude) ;
      2. photos aériennes de l'IGN (BD ORTHO, HF.IGN, préparées par tools/ign.py), emboîtées comme une carte (chaque niveau couvre
-        le quart central du précédent), zoom continu jusqu'au bâtiment ; 3. arrêt sur le lieu, puis la caméra remonte vers la Terre. ===== */
-  const IGN=HF.IGN||null,PLACE={lat:48.977663,lon:2.411174},MPU=40075016.686*Math.cos(48.977663*D);   /* mètres par unité Mercator, à cette latitude */
-  const D_DIVE=7,D_ZOOM=17,D_STAY=16,H_ALT=1.2e6,H_END=130;
-  let desc=0,descT=0,phImgs=null,phA=0,hv0=1e6,hv=1e6,descCap=-1;   /* desc : 0 non, 1 plongée 3D, 2 zoom sur les photos, 3 arrêt */
+        le quart central du précédent), zoom continu jusqu'au bâtiment ; 3. bref arrêt sur la photo ;
+     4. la vue bascule de la verticale à l'horizontale : 5. la scène illustrée de Garges (_garges.js), la même qu'au départ.
+     Départ (page ouverte sans ancre, ou ⏭ / « Repartir » sur la scène) : 5 → 7. bascule vers la photo vue d'en haut →
+     8. zoom arrière dans les photos → la caméra s'élève jusqu'à la Terre (premier plan du voyage).
+     Mode manuel : la scène attend ⏭ ; mode Auto : elle reste D_SCENE secondes. ===== */
+  const IGN=HF.IGN||null,PLACE={lat:48.9773956,lon:2.4109248},MPU=40075016.686*Math.cos(48.9774*D);   /* centre du bâtiment (OpenStreetMap, lieu de culte musulman, vérifié le 21 novembre 2026 ; le géocodage de l'adresse tombait sur le boulevard) */
+  const PM=[(PLACE.lon+180)/360,(1-Math.log(Math.tan(PLACE.lat*D)+1/Math.cos(PLACE.lat*D))/Math.PI)/2];   /* le même point en unités Mercator (les photos restent centrées sur l'ancien point, 35 m plus loin) */   /* mètres par unité Mercator, à cette latitude */
+  const D_DIVE=7,D_ZOOM=17,D_STAY=4,D_TILT=3.2,D_SCENE=14,D_UP=11,H_ALT=1.2e6,H_END=130;
+  let desc=0,descT=0,phImgs=null,phA=0,hv0=1e6,hv=1e6,descCap=-1,gA=0,back=false;   /* desc : 0 non, 1 plongée 3D, 2 zoom sur les photos, 3 arrêt, 4 bascule, 5 scène, 7 bascule du départ, 8 zoom arrière ; back : scène du retour */
   const ph=document.createElement('canvas');ph.className='vy3-photo';ph.setAttribute('aria-hidden','true');host.insertBefore(ph,labBox);
+  const gc=document.createElement('canvas');gc.className='vy3-photo vy3-garges';gc.setAttribute('aria-hidden','true');host.insertBefore(gc,labBox);const GARGES=HF.garges?HF.garges():null;
   const pin=document.createElement('div');pin.className='vy3-lab gold vy3-pin';pin.innerHTML='<i></i><span>La mosquée de la Muette</span>';labBox.appendChild(pin);
   function placeW(){const la=PLACE.lat*D,phi=(PLACE.lon+180)*D,v=V3(-Math.cos(phi)*Math.cos(la),Math.sin(la),Math.sin(phi)*Math.cos(la));
     TL.earth.updateMatrixWorld();return TL.earth.localToWorld(v).multiplyScalar(RE);}
   function capSet(h){cap.innerHTML='<div class="vy3-ci">'+h+'</div>';cap.classList.remove('in');void cap.offsetWidth;cap.classList.add('in');}
   const DESC_CAP=[[2.2e5,'<b>La France</b><em>Photos aériennes de l’IGN</em>'],[1.4e4,'<b>L’Île-de-France</b><em>Paris et sa banlieue</em>'],[700,'<b>Garges-lès-Gonesse</b><em>Val-d’Oise</em>'],
-    [0,'<b>La mosquée de la Muette</b><em>Garges-lès-Gonesse</em><span>Le point de départ de notre voyage : d’ici jusqu’au bord de l’univers observable, et retour.</span><small>Photos aériennes : IGN, BD ORTHO (Licence Ouverte).</small><button type="button" class="vy3-ch" data-encore>▶ Repartir pour le grand voyage</button>']];
+    [0,'<b>La mosquée de la Muette</b><em>Garges-lès-Gonesse</em><small>Photos aériennes : IGN, BD ORTHO (Licence Ouverte).</small>']];
+  const sceneCap=b=>'<b>'+(b?'De retour à Garges-lès-Gonesse':'Garges-lès-Gonesse, ce soir')+'</b><em>Devant la mosquée de la Muette · scène illustrée</em><span>'+
+    (b?'Tout ce chemin, jusqu’au bord de l’univers observable, a été parcouru et mesuré depuis cette petite planète.':'Le point de départ de notre voyage : d’ici, jusqu’au bord de l’univers observable.')+
+    '</span><button type="button" class="vy3-ch" data-encore>▶ '+(b?'Repartir':'Partir')+' pour le grand voyage</button>';
+  /* la caméra 3D, cachée derrière les photos et la scène : à la verticale du lieu */
+  function above(){const G=placeW(),nG=G.clone().normalize();return {p:G,z:lg(H_ALT),q:q0({d:nG,up:perp(N,nG)}),fov:38};}
+  function loadPh(){if(!phImgs&&IGN)phImgs=IGN.niveaux.map(L=>{const im=new Image();im.src=L.src;return {L,im};});}
+  /* scène de Garges, tout de suite (ouverture de la page) */
+  function startScene(){if(!GARGES)return;loadPh();const B=above();tr={A:B,B,peak:0,bump:false,dur:.01,to:0,fast:false,from:0};desc=5;descT=0;gA=1;back=false;descCap=-5;capSet(sceneCap(false));}
+  /* départ : la scène bascule vers la photo vue d'en haut, zoom arrière, puis la caméra s'élève jusqu'à la Terre */
+  function depart(){if(!IGN){endDesc();return;}loadPh();const B=above();tr={A:B,B,peak:0,bump:false,dur:.01,to:0,fast:false,from:0};
+    hv0=2*H_ALT*Math.tan(fovEff(38)*D/2);desc=7;descT=0;descCap=-1;}
   function startDesc(){if(!IGN){home=true;showStage();return;}
-    if(!phImgs)phImgs=IGN.niveaux.map(L=>{const im=new Image();im.src=L.src;return {L,im};});
+    loadPh();back=true;
     const G=placeW(),nG=G.clone().normalize();
     tr={A:snap(),B:{p:G,z:lg(H_ALT),q:q0({d:nG,up:perp(N,nG)}),fov:38},peak:0,bump:false,dur:reduce?.01:D_DIVE,to:0,fast:false,from:0};
     desc=1;descT=0;descCap=-1;capSet('<b>Retour chez nous</b><em>Cap sur la France</em>');}
-  function endDesc(){desc=0;pin.classList.remove('on');const s0=snap();travel(s0,0);hideStage();}
+  function endDesc(){desc=0;descCap=-1;pin.classList.remove('on');const s0=snap();travel(s0,0);hideStage();}
   /* ⏮ ⏭ (et ← →) : toujours « continuer dans le sens du film ». Pendant le retour : une étape vers la Terre (⏭) ou vers le large (⏮),
      sans annuler le retour ; pendant la descente : ⏭ la passe ; à la dernière étape du voyage : ⏭ lance le retour. */
   function step(d){
-    if(desc){endDesc();return;}
+    if(desc){if(d<0)return;if(desc<4){desc=4;descT=0;}else if(desc===4){desc=5;descT=0;}else if(desc===5)depart();else endDesc();return;}
     if(rev){if(d<0)return;const s0=snap();offY=offP=offZ=0;user=0;travel(s0,revNext(curIdx()),true);return;}
     if(!CHAP&&d>0&&curIdx()===ST.length-1){startRev();return;}
     if(!CHAP&&curIdx()+d<0)return;
@@ -2486,20 +2634,34 @@ HF.voyage=function(host,opt){
   function descTick(){
     if(desc===1&&descT>=tr.dur){desc=2;descT=0;hv0=2*H_ALT*Math.tan(fovEff(38)*D/2);}
     if(desc===2&&descT>=(reduce?.01:D_ZOOM)){desc=3;descT=0;}
-    if(desc===3&&descT>=D_STAY&&playing&&HF.auto!==false)endDesc();}
-  function photo(dt){const want=desc>=2?1:0;phA+=(want-phA)*Math.min(1,dt*(want?1.5:2.2));
+    if(desc===3&&descT>=(reduce?.01:D_STAY)){desc=4;descT=0;}
+    if(desc===4&&descT>=(reduce?.01:D_TILT)){desc=5;descT=0;}
+    if(desc===5&&descT>=D_SCENE&&playing&&HF.auto!==false)depart();
+    if(desc===7&&descT>=(reduce?.01:D_TILT)){desc=8;descT=0;}
+    if(desc===8&&descT>=(reduce?.01:D_UP))endDesc();}
+  /* scène de Garges : opacité et glissement vertical (l'horizon descend du haut quand la vue se redresse) */
+  function scene(dt){const tl=desc===4?sm(descT/D_TILT):desc===7?1-sm(descT/D_TILT):desc===5?1:0;
+    if(desc===4||desc===5||desc===7)gA=tl;else gA=Math.max(0,gA-dt*1.6);
+    if(desc===5&&descCap!==-5){descCap=-5;capSet(sceneCap(back));}
+    if(gA<.004){if(gc.style.opacity!=='0')gc.style.opacity='0';return;}
+    const cw=Math.round(W*DPR),chh=Math.round(H*DPR);if(gc.width!==cw||gc.height!==chh){gc.width=cw;gc.height=chh;}
+    const g=gc.getContext('2d');g.setTransform(DPR,0,0,DPR,0,0);g.clearRect(0,0,W,H);GARGES.draw(g,W,H,DPR,performance.now()/1000,-(1-gA)*H*.55);
+    gc.style.opacity=Math.min(1,gA*1.4).toFixed(3);}
+  function photo(dt){const want=(desc>=2&&desc<=4)||desc===7||(desc===8&&descT<D_UP*.82)?1:0;phA+=(want-phA)*Math.min(1,dt*(want?1.5:2.2));
     if(!want&&phA<.004){if(ph.style.opacity!=='0')ph.style.opacity='0';return;}
     const cw=Math.round(W*DPR),chh=Math.round(H*DPR);if(ph.width!==cw||ph.height!==chh){ph.width=cw;ph.height=chh;}
-    if(desc===2)hv=Math.exp(Math.log(hv0)+(Math.log(H_END)-Math.log(hv0))*sm(descT/D_ZOOM));else if(desc===3)hv=H_END;
+    if(desc===2)hv=Math.exp(Math.log(hv0)+(Math.log(H_END)-Math.log(hv0))*sm(descT/D_ZOOM));else if(desc===8)hv=Math.exp(Math.log(H_END)+(Math.log(hv0)-Math.log(H_END))*sm(descT/D_UP));else if(desc>=3)hv=H_END;
+    /* bascule : la photo se couche vers l'horizon et s'efface sous la scène */
+    const tl=desc===4?sm(descT/D_TILT):desc===7?1-sm(descT/D_TILT):desc===5?1:0;ph.style.transform=tl>0?'perspective('+H+'px) rotateX('+(tl*72).toFixed(1)+'deg)':'';
     /* le lieu visé remonte peu à peu au-dessus de la légende */
-    const up=desc===2?sm(descT/D_ZOOM):desc===3?1:1,g=ph.getContext('2d'),sc=hv/H/MPU,cx=W/2,cy=H/2-yOff-H*.15*up,P=IGN.point;g.setTransform(DPR,0,0,DPR,0,0);g.clearRect(0,0,W,H);
+    const up=desc===2?sm(descT/D_ZOOM):desc===8?1-sm(descT/D_UP):1,g=ph.getContext('2d'),sc=hv/H/MPU,cx=W/2,cy=H/2-yOff-H*.15*up,P=PM;g.setTransform(DPR,0,0,DPR,0,0);g.clearRect(0,0,W,H);
     phImgs.forEach(({L,im},i)=>{if(!im.complete||!im.naturalWidth)return;const w=L.s/sc;if(w<3||w>W*80)return;const x=cx+(L.x-P[0])/sc,y=cy+(L.y-P[1])/sc;g.drawImage(im,x,y,w,w);
       /* bords adoucis de la photo la plus large (pas de carré visible, tuiles hors de France masquées) */
       if(i===0){const r=w/2,gr=g.createRadialGradient(x+r,y+r,r*.45,x+r,y+r,r*.98);gr.addColorStop(0,'#000');gr.addColorStop(1,'rgba(0,0,0,0)');
         g.globalCompositeOperation='destination-in';g.fillStyle=gr;g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';}});
-    ph.style.opacity=phA.toFixed(3);
-    pin.style.transform='translate3d('+cx.toFixed(1)+'px,'+cy.toFixed(1)+'px,0)';pin.classList.toggle('on',desc>=2&&hv<2500);
-    if(desc>=2){const i=DESC_CAP.findIndex(c=>hv>c[0]);if(i!==descCap){descCap=i;capSet(DESC_CAP[i][1]);}}}
+    ph.style.opacity=(phA*(1-sm(.55,1,tl))).toFixed(3);
+    pin.style.transform='translate3d('+cx.toFixed(1)+'px,'+cy.toFixed(1)+'px,0)';pin.classList.toggle('on',(desc>=2&&desc<=3||desc===8)&&hv<2500);
+    if(desc===2||desc===3||desc===8){const i=DESC_CAP.findIndex(c=>hv>c[0]);if(i!==descCap){descCap=i;capSet(DESC_CAP[i][1]);}}}
   const dist=document.createElement('div');dist.className='cin-clock vy3-dist';host.appendChild(dist);
   const prog=document.createElement('div');prog.className='vy3-prog';prog.setAttribute('aria-hidden','true');prog.innerHTML=ST.map(()=>'<i></i>').join('');host.appendChild(prog);
   const ui=document.createElement('div');ui.className='cin-ui';
@@ -2620,7 +2782,8 @@ HF.voyage=function(host,opt){
     layT-=dt;if(layT<=0){layT=.4;layout(shownL);}
     /* distance à la Terre, en temps de lumière (4 fois par seconde) */
     if(IGN&&(desc||phA>0))photo(dt);
-    distT-=dt;if(distT<=0){distT=.25;const L=lum(camPos.length()),alt=hv/(2*Math.tan(fovEff(38)*D/2)),s=desc>=2?'À ≈ '+(alt>=1500?nf(Math.round(alt/1000))+' km':nf(Math.round(alt/10)*10)+' m')+' d’altitude':L?'À '+L+' de la Terre':'Point de vue imaginaire, au-delà de l’univers observable';if(s!==distTxt){distTxt=s;dist.textContent=s;}}
+    if(GARGES&&(desc||gA>0))scene(dt);
+    distT-=dt;if(distT<=0){distT=.25;const L=lum(camPos.length()),alt=hv/(2*Math.tan(fovEff(38)*D/2)),s=desc>=4&&desc<=7?'Au sol, à Garges-lès-Gonesse':desc>=2?'À ≈ '+(alt>=1500?nf(Math.round(alt/1000))+' km':nf(Math.round(alt/10)*10)+' m')+' d’altitude':L?'À '+L+' de la Terre':'Point de vue imaginaire, au-delà de l’univers observable';if(s!==distTxt){distTxt=s;dist.textContent=s;}}
     idle+=dt;if(idle>3.5&&!host.classList.contains('calm'))host.classList.add('calm');}
   let raf=0;const kick=()=>{if(!raf&&visible){last=performance.now();raf=requestAnimationFrame(frame);}};
   try{new ResizeObserver(size).observe(host);}catch(e){window.addEventListener('resize',size);}size();
@@ -2631,10 +2794,11 @@ HF.voyage=function(host,opt){
   if(!CHAP){const fromHash=()=>{const h=decodeURIComponent(location.hash.slice(1));if(h==='retour'){go(ST.length-1,true);cur=apply(stState(ST.length-1,1));startRev();return;}
     /* « étape~ » : s'arrêter sur ce plan du voyage (← depuis un film) ; « étape » : retour d'un film, on repart aussitôt vers la suite */
     const stop=h.endsWith('~'),hi=ST.findIndex(s=>s.id===(stop?h.slice(0,-1):h));if(hi<0)return;go(hi,true);if(stop)return;
-    cur=apply(stState(hi,1));if(hi===ST.length-1){showStage();return;}else{travel(cur,hi+1);hideStage();}};fromHash();window.addEventListener('hashchange',fromHash);}
+    cur=apply(stState(hi,1));if(hi===ST.length-1){showStage();return;}else{travel(cur,hi+1);hideStage();}};fromHash();window.addEventListener('hashchange',fromHash);
+    if(!location.hash)startScene();}   /* page ouverte sans ancre : le voyage commence sur la scène de Garges */
   /* pour les captures : figer le trajet vers le plan n à la fraction u (pause) */
   function seek(n,u){k=(n-1+ST.length)%ST.length;offY=offP=offZ=0;user=0;travel(apply(stState(k,1)),n);t=u*tr.dur;playing=false;paintUI();hideStage();}
-  return {go,seek,get stage(){return curIdx();},ids:ST.map(s=>s.id),state:()=>({k,mode,t,playing,tu:mode==='travel'&&tr?cl(t/tr.dur,0,1):0,rev,home,desc,left:mode==='hold'&&!desc?Math.max(0,holdOf(k)-t):0,ids:ST[curIdx()].id,cap:cap.textContent,dist:dist.textContent,lE:lg(camPos.length())}),renderer:R,retour(){if(rev||desc)return;if(curIdx()!==ST.length-1)go(ST.length-1,true);startRev();},descend(){k=0;mode='hold';t=0;startDesc();},finish(){while(JOBS.length||job)runJobs(1000);}};
+  return {go,seek,get stage(){return curIdx();},ids:ST.map(s=>s.id),state:()=>({k,mode,t,playing,tu:mode==='travel'&&tr?cl(t/tr.dur,0,1):0,rev,home,desc,left:mode==='hold'&&!desc?Math.max(0,holdOf(k)-t):0,ids:ST[curIdx()].id,cap:cap.textContent,dist:dist.textContent,lE:lg(camPos.length())}),renderer:R,retour(){if(rev||desc)return;if(curIdx()!==ST.length-1)go(ST.length-1,true);startRev();},descend(){k=0;mode='hold';t=0;startDesc();},scene(){k=0;mode='hold';t=0;startScene();},depart(){if(desc===5)depart();},finish(){while(JOBS.length||job)runJobs(1000);}};
 };
 })();
 

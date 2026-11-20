@@ -1447,7 +1447,7 @@ html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17p
 .vy3-cap small.vy3-revn{display:block;margin:0 auto 8px;font-style:normal;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--or)}
 .vy3-rev b{font-size:clamp(24px,3.6vw,44px)}
 /* descente finale (voyage.js) : photos aériennes IGN par-dessus la scène, repère du lieu */
-.vy3-photo{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0}
+.vy3-photo{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;transform-origin:50% 100%}
 /* immersion (core.js) : la page devient un cadre plein écran dans lequel on navigue sans quitter le plein écran */
 .u-imm-body{margin:0;background:#000;overflow:hidden}.u-imm{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:#000}
 
@@ -1622,29 +1622,34 @@ function initFresh(){
 }
 
 
-/* ----- Bande-son : effets spéciaux d'espace, sans musique (aucune note, aucune mélodie) -----
-   Tout est calculé dans le navigateur à partir de bruit, et rien ne se répète à l'identique (événements tirés au hasard).
+/* ----- Bande-son : ambiances d'espace, sans musique (aucune note, aucune mélodie) -----
+   Fond principal : une ambiance enregistrée par endroit (nappes, grondements, vents : Freesound CC0, boucles sans coupure
+   préparées par tools/sons.mjs dans assets/sons/, intégrées à la page en « data: » : HF.SONS[clé]). Décodée seulement
+   quand on en a besoin ; celles qui ne servent plus sont libérées (mémoire des téléphones).
+   Par-dessous, en liant discret (plus fort si aucun enregistrement n'est disponible), le bruit calculé ci-dessous ;
+   rien ne s'y répète à l'identique (événements tirés au hasard).
    Couches continues : grondement (bruit brun filtré bas), souffle (bruit rose filtré, qui ondule), neige (bruit blanc aigu),
    souffle des déplacements (filtre qui s'ouvre avec la vitesse de la caméra).
    Événements : crépitements (plasma), étincelles, détonations sourdes, grésillements radio — avec un long écho (réverbération calculée).
    Une ambiance par endroit (son.scene), en fondu ; démarre au premier geste ; interrupteur « Son » (HF.store 'son'). */
 var SCENES={   /* g : grondement [volume, fréquence] ; a : souffle [volume, fréquence, Q, vitesse d'ondulation, ampleur] ; h : neige ;
-                  c : crépitements [par seconde, volume, fréquence basse, haute] ; s : étincelles [par s, volume] ; t : détonations [par s, volume] ; r : radio [par s, volume] */
-  terre:     {g:[.22,90], a:[.34,480,.7,.09,.65],h:.015,c:[0,0,0,0],        s:[0,0],    t:[0,0],    r:[0,0]},
-  soleil:    {g:[.7,62], a:[.22,320,.8,.17,.5], h:.04, c:[22,.5,1400,7000],s:[0,0],    t:[.35,.42],r:[0,0]},
-  eclipse:   {g:[.18,50], a:[.06,700,.9,.05,.4], h:.01, c:[.6,.12,2000,5000], s:[.4,.05], t:[0,0],    r:[0,0]},
-  systeme:   {g:[.28,58], a:[.14,900,1.6,.05,.45],h:.045,c:[0,0,0,0],        s:[3,.11],  t:[0,0],    r:[.22,.13]},
-  anneaux:   {g:[.25,58], a:[.12,1100,1.6,.05,.45],h:.05,c:[0,0,0,0],        s:[11,.1],  t:[0,0],    r:[.1,.1]},
-  sonde:     {g:[.18,48], a:[.07,1300,2,.05,.3], h:.06, c:[0,0,0,0],         s:[1,.06],  t:[0,0],    r:[1.3,.2]},
-  etoiles:   {g:[.25,55], a:[.12,2400,3,.06,.5], h:.065,c:[0,0,0,0],         s:[6,.11],  t:[.14,.24],r:[0,0]},
-  nuit:      {g:[.2,70],  a:[.28,380,.6,.07,.5], h:.02, c:[0,0,0,0],         s:[1,.05],  t:[0,0],    r:[0,0]},
-  galaxie:   {g:[.5,44],  a:[.3,400,.6,.03,.7],  h:.03, c:[0,0,0,0],         s:[2,.07],  t:[.05,.25],r:[0,0]},
-  groupe:    {g:[.55,38], a:[.22,260,.5,.02,.6], h:.02, c:[0,0,0,0],         s:[.8,.06], t:[.08,.32],r:[0,0]},
-  structures:{g:[.62,32], a:[.2,200,.5,.015,.7], h:.02, c:[0,0,0,0],         s:[.4,.05], t:[.06,.38],r:[0,0]},
-  univers:   {g:[.45,30], a:[.1,600,.7,.02,.5],  h:.11, c:[0,0,0,0],         s:[0,0],    t:[.03,.3], r:[1.6,.12]},
-  fond:      {g:[.3,30],  a:[.06,700,.7,.02,.4], h:.2,  c:[0,0,0,0],         s:[0,0],    t:[0,0],    r:[4,.14]},
-  entree:    {g:[.65,85], a:[.85,650,.5,.35,.35],h:.11, c:[0,0,0,0],         s:[0,0],    t:[0,0],    r:[0,0]},
-  arrivee:   {g:[.25,90], a:[.32,420,.6,.1,.6],  h:.02, c:[0,0,0,0],         s:[0,0],    t:[0,0],    r:[0,0]}};
+                  c : crépitements [par seconde, volume, fréquence basse, haute] ; s : étincelles [par s, volume] ; t : détonations [par s, volume] ; r : radio [par s, volume] ;
+                  l : ambiance enregistrée [clé de HF.SONS, volume] */
+  terre:     {g:[.22,90], a:[.34,480,.7,.09,.65],h:.015,c:[0,0,0,0],        s:[0,0],    t:[0,0],    r:[0,0],l:['terre',.75]},
+  soleil:    {g:[.7,62], a:[.22,320,.8,.17,.5], h:.04, c:[22,.5,1400,7000],s:[0,0],    t:[.35,.42],r:[0,0],l:['soleil',.8]},
+  eclipse:   {g:[.18,50], a:[.06,700,.9,.05,.4], h:.01, c:[.6,.12,2000,5000], s:[.4,.05], t:[0,0],    r:[0,0],l:['aerien',.6]},
+  systeme:   {g:[.28,58], a:[.14,900,1.6,.05,.45],h:.045,c:[0,0,0,0],        s:[3,.11],  t:[0,0],    r:[.22,.13],l:['planete',.6]},
+  anneaux:   {g:[.25,58], a:[.12,1100,1.6,.05,.45],h:.05,c:[0,0,0,0],        s:[11,.1],  t:[0,0],    r:[.1,.1],l:['planete',.7]},
+  sonde:     {g:[.18,48], a:[.07,1300,2,.05,.3], h:.06, c:[0,0,0,0],         s:[1,.06],  t:[0,0],    r:[1.3,.2],l:['sonde',.6]},
+  etoiles:   {g:[.25,55], a:[.12,2400,3,.06,.5], h:.065,c:[0,0,0,0],         s:[6,.11],  t:[.14,.24],r:[0,0],l:['aerien',.7]},
+  nuit:      {g:[.2,70],  a:[.28,380,.6,.07,.5], h:.02, c:[0,0,0,0],         s:[1,.05],  t:[0,0],    r:[0,0],l:['soir',.6]},
+  galaxie:   {g:[.5,44],  a:[.3,400,.6,.03,.7],  h:.03, c:[0,0,0,0],         s:[2,.07],  t:[.05,.25],r:[0,0],l:['espace',.7]},
+  groupe:    {g:[.55,38], a:[.22,260,.5,.02,.6], h:.02, c:[0,0,0,0],         s:[.8,.06], t:[.08,.32],r:[0,0],l:['espace',.75]},
+  structures:{g:[.62,32], a:[.2,200,.5,.015,.7], h:.02, c:[0,0,0,0],         s:[.4,.05], t:[.06,.38],r:[0,0],l:['espace',.8]},
+  univers:   {g:[.45,30], a:[.1,600,.7,.02,.5],  h:.11, c:[0,0,0,0],         s:[0,0],    t:[.03,.3], r:[1.6,.12],l:['espace',.65]},
+  fond:      {g:[.3,30],  a:[.06,700,.7,.02,.4], h:.2,  c:[0,0,0,0],         s:[0,0],    t:[0,0],    r:[4,.14],l:['aerien',.6]},
+  entree:    {g:[.65,85], a:[.85,650,.5,.35,.35],h:.11, c:[0,0,0,0],         s:[0,0],    t:[0,0],    r:[0,0],l:['entree',.85]},
+  arrivee:   {g:[.25,90], a:[.32,420,.6,.1,.6],  h:.02, c:[0,0,0,0],         s:[0,0],    t:[0,0],    r:[0,0],l:['soir',.75]}};
 var son={ctx:null,on:store.get('son')!==false,cur:null,S:SCENES.terre,
   start:function(){if(this.ctx||!this.on)return;var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
     try{var c=this.ctx=new AC();}catch(e){return;}
@@ -1676,12 +1681,28 @@ var son={ctx:null,on:store.get('son')!==false,cur:null,S:SCENES.terre,
     this.wh=c.createGain();this.wh.gain.value=0;loop(this.B.blanc).connect(this.whF).connect(this.wh).connect(this.master);this.wh.connect(this.rev);
     this.master.gain.setTargetAtTime(.55,c.currentTime,1.5);this.apply(this.S,.1);
     setInterval(function(){self.events();},100);},
-  /* une ambiance : tous les réglages glissent vers elle (≈ 2 s) */
+  /* une ambiance : tous les réglages glissent vers elle (≈ 2 s) ; le bruit calculé s'efface sous l'enregistrement quand il est là */
   apply:function(S,k){var c=this.ctx;if(!c)return;var t=c.currentTime;k=k||1.2;
-    this.gG.gain.setTargetAtTime(S.g[0],t,k);this.gF.frequency.setTargetAtTime(S.g[1],t,k);
-    this.aG.gain.setTargetAtTime(S.a[0],t,k);this.aF.frequency.setTargetAtTime(S.a[1],t,k);this.aF.Q.setTargetAtTime(S.a[2],t,k);
-    this.lfo.frequency.setTargetAtTime(S.a[3],t,k);this.lfoG.gain.setTargetAtTime(S.a[0]*S.a[4],t,k);this.hG.gain.setTargetAtTime(S.h,t,k);},
+    var lp=S.l&&this.L[S.l[0]]&&this.L[S.l[0]].src,q=this.pk=lp?.3:1;
+    this.gG.gain.setTargetAtTime(S.g[0]*q,t,k);this.gF.frequency.setTargetAtTime(S.g[1],t,k);
+    this.aG.gain.setTargetAtTime(S.a[0]*q,t,k);this.aF.frequency.setTargetAtTime(S.a[1],t,k);this.aF.Q.setTargetAtTime(S.a[2],t,k);
+    this.lfo.frequency.setTargetAtTime(S.a[3],t,k);this.lfoG.gain.setTargetAtTime(S.a[0]*S.a[4]*q,t,k);this.hG.gain.setTargetAtTime(S.h*q,t,k);
+    this.loops(S,k*1.6);},
   scene:function(key){if(key===this.cur||!SCENES[key])return;this.cur=key;this.S=SCENES[key];this.apply(this.S);},
+  /* ambiances enregistrées : L[clé] = {g : volume, src : lecture en boucle, ld : décodage en cours} */
+  L:{},
+  loops:function(S,k){var c=this.ctx,t=c.currentTime,want=S.l&&HF.SONS&&HF.SONS[S.l[0]]?S.l[0]:null,self=this;
+    if(want&&!this.L[want])this.load(want);
+    Object.keys(this.L).forEach(function(key){var o=self.L[key];if(!o.g)return;
+      o.g.gain.cancelScheduledValues(t);o.g.gain.setTargetAtTime(key===want?S.l[1]:0,t,k);
+      clearTimeout(o.off);if(key!==want)o.off=setTimeout(function(){if(self.S.l&&self.S.l[0]===key)return;   /* libérée après le fondu */
+        try{o.src.stop();}catch(e){}o.src.disconnect();delete self.L[key];},k*6000+1000);});},
+  load:function(key){var c=this.ctx,self=this,o=this.L[key]={ld:true};
+    var done=function(b){if(self.L[key]!==o)return;o.ld=false;var s=o.src=c.createBufferSource();s.buffer=b;s.loop=true;
+        o.g=c.createGain();o.g.gain.value=0;s.connect(o.g).connect(self.master);s.start(0,Math.random()*b.duration);self.apply(self.S,.6);},
+      fail=function(){if(self.L[key]===o)delete self.L[key];};
+    fetch(HF.SONS[key]).then(function(r){return r.arrayBuffer();}).then(function(ab){
+      var p=c.decodeAudioData(ab,done,fail);if(p&&p.catch)p.catch(fail);}).catch(fail);},
   /* un événement bref : bruit filtré, enveloppe, part dans l'écho */
   shot:function(t,dur,type,f,q,vol,send){var c=this.ctx,s=c.createBufferSource();s.buffer=Math.random()<.5?this.B.blanc:this.B.rose;
     var fl=c.createBiquadFilter();fl.type=type;fl.frequency.value=f;fl.Q.value=q;var g=c.createGain();g.gain.setValueAtTime(0,t);
@@ -1689,15 +1710,16 @@ var son={ctx:null,on:store.get('son')!==false,cur:null,S:SCENES.terre,
     s.connect(fl).connect(g).connect(this.master);if(send){var sg=c.createGain();sg.gain.value=send;g.connect(sg).connect(this.rev);}
     s.start(t,Math.random()*5,dur+.05);},
   events:function(){var c=this.ctx;if(!c||!this.on||c.state!=='running')return;var S=this.S,t0=c.currentTime+.05,self=this,R=Math.random;
+    var q=this.pk<1?.5:1;   /* sous un enregistrement : étincelles et radio plus discrètes */
     var each=function(rate,fn){var n=rate*.1;while(n>0){if(R()<Math.min(n,1))fn(t0+R()*.1);n-=1;}};
     /* crépitements : grappes de petits claquements secs, d'éclat inégal */
     each(S.c[0],function(t){var k=1+Math.floor(R()*R()*6);for(var i=0;i<k;i++)self.shot(t+i*(.006+R()*.03),.004+R()*.025,'bandpass',S.c[2]+R()*(S.c[3]-S.c[2]),1.5+R()*3,S.c[1]*(.25+R()*R()*1.5),.25);});
     /* étincelles : tintements de bruit très aigus, lointains */
-    each(S.s[0],function(t){self.shot(t,.015+R()*.05,'highpass',6500+R()*4500,.7,S.s[1]*(.3+R()),1.1);});
+    each(S.s[0],function(t){self.shot(t,.015+R()*.05,'highpass',6500+R()*4500,.7,S.s[1]*q*(.3+R()),1.1);});
     /* détonations : coups sourds et longs, avec écho */
     each(S.t[0],function(t){self.shot(t,.9+R()*1.6,'lowpass',70+R()*90,.8,S.t[1]*(.6+R()*.6),.9);});
     /* radio : grésillements hachés */
-    each(S.r[0],function(t){var f=1200+R()*2600,d=.12+R()*.5,k=3+Math.floor(R()*8);for(var i=0;i<k;i++)self.shot(t+i*d/k,d/k*1.6,'bandpass',f*(.9+R()*.2),3+R()*6,S.r[1]*(.4+R()*.8),.3);});},
+    each(S.r[0],function(t){var f=1200+R()*2600,d=.12+R()*.5,k=3+Math.floor(R()*8);for(var i=0;i<k;i++)self.shot(t+i*d/k,d/k*1.6,'bandpass',f*(.9+R()*.2),3+R()*6,S.r[1]*q*(.4+R()*.8),.3);});},
   set:function(on){this.on=on;store.set('son',on);if(on){this.start();if(this.ctx){this.ctx.resume();this.master.gain.setTargetAtTime(.55,this.ctx.currentTime,.4);}}
     else if(this.ctx)this.master.gain.setTargetAtTime(0,this.ctx.currentTime,.2);},
   /* m : mouvement de 0 (immobile) à 1 (trajet rapide) */
@@ -1710,7 +1732,7 @@ var son={ctx:null,on:store.get('son')!==false,cur:null,S:SCENES.terre,
 var SC_ETAPE=['','terre','soleil','systeme','etoiles','galaxie','groupe','structures','univers'];
 var SC_VOY={terre:'terre',soleil:'soleil',planetes:'systeme',voyager:'sonde',voisines:'etoiles',galaxie:'galaxie',groupe:'groupe',toile:'structures',univers:'univers'};
 var SC_PLAN={couronne:'eclipse',saturne:'anneaux',anneaux:'anneaux',ciel:'nuit',fond:'fond'};
-function sceneOf(isVoy,cur,f){if(isVoy){if(f.desc)return f.desc>=3?'arrivee':'entree';return SC_VOY[f.id]||'terre';}
+function sceneOf(isVoy,cur,f){if(isVoy){if(f.desc)return f.desc<3||f.desc===8?'entree':'arrivee';   /* descente et zoom arrière du départ : vent ; photo et scène de Garges : soirée */return SC_VOY[f.id]||'terre';}
   return (SC_PLAN[f.id]&&!(cur===5&&f.id==='ciel'))?SC_PLAN[f.id]:SC_ETAPE[cur];}
 
 /* ----- La route : « un voyage, huit escales » -----
@@ -1830,6 +1852,7 @@ document.addEventListener('DOMContentLoaded',function(){initMenu();initPresent()
 
 </script>
 
+<script>HF.SONS={terre:'assets/sons/terre.mp3'};</script>
 <script>HF.MOON_SRC='assets/moon2k.jpg';HF.EARTH_SRC='assets/terre-jour.jpg';HF.EARTH_NIGHT_SRC='assets/terre-nuit.jpg';HF.CLOUDS_SRC='assets/nuages.jpg';</script>
 <script src="assets/three.min.js"></script><script>
 /* _eph.js — éphémérides (Meeus, éléments du JPL) et modèle de visibilité du croissant (repris de la formation de référence).

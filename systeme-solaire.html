@@ -1466,6 +1466,12 @@ html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17p
 .u-auto input:checked+i{background:var(--or);border-color:var(--or)}
 .u-auto input:checked+i::after{transform:translateX(18px)}
 .u-auto input:focus-visible+i{outline:2px solid var(--or);outline-offset:2px}
+/* grand bouton du retour, au milieu de l'écran, à la fin du voyage (voyage.js) */
+.vy3-big{position:absolute;z-index:9;left:50%;top:46%;transform:translate(-50%,-50%) scale(.92);display:none;flex-direction:column;align-items:center;gap:6px;min-height:64px;padding:18px 34px;border-radius:999px;border:0;background:var(--or);color:#0B0F1E;font:inherit;font-size:clamp(20px,2.6vw,30px);font-weight:900;cursor:pointer;box-shadow:0 0 0 0 rgba(244,184,96,.5),0 10px 40px rgba(0,0,0,.5);opacity:0;transition:opacity .8s,transform .8s;animation:bigPulse 2.4s ease-in-out infinite}
+.vy3-big small{font-size:.5em;font-weight:700;opacity:.75}
+.vy3-big.on{display:flex;opacity:1;transform:translate(-50%,-50%) scale(1)}
+.vy3-big:hover,.vy3-big:focus-visible{background:#ffd08a}
+@keyframes bigPulse{0%,100%{box-shadow:0 0 0 0 rgba(244,184,96,.45),0 10px 40px rgba(0,0,0,.5)}50%{box-shadow:0 0 0 18px rgba(244,184,96,0),0 10px 40px rgba(0,0,0,.5)}}
 
 </style>
 </head>
@@ -1612,32 +1618,95 @@ function initFresh(){
 
 
 /* ----- Bande-son : effets spéciaux d'espace, sans musique (aucune note, aucune mélodie) -----
-   Tout est calculé dans le navigateur à partir de bruit : un grondement sourd et lent en fond (bruit brun, filtré très bas),
-   et un souffle qui monte et descend avec les déplacements de la caméra (bruit blanc, filtre qui s'ouvre avec la vitesse).
-   Démarre au premier geste (règle des navigateurs) ; interrupteur « Son » dans la barre de route, gardé dans HF.store. */
-var son={ctx:null,on:store.get('son')!==false,master:null,amb:null,wh:null,whF:null,
+   Tout est calculé dans le navigateur à partir de bruit, et rien ne se répète à l'identique (événements tirés au hasard).
+   Couches continues : grondement (bruit brun filtré bas), souffle (bruit rose filtré, qui ondule), neige (bruit blanc aigu),
+   souffle des déplacements (filtre qui s'ouvre avec la vitesse de la caméra).
+   Événements : crépitements (plasma), étincelles, détonations sourdes, grésillements radio — avec un long écho (réverbération calculée).
+   Une ambiance par endroit (son.scene), en fondu ; démarre au premier geste ; interrupteur « Son » (HF.store 'son'). */
+var SCENES={   /* g : grondement [volume, fréquence] ; a : souffle [volume, fréquence, Q, vitesse d'ondulation, ampleur] ; h : neige ;
+                  c : crépitements [par seconde, volume, fréquence basse, haute] ; s : étincelles [par s, volume] ; t : détonations [par s, volume] ; r : radio [par s, volume] */
+  terre:     {g:[.22,90], a:[.34,480,.7,.09,.65],h:.015,c:[0,0,0,0],        s:[0,0],    t:[0,0],    r:[0,0]},
+  soleil:    {g:[.7,62], a:[.22,320,.8,.17,.5], h:.04, c:[22,.5,1400,7000],s:[0,0],    t:[.35,.42],r:[0,0]},
+  eclipse:   {g:[.18,50], a:[.06,700,.9,.05,.4], h:.01, c:[.6,.12,2000,5000], s:[.4,.05], t:[0,0],    r:[0,0]},
+  systeme:   {g:[.28,58], a:[.14,900,1.6,.05,.45],h:.045,c:[0,0,0,0],        s:[3,.11],  t:[0,0],    r:[.22,.13]},
+  anneaux:   {g:[.25,58], a:[.12,1100,1.6,.05,.45],h:.05,c:[0,0,0,0],        s:[11,.1],  t:[0,0],    r:[.1,.1]},
+  sonde:     {g:[.18,48], a:[.07,1300,2,.05,.3], h:.06, c:[0,0,0,0],         s:[1,.06],  t:[0,0],    r:[1.3,.2]},
+  etoiles:   {g:[.25,55], a:[.12,2400,3,.06,.5], h:.065,c:[0,0,0,0],         s:[6,.11],  t:[.14,.24],r:[0,0]},
+  nuit:      {g:[.2,70],  a:[.28,380,.6,.07,.5], h:.02, c:[0,0,0,0],         s:[1,.05],  t:[0,0],    r:[0,0]},
+  galaxie:   {g:[.5,44],  a:[.3,400,.6,.03,.7],  h:.03, c:[0,0,0,0],         s:[2,.07],  t:[.05,.25],r:[0,0]},
+  groupe:    {g:[.55,38], a:[.22,260,.5,.02,.6], h:.02, c:[0,0,0,0],         s:[.8,.06], t:[.08,.32],r:[0,0]},
+  structures:{g:[.62,32], a:[.2,200,.5,.015,.7], h:.02, c:[0,0,0,0],         s:[.4,.05], t:[.06,.38],r:[0,0]},
+  univers:   {g:[.45,30], a:[.1,600,.7,.02,.5],  h:.11, c:[0,0,0,0],         s:[0,0],    t:[.03,.3], r:[1.6,.12]},
+  fond:      {g:[.3,30],  a:[.06,700,.7,.02,.4], h:.2,  c:[0,0,0,0],         s:[0,0],    t:[0,0],    r:[4,.14]},
+  entree:    {g:[.65,85], a:[.85,650,.5,.35,.35],h:.11, c:[0,0,0,0],         s:[0,0],    t:[0,0],    r:[0,0]},
+  arrivee:   {g:[.25,90], a:[.32,420,.6,.1,.6],  h:.02, c:[0,0,0,0],         s:[0,0],    t:[0,0],    r:[0,0]}};
+var son={ctx:null,on:store.get('son')!==false,cur:null,S:SCENES.terre,
   start:function(){if(this.ctx||!this.on)return;var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
     try{var c=this.ctx=new AC();}catch(e){return;}
-    var sr=c.sampleRate,N=sr*6,mk=function(brown){var b=c.createBuffer(1,N,sr),d=b.getChannelData(0),l=0;
-      for(var i=0;i<N;i++){var w=Math.random()*2-1;if(brown){l=(l+.02*w)/1.02;d[i]=l*3.5;}else d[i]=w*.5;}
-      var src=c.createBufferSource();src.buffer=b;src.loop=true;src.start();return src;};
-    this.master=c.createGain();this.master.gain.value=0;this.master.connect(c.destination);
-    /* grondement : bruit brun sous 140 Hz, qui « respire » très lentement */
-    var lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=140;this.amb=c.createGain();this.amb.gain.value=.55;
-    var lfo=c.createOscillator(),lg=c.createGain();lfo.frequency.value=.06;lg.gain.value=.2;lfo.connect(lg).connect(this.amb.gain);lfo.start();
-    mk(true).connect(lp).connect(this.amb).connect(this.master);
+    var sr=c.sampleRate,N=sr*6,self=this;
+    var buf=function(kind){var b=c.createBuffer(1,N,sr),d=b.getChannelData(0),l=0,p0=0,p1=0,p2=0;
+      for(var i=0;i<N;i++){var w=Math.random()*2-1;
+        if(kind==='brun'){l=(l+.02*w)/1.02;d[i]=l*3.5;}
+        else if(kind==='rose'){p0=.99765*p0+w*.099;p1=.963*p1+w*.2965;p2=.57*p2+w*1.0526;d[i]=(p0+p1+p2+w*.1848)*.11;}
+        else d[i]=w*.5;}return b;};
+    this.B={brun:buf('brun'),rose:buf('rose'),blanc:buf('blanc')};
+    var loop=function(b){var s=c.createBufferSource();s.buffer=b;s.loop=true;s.start(0,Math.random()*5);return s;};
+    this.master=c.createGain();this.master.gain.value=0;
+    var comp=c.createDynamicsCompressor();comp.threshold.value=-18;comp.ratio.value=4;this.master.connect(comp).connect(c.destination);
+    /* écho : réverbération calculée (bruit qui décroît sur 4 s) */
+    var L=sr*4,ir=c.createBuffer(2,L,sr);for(var ch=0;ch<2;ch++){var d=ir.getChannelData(ch);for(var i=0;i<L;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/L,3.2);}
+    this.rev=c.createConvolver();this.rev.buffer=ir;this.revG=c.createGain();this.revG.gain.value=.8;this.rev.connect(this.revG).connect(this.master);
+    /* grondement */
+    this.gF=c.createBiquadFilter();this.gF.type='lowpass';this.gF.frequency.value=80;this.gG=c.createGain();this.gG.gain.value=0;
+    loop(this.B.brun).connect(this.gF).connect(this.gG).connect(this.master);
+    /* souffle qui ondule */
+    this.aF=c.createBiquadFilter();this.aF.type='bandpass';this.aF.frequency.value=400;this.aG=c.createGain();this.aG.gain.value=0;
+    this.lfo=c.createOscillator();this.lfo.frequency.value=.08;this.lfoG=c.createGain();this.lfoG.gain.value=0;this.lfo.connect(this.lfoG).connect(this.aG.gain);this.lfo.start();
+    var aS=loop(this.B.rose);aS.connect(this.aF).connect(this.aG).connect(this.master);this.aG.connect(this.rev);
+    /* neige aiguë */
+    this.hF=c.createBiquadFilter();this.hF.type='highpass';this.hF.frequency.value=5000;this.hG=c.createGain();this.hG.gain.value=0;
+    loop(this.B.blanc).connect(this.hF).connect(this.hG).connect(this.master);
     /* souffle des déplacements */
     this.whF=c.createBiquadFilter();this.whF.type='bandpass';this.whF.frequency.value=250;this.whF.Q.value=.9;
-    this.wh=c.createGain();this.wh.gain.value=0;mk(false).connect(this.whF).connect(this.wh).connect(this.master);
-    this.master.gain.setTargetAtTime(.5,c.currentTime,1.5);},
-  set:function(on){this.on=on;store.set('son',on);if(on){this.start();if(this.ctx){this.ctx.resume();this.master.gain.setTargetAtTime(.5,this.ctx.currentTime,.4);}}
+    this.wh=c.createGain();this.wh.gain.value=0;loop(this.B.blanc).connect(this.whF).connect(this.wh).connect(this.master);this.wh.connect(this.rev);
+    this.master.gain.setTargetAtTime(.55,c.currentTime,1.5);this.apply(this.S,.1);
+    setInterval(function(){self.events();},100);},
+  /* une ambiance : tous les réglages glissent vers elle (≈ 2 s) */
+  apply:function(S,k){var c=this.ctx;if(!c)return;var t=c.currentTime;k=k||1.2;
+    this.gG.gain.setTargetAtTime(S.g[0],t,k);this.gF.frequency.setTargetAtTime(S.g[1],t,k);
+    this.aG.gain.setTargetAtTime(S.a[0],t,k);this.aF.frequency.setTargetAtTime(S.a[1],t,k);this.aF.Q.setTargetAtTime(S.a[2],t,k);
+    this.lfo.frequency.setTargetAtTime(S.a[3],t,k);this.lfoG.gain.setTargetAtTime(S.a[0]*S.a[4],t,k);this.hG.gain.setTargetAtTime(S.h,t,k);},
+  scene:function(key){if(key===this.cur||!SCENES[key])return;this.cur=key;this.S=SCENES[key];this.apply(this.S);},
+  /* un événement bref : bruit filtré, enveloppe, part dans l'écho */
+  shot:function(t,dur,type,f,q,vol,send){var c=this.ctx,s=c.createBufferSource();s.buffer=Math.random()<.5?this.B.blanc:this.B.rose;
+    var fl=c.createBiquadFilter();fl.type=type;fl.frequency.value=f;fl.Q.value=q;var g=c.createGain();g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(vol,t+Math.min(.004+dur*.05,.03));g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    s.connect(fl).connect(g).connect(this.master);if(send){var sg=c.createGain();sg.gain.value=send;g.connect(sg).connect(this.rev);}
+    s.start(t,Math.random()*5,dur+.05);},
+  events:function(){var c=this.ctx;if(!c||!this.on||c.state!=='running')return;var S=this.S,t0=c.currentTime+.05,self=this,R=Math.random;
+    var each=function(rate,fn){var n=rate*.1;while(n>0){if(R()<Math.min(n,1))fn(t0+R()*.1);n-=1;}};
+    /* crépitements : grappes de petits claquements secs, d'éclat inégal */
+    each(S.c[0],function(t){var k=1+Math.floor(R()*R()*6);for(var i=0;i<k;i++)self.shot(t+i*(.006+R()*.03),.004+R()*.025,'bandpass',S.c[2]+R()*(S.c[3]-S.c[2]),1.5+R()*3,S.c[1]*(.25+R()*R()*1.5),.25);});
+    /* étincelles : tintements de bruit très aigus, lointains */
+    each(S.s[0],function(t){self.shot(t,.015+R()*.05,'highpass',6500+R()*4500,.7,S.s[1]*(.3+R()),1.1);});
+    /* détonations : coups sourds et longs, avec écho */
+    each(S.t[0],function(t){self.shot(t,.9+R()*1.6,'lowpass',70+R()*90,.8,S.t[1]*(.6+R()*.6),.9);});
+    /* radio : grésillements hachés */
+    each(S.r[0],function(t){var f=1200+R()*2600,d=.12+R()*.5,k=3+Math.floor(R()*8);for(var i=0;i<k;i++)self.shot(t+i*d/k,d/k*1.6,'bandpass',f*(.9+R()*.2),3+R()*6,S.r[1]*(.4+R()*.8),.3);});},
+  set:function(on){this.on=on;store.set('son',on);if(on){this.start();if(this.ctx){this.ctx.resume();this.master.gain.setTargetAtTime(.55,this.ctx.currentTime,.4);}}
     else if(this.ctx)this.master.gain.setTargetAtTime(0,this.ctx.currentTime,.2);},
   /* m : mouvement de 0 (immobile) à 1 (trajet rapide) */
-  move:function(m){if(!this.ctx)return;var t=this.ctx.currentTime;this.wh.gain.setTargetAtTime(.32*m,t,.35);this.whF.frequency.setTargetAtTime(220+1100*m,t,.45);},
+  move:function(m){if(!this.ctx)return;var t=this.ctx.currentTime;this.wh.gain.setTargetAtTime(.3*m,t,.35);this.whF.frequency.setTargetAtTime(220+1100*m,t,.45);},
   /* souffle bref (changement de plan, fondu vers un autre film) */
-  burst:function(){if(!this.ctx)return;var t=this.ctx.currentTime;this.wh.gain.cancelScheduledValues(t);this.wh.gain.setTargetAtTime(.3,t,.25);this.wh.gain.setTargetAtTime(0,t+1.2,.6);
+  burst:function(){if(!this.ctx)return;var t=this.ctx.currentTime;this.wh.gain.cancelScheduledValues(t);this.wh.gain.setTargetAtTime(.28,t,.25);this.wh.gain.setTargetAtTime(0,t+1.2,.6);
     this.whF.frequency.cancelScheduledValues(t);this.whF.frequency.setTargetAtTime(900,t,.3);this.whF.frequency.setTargetAtTime(260,t+1.2,.7);}};
 ['pointerdown','keydown','touchstart'].forEach(function(t){document.addEventListener(t,function(){son.start();if(son.ctx&&son.ctx.state==='suspended')son.ctx.resume();},{passive:true});});
+/* quelle ambiance : étape (page) et plan en cours ; dans le grand voyage, l'endroit traversé, la descente vers la Terre */
+var SC_ETAPE=['','terre','soleil','systeme','etoiles','galaxie','groupe','structures','univers'];
+var SC_VOY={terre:'terre',soleil:'soleil',planetes:'systeme',voyager:'sonde',voisines:'etoiles',galaxie:'galaxie',groupe:'groupe',toile:'structures',univers:'univers'};
+var SC_PLAN={couronne:'eclipse',saturne:'anneaux',anneaux:'anneaux',ciel:'nuit',fond:'fond'};
+function sceneOf(isVoy,cur,f){if(isVoy){if(f.desc)return f.desc>=3?'arrivee':'entree';return SC_VOY[f.id]||'terre';}
+  return (SC_PLAN[f.id]&&!(cur===5&&f.id==='ciel'))?SC_PLAN[f.id]:SC_ETAPE[cur];}
 
 /* ----- La route : « un voyage, huit escales » -----
    Règle simple, la même partout : le film ne s'arrête jamais tout seul (on peut tourner ou zoomer pendant qu'il continue ;
@@ -1680,7 +1749,7 @@ function initRoute(){
   var sws=bar.querySelector('.u-son input');sws.checked=son.on;sws.addEventListener('change',function(){son.set(sws.checked);});
   /* film en cours : n° du plan et nombre de plans, quel que soit le moteur */
   function film(){var f=HF._voy||HF._vl||HF._eto||HF._sys||HF._sol||HF._cin;if(!f||!f.state)return null;var s=f.state();
-    return {i:f.stage!=null?f.stage:s.shot,n:f.ids?f.ids.length:f.n,id:s.ids||s.id,playing:s.playing!==false,mode:s.mode,rev:!!s.rev,desc:!!s.desc,left:s.left||0,tu:s.tu||0};}
+    return {i:f.stage!=null?f.stage:s.shot,n:f.ids?f.ids.length:f.n,id:s.ids||s.id,playing:s.playing!==false,mode:s.mode,rev:!!s.rev,desc:s.desc||0,left:s.left||0,tu:s.tu||0};}
   /* Grand voyage : à chaque étape, on entre dans son film — tout seul en mode Auto (à la fin de la tenue), ou avec ⏭ / → en mode manuel
      (aussi pendant le trajet vers l'étape). Jamais pendant le retour ni la descente, ni à l'étape d'où l'on revient (voyage.html#étape).
      À la dernière étape, le bouton « Revenir au point de départ ». */
@@ -1694,7 +1763,7 @@ function initRoute(){
      À la dernière étape, le bouton « Revenir au point de départ ». */
   function voyTick(f){var n=VOY[f.id];if(n)paint(n);
     if(f.id!==vid){vid=f.id;skipNow=!!skip&&vid===skip;if(skipNow)skip='';}
-    if(f.id==='univers'&&!f.rev&&!f.desc)setGo('⟲ Revenir au point de départ','voyage.html#retour',function(){if(HF._voy)HF._voy.retour();});else setGo(null);
+    setGo(null);   /* le retour se lance avec le grand bouton au milieu de l'écran (voyage.js) */
     var j=RESUME.indexOf(vid);
     if(j>0&&!skipNow&&!f.rev&&!f.desc&&f.mode==='hold'&&HF.autoEtape!==false)leave(E[j-1].file);}   /* HF.autoEtape=false : tests (test.py) */
   /* ⏮ ⏭ et ← → , partout le même sens : → avance (dans le voyage, entre dans le film de l'étape vers laquelle on va) ;
@@ -1727,6 +1796,7 @@ function initRoute(){
   var lastI=-1;
   setInterval(function(){var f=film();if(!f)return;if(isVoy)voyTick(f);else escTick(f);
     /* son : trajets du voyage (souffle qui suit la vitesse), changements de plan dans les films (souffle bref) */
+    son.scene(sceneOf(isVoy,cur,f));
     if(isVoy||f.mode){var m=f.mode==='travel'?Math.sin(Math.PI*(f.tu||0)):0;son.move(m);}
     else if(f.i!==lastI&&lastI>=0)son.burst();
     lastI=f.i;},250);
@@ -1745,7 +1815,7 @@ function initRoute(){
     var off=function(){h.classList.remove('on');setTimeout(function(){h.remove();},700);};setTimeout(off,8500);scene.addEventListener('pointerdown',off,{once:true});},2500);}
 }
 
-window.HF={store:store,applyTheme:applyTheme,auto:store.get('auto')===true,immersion:function(){immersion();},inImmersion:function(){return IN_SHELL;},
+window.HF={store:store,applyTheme:applyTheme,son:son,auto:store.get('auto')===true,immersion:function(){immersion();},inImmersion:function(){return IN_SHELL;},
   coarse:function(){return root.classList.contains('coarse');},
   reduced:function(){try{return window.matchMedia('(prefers-reduced-motion:reduce)').matches;}catch(e){return false;}},
   fr:function(n,d){d=d==null?0:d;return Number(n).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});}

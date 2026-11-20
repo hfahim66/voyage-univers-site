@@ -1446,21 +1446,15 @@ html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17p
 /* voyage retour (voyage.js) : légende courte, numéro d'étape */
 .vy3-cap small.vy3-revn{display:block;margin:0 auto 8px;font-style:normal;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--or)}
 .vy3-rev b{font-size:clamp(24px,3.6vw,44px)}
-/* messages au milieu de la scène (core.js) : « Voulez-vous vous arrêter ici ? », « Reprendre le grand voyage ? » */
-.u-ask{position:absolute;z-index:7;left:50%;top:calc(var(--route-h) + 16%);transform:translateX(-50%);width:min(460px,calc(100% - 24px));padding:18px 18px 16px;border-radius:22px;border:1px solid rgba(244,184,96,.65);background:rgba(4,8,20,.84);text-align:center;color:#fff;box-shadow:0 12px 40px rgba(0,0,0,.55);animation:cinIn .6s ease-out}
-.u-ask small{display:block;color:var(--or);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase}
-.u-ask b{display:block;font-size:23px;line-height:1.2;margin:6px 0 4px}
-.u-ask span{display:block;color:#D6DDF2;font-size:15px;line-height:1.4}
-.u-ask div{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
-.u-ask a,.u-ask button{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;font:inherit;font-weight:700;font-size:15px;text-decoration:none;cursor:pointer}
-.u-ask-y{background:var(--or);color:#0B0F1E;border:0}
-.u-ask-s{background:rgba(191,208,255,.1);color:#fff;border:1px solid rgba(191,208,255,.4)}
-.u-ask-n{background:transparent;color:#BFC9E8;border:1px solid rgba(191,208,255,.2)}
-.u-ask em{font-style:normal;color:var(--or);margin-left:6px}
-@media (max-width:760px){.u-ask{top:calc(var(--route-h) + 6%)}.u-ask b{font-size:20px}}
-html.present .u-ask b{font-size:30px}html.present .u-ask span,html.present .u-ask a,html.present .u-ask button{font-size:18px}
 /* descente finale (voyage.js) : photos aériennes IGN par-dessus la scène, repère du lieu */
 .vy3-photo{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0}
+/* immersion (core.js) : la page devient un cadre plein écran dans lequel on navigue sans quitter le plein écran */
+.u-imm-body{margin:0;background:#000;overflow:hidden}.u-imm{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:#000}
+
+/* barre de route (core.js) : « Voir l'escale » s'illumine en approchant d'une escale ; fondu au noir à la fin d'une escale */
+.u-route-go.pulse{animation:goPulse 2s ease-in-out 3}
+@keyframes goPulse{0%,100%{box-shadow:0 0 0 0 rgba(244,184,96,0);background:rgba(244,184,96,.1)}50%{box-shadow:0 0 0 5px rgba(244,184,96,.22),0 0 22px rgba(244,184,96,.55);background:rgba(244,184,96,.3)}}
+.u-fade{position:absolute;inset:0;z-index:30;background:#000;opacity:0;transition:opacity .9s ease-in;pointer-events:none}.u-fade.on{opacity:1}
 
 </style>
 </head>
@@ -1547,9 +1541,32 @@ function initPresent(){
   function paint(on){root.classList.toggle('present',on);if(b)b.setAttribute('aria-pressed',String(on));}
   paint(!!store.get('present'));
   if(b)b.addEventListener('click',function(){var on=!root.classList.contains('present');store.set('present',on);paint(on);
-    try{if(on&&document.documentElement.requestFullscreen&&!document.fullscreenElement)document.documentElement.requestFullscreen().catch(function(){});
-        else if(!on&&document.fullscreenElement)document.exitFullscreen();}catch(e){}});
+    if(on&&!IN_SHELL&&!document.fullscreenElement)immersion();else if(!on)immersion(true);});
 }
+
+/* ----- Immersion : un plein écran qui survit aux changements de page -----
+   Un navigateur quitte le plein écran à chaque nouvelle page. On passe donc en plein écran une seule fois (au clic),
+   et la page devient une « coque » : un cadre (iframe nommé « immersion ») plein écran, dans lequel on navigue
+   (escales, grand voyage, accueil) sans jamais sortir du plein écran. Échap ou ⛶ : on sort, et la coque ouvre
+   normalement la dernière page vue. */
+var IN_SHELL=false;try{IN_SHELL=window.name==='immersion'&&window.parent!==window;}catch(e){}
+function immersion(leave){
+  if(IN_SHELL){try{window.parent.postMessage({imm:'exit'},'*');}catch(e){}return;}
+  var d=document,r=d.documentElement;
+  if(d.fullscreenElement||leave){try{if(d.fullscreenElement)d.exitFullscreen();}catch(e){}return;}
+  if(!r.requestFullscreen)return;
+  try{r.requestFullscreen().catch(function(){});}catch(e){return;}
+  /* arrêter les films de cette page (ils reprennent dans le cadre) */
+  [HF._voy,HF._vl,HF._eto,HF._sys,HF._sol,HF._cin].forEach(function(a){try{if(a&&a.renderer){a.renderer.dispose();a.renderer.forceContextLoss();}}catch(e){}});
+  var last=location.href,f=d.createElement('iframe');f.name='immersion';f.className='u-imm';f.title=d.title;f.setAttribute('allow','fullscreen');f.src=location.href;
+  d.body.innerHTML='';d.body.className='u-imm-body';d.body.appendChild(f);
+  f.addEventListener('load',function(){try{f.contentWindow.focus();}catch(e){}});
+  window.addEventListener('message',function(e){if(e.source!==f.contentWindow||!e.data)return;
+    if(e.data.imm==='url'&&typeof e.data.url==='string')last=e.data.url;else if(e.data.imm==='exit'&&d.fullscreenElement)d.exitFullscreen();});
+  d.addEventListener('fullscreenchange',function(){if(!d.fullscreenElement)location.href=last;});
+}
+/* dans le cadre : signaler chaque page vue à la coque */
+if(IN_SHELL){root.classList.add('in-imm');try{window.parent.postMessage({imm:'url',url:location.href},'*');}catch(e){}}
 
 /* ----- Apparition douce au défilement ----- */
 function initReveal(){
@@ -1572,8 +1589,8 @@ function initOnline(){
 
 /* ----- La route : « un voyage, huit escales » -----
    Barre au-dessus du film (grand voyage et escales) : points des 8 escales, ◀ ▶, et le passage entre les deux
-   (« S'arrêter ici » dans le grand voyage, « Reprendre le grand voyage » à cet endroit dans une escale).
-   À la fin d'une escale, l'escale suivante s'ouvre seule après un compte à rebours (sauf si l'on touche à quelque chose). */
+   (« Voir l'escale » dans le grand voyage, « Reprendre le grand voyage » à cet endroit dans une escale).
+   À la fin d'une escale, fondu au noir et retour au grand voyage (sauf si l'on touche à quelque chose). */
 /* étapes du grand voyage → escale ; escale → étape où reprendre le voyage */
 var VOY={terre:1,'terre-lune':1,lune:1,soleil:2,planetes:3,voyager:3,voisines:4,orion:4,'orion-cote':4,galaxie:5,groupe:6,toile:7,univers:8};
 var RESUME=['','terre-lune','soleil','planetes','voisines','galaxie','groupe','toile','univers'];
@@ -1589,7 +1606,7 @@ function initRoute(){
   function paint(n){if(n===shown)return;shown=n;
     links.forEach(function(a,i){a.classList.toggle('on',i+1===n);a.classList.toggle('past',i+1<n);if(i+1===n)a.setAttribute('aria-current','step');else a.removeAttribute('aria-current');});
     var e=E[n-1];txt.textContent=e?(isVoy?'Grand voyage · ':'')+'Escale '+e.num+' · '+e.title:'';
-    if(isVoy){go.href=e.file;go.innerHTML='⏸ S’arrêter ici<span> : '+e.title+'</span>';}
+    if(isVoy){go.href=e.file;go.innerHTML='▶ Voir l’escale<span> : '+e.title+'</span>';}
     else{go.href='voyage.html#'+RESUME[n];go.innerHTML='▶ Reprendre le grand voyage';}
     [].forEach.call(bar.querySelectorAll('.u-route-b'),function(b){var t=n+(+b.dataset.d);b.disabled=t<1||t>E.length;});}
   function voyTo(n){var v=HF._voy;if(!v)return;var i=v.ids.indexOf(RESUME[n]);if(i>=0)v.go(i);}
@@ -1599,41 +1616,39 @@ function initRoute(){
   paint(isVoy?1:cur);
   /* film en cours : n° du plan et nombre de plans, quel que soit le moteur */
   function film(){var f=HF._voy||HF._vl||HF._eto||HF._sys||HF._sol||HF._cin;if(!f||!f.state)return null;var s=f.state();
-    return {i:f.stage!=null?f.stage:s.shot,n:f.ids?f.ids.length:f.n,id:s.ids||s.id,playing:s.playing!==false,mode:s.mode,rev:!!s.rev};}
-  /* message au milieu de la scène (une question, deux ou trois réponses) */
-  var box=null;
-  function close(){if(box){box.remove();box=null;}}
-  function ask(html){close();box=document.createElement('div');box.className='u-ask';box.setAttribute('role','status');box.innerHTML=html;
-    var n=box.querySelector('.u-ask-n');if(n)n.addEventListener('click',stop);bar.parentNode.insertBefore(box,scene);}
-  /* grand voyage : à chaque escale, « Voulez-vous vous arrêter ici ? » ; sans réponse, le voyage continue seul et le message s'efface.
-     Pas pendant le voyage retour, ni à l'étape où l'on vient de reprendre le voyage (voyage.html#étape). */
-  var skip=decodeURIComponent(location.hash.slice(1)),vid='',askedFor='';
+    return {i:f.stage!=null?f.stage:s.shot,n:f.ids?f.ids.length:f.n,id:s.ids||s.id,playing:s.playing!==false,mode:s.mode,rev:!!s.rev,desc:!!s.desc,left:s.left||0};}
+  /* Rien au milieu de l'écran (l'immersion avant tout) ; on passe d'un film à l'autre par un fondu au noir. */
+  var gone=false;
+  function leave(url){if(gone)return;gone=true;var fd=document.createElement('div');fd.className='u-fade';fd.setAttribute('aria-hidden','true');scene.parentNode.appendChild(fd);
+    requestAnimationFrame(function(){fd.classList.add('on');});setTimeout(function(){location.href=url;},900);}
+  /* Grand voyage : par défaut, on entre dans chaque escale. On arrive à l'étape (le bouton « ▶ Voir l'escale » s'illumine), on la voit
+     pendant sa tenue, puis fondu et film de l'escale. Un geste sur la scène pendant l'arrêt : on reste dans le voyage, qui continue.
+     Jamais pendant le voyage retour ni la descente finale, ni à l'étape où l'on revient d'une escale (voyage.html#étape). */
+  var vid='',skip=decodeURIComponent(location.hash.slice(1)),keep=false;
+  if(isVoy)['pointerdown','keydown','wheel'].forEach(function(t){scene.addEventListener(t,function(){keep=true;},{passive:true});});
   function voyTick(f){var n=VOY[f.id];if(n)paint(n);
-    if(f.id!==vid){vid=f.id;close();askedFor='';}
+    if(f.id!==vid){vid=f.id;keep=false;go.classList.remove('pulse');
+      if(skip&&vid===skip){keep=true;skip='';}
+      if(!f.rev&&!f.desc&&RESUME.indexOf(vid)>0){void go.offsetWidth;go.classList.add('pulse');}}
     var j=RESUME.indexOf(vid);
-    if(f.mode==='hold'&&!f.rev&&j>0&&askedFor!==vid){askedFor=vid;if(vid===skip){skip='';return;}var e=E[j-1];
-      ask('<small>Escale '+e.num+' · '+e.title+'</small><b>Voulez-vous vous arrêter ici ?</b><span>On s’arrête pour voir en détail. Sinon, le voyage continue tout seul.</span>'+
-        '<div><a class="u-ask-y" href="'+e.file+'">⏸ M’arrêter ici</a><button type="button" class="u-ask-n">Continuer le voyage</button></div>');}}
-  /* fin d'une escale : « Reprendre le grand voyage ? », ou l'escale suivante (toute seule après un compte à rebours).
-     Armé dès le dernier plan ; continue même si le film reboucle ; un geste sur la scène l'annule (il se réarme au tour suivant). */
-  var me=E[cur-1],next=E[cur],wait=0,left=0,calm=true,armed=false;
-  function stop(){calm=false;armed=false;wait=0;close();}
+    if(j>0&&!keep&&!f.rev&&!f.desc&&f.mode==='hold'&&f.playing&&f.left>0&&f.left<=1.2)leave(E[j-1].file);}
+  /* Escale : quand le film est fini (dernier plan vu au moins 4 s, puis le film repart au premier plan), fondu au noir et retour
+     au grand voyage, là où on l'avait quitté. Un geste sur la scène pendant le dernier plan : on reste sur l'escale (il se réarme au tour suivant). */
+  var calm=true,armed=false,wait=0;
+  function stop(){calm=false;armed=false;wait=0;}
   if(!isVoy)['pointerdown','keydown','wheel'].forEach(function(t){scene.addEventListener(t,stop,{passive:true});});
   function escTick(f){
     if(f.i<f.n-1&&!armed)calm=true;
     if(f.i===f.n-1&&calm&&f.playing)armed=true;
-    if(!armed||!f.playing)return;
-    wait+=.5;
-    if(wait>=5&&!box){left=10;
-      ask('<small>Fin de l’escale '+me.num+' · '+me.title+'</small><b>Reprendre le grand voyage ?</b><span>'+(next?'Ou passer directement à l’escale suivante : '+next.title+'.':'C’était la dernière escale.')+'</span>'+
-        '<div><a class="u-ask-y" href="voyage.html#'+RESUME[cur]+'">▶ Reprendre le voyage</a>'+
-        (next?'<a class="u-ask-s" href="'+next.file+'">Escale suivante <em>10 s</em></a>':'<a class="u-ask-s" href="voyage.html#retour">⟲ Revenir au point de départ</a>')+
-        '<button type="button" class="u-ask-n">Rester ici</button></div>');}
-    else if(box&&next){left-=.5;var em=box.querySelector('em');if(em)em.textContent=Math.max(0,Math.ceil(left))+' s';if(left<=0){close();calm=false;armed=false;location.href=next.file;}}}
+    if(!armed)return;
+    if(f.i===f.n-1){if(f.playing&&(wait+=.5)>=30)leave('voyage.html#'+RESUME[cur]);return;}   /* garde-fou : dernier plan très long */
+    if(f.i===0&&wait>=4)leave('voyage.html#'+RESUME[cur]);   /* le film repart au début : il est fini */
+    else{armed=false;wait=0;}                                 /* saut vers un autre plan : ce n'est pas la fin */
+  }
   setInterval(function(){var f=film();if(!f)return;if(isVoy)voyTick(f);else escTick(f);},500);
 }
 
-window.HF={store:store,applyTheme:applyTheme,
+window.HF={store:store,applyTheme:applyTheme,immersion:function(){immersion();},inImmersion:function(){return IN_SHELL;},
   coarse:function(){return root.classList.contains('coarse');},
   reduced:function(){try{return window.matchMedia('(prefers-reduced-motion:reduce)').matches;}catch(e){return false;}},
   fr:function(n,d){d=d==null?0:d;return Number(n).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});}
@@ -1647,8 +1662,10 @@ document.addEventListener('DOMContentLoaded',function(){initMenu();initPresent()
 <script src="assets/three.min.js"></script><script>
 /* soleil.js — chapitre 2 « Le Soleil » : film plein écran, façon documentaire (three.js r128), dans le style de cinema.js.
    - Plans enchaînés seuls, légendes courtes, commandes qui s'effacent ; geste = reprise en main (8 s), ← → Espace Début au clavier.
-   - Unité : 1 = rayon du Soleil (695 700 km, NASA NSSDCA). Soleil au centre, nord = +y. Le Soleil ne tourne pas (les plans visent des points fixes).
-   - Illustré, et signalé à l'écran : granulation (cellules animées, en accéléré), taches, facules, protubérances, couronne, éclipse, vue en coupe.
+   - Unité : 1 = rayon du Soleil (695 700 km, NASA NSSDCA). Soleil au centre, nord = +y. Les plans visent des points fixes de la surface ; dans les plans larges (spin), la caméra suit le Soleil
+     et les étoiles tournent d'autant : le Soleil paraît tourner sur lui-même (en accéléré).
+   - Illustré, et signalé à l'écran : courants de plasma, granulation (cellules animées, en accéléré), taches qui évoluent, facules, éruption,
+     chromosphère et spicules, protubérances (dont une qui s'élève), couronne qui s'écoule, éclipse, vue en coupe animée. Tout est calculé par shader.
    - À l'échelle des tailles (pas des distances) : la Terre, rayon 6 371 / 695 700, posée près du bord du Soleil pour comparer.
    - Sécurité solaire : bandeau permanent + dernier plan.
    HF.soleil(hôte) → {go(n, instantané), next(), ids, state()} ; null si WebGL manque (message de repli). */
@@ -1661,38 +1678,68 @@ const F=s=>s.replace(/(\d) (\d{3})/g,'$1 $2').replace(/ ([?!:;»%°])/g,' $1'
 
 /* ===== Shaders ===== */
 const NOISE='float h3(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}float n3(vec3 x){vec3 i=floor(x),f=fract(x);f=f*f*(3.-2.*f);return mix(mix(mix(h3(i),h3(i+vec3(1,0,0)),f.x),mix(h3(i+vec3(0,1,0)),h3(i+vec3(1,1,0)),f.x),f.y),mix(mix(h3(i+vec3(0,0,1)),h3(i+vec3(1,0,1)),f.x),mix(h3(i+vec3(0,1,1)),h3(i+vec3(1,1,1)),f.x),f.y),f.z);}float fbm(vec3 p){return n3(p)*.5+n3(p*2.03)*.25+n3(p*4.07)*.125+n3(p*8.1)*.125;}';
-/* cellules de Voronoï (granulation) : hachage sans sinus, points qui dérivent avec le temps */
-const CELL='vec3 h33(vec3 p){p=fract(p*vec3(.1031,.1030,.0973));p+=dot(p,p.yxz+33.33);return fract((p.xxy+p.yxx)*p.zyx);}vec2 cell(vec3 x,float t){vec3 i=floor(x),f=fract(x);float d1=8.,d2=8.;for(int a=-1;a<=1;a++)for(int b=-1;b<=1;b++)for(int c=-1;c<=1;c++){vec3 g=vec3(float(a),float(b),float(c));vec3 o=h33(i+g);o=.5+.42*sin(t+6.2831*o);vec3 r=g+o-f;float d=dot(r,r);if(d<d1){d2=d1;d1=d;}else if(d<d2){d2=d;}}return vec2(sqrt(d1),sqrt(d2));}';
+/* cellules de Voronoï (granulation) : hachage sans sinus, points qui dérivent avec le temps ; renvoie (distance au 1er point, au 2e, identifiant de la cellule) */
+const CELL='vec3 h33(vec3 p){p=fract(p*vec3(.1031,.1030,.0973));p+=dot(p,p.yxz+33.33);return fract((p.xxy+p.yxx)*p.zyx);}vec3 cell(vec3 x,float t){vec3 i=floor(x),f=fract(x);float d1=8.,d2=8.,id=0.;for(int a=-1;a<=1;a++)for(int b=-1;b<=1;b++)for(int c=-1;c<=1;c++){vec3 g=vec3(float(a),float(b),float(c));vec3 h=h33(i+g);vec3 o=.5+.42*sin(t*(.6+.8*h.yzx)+6.2831*h);vec3 r=g+o-f;float d=dot(r,r);if(d<d1){d2=d1;d1=d;id=h.x;}else if(d<d2){d2=d;}}return vec3(sqrt(d1),sqrt(d2),id);}';
+/* palette « température » : brun-rouge (froid, sombre) → orange → jaune → blanc (chaud, clair) */
+const PAL='vec3 pal(float x){x=clamp(x,0.,1.5);if(x<.35)return mix(vec3(.16,.03,.01),vec3(.82,.22,.03),x/.35);if(x<.7)return mix(vec3(.82,.22,.03),vec3(1.,.58,.14),(x-.35)/.35);if(x<1.)return mix(vec3(1.,.58,.14),vec3(1.,.88,.58),(x-.7)/.3);return mix(vec3(1.,.88,.58),vec3(1.,1.,.96),(x-1.)/.5);}';
 const vSun='varying vec3 vO;varying vec3 vN;varying vec3 vP;void main(){vO=position;vN=normalize(mat3(modelMatrix)*normal);vec4 w=modelMatrix*vec4(position,1.);vP=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}';
-/* surface (illustration) : assombrissement centre-bord, marbrure, granulation de près, facules près du bord, taches (ombre + pénombre filamentaire) ;
-   uCut ouvre un quartier (repère du monde) pour la vue en coupe */
-const fSun=NOISE+CELL+'uniform float uT,uCut,uGran;uniform vec4 uSp[6];varying vec3 vO;varying vec3 vN;varying vec3 vP;void main(){'+
+/* surface (illustration) : courants de plasma qui coulent (domaine déformé, animé), grain fin effacé sous la taille d'un pixel (uPx),
+   granulation vivante de près (grains qui naissent, grandissent, éclatent), assombrissement centre-bord, facules autour des taches,
+   taches qui respirent (pénombre filamentaire qui s'écoule), éruption (deux rubans éblouissants, uFl) ; uCut ouvre un quartier pour la vue en coupe */
+const fSun=NOISE+CELL+PAL+'uniform float uT,uCut,uFl,uPx;uniform vec3 uFlP;uniform vec4 uSp[6];varying vec3 vO;varying vec3 vN;varying vec3 vP;void main(){'+
  'if(uCut>.001){float a=atan(vP.z,vP.x);if(a>0.&&a<uCut*1.5707963)discard;}'+
- 'vec3 n=normalize(vO);vec3 V=normalize(cameraPosition-vP);float mu=max(dot(normalize(vN),V),0.);float dc=length(cameraPosition-vP);'+
- 'float m=fbm(n*9.+vec3(0.,0.,uT*.004));float g=n3(n*55.+uT*.05)*.6+n3(n*140.-uT*.08)*.4;float b=.80+.32*g;'+
- 'float gf=uGran*(1.-smoothstep(.05,.42,dc));if(gf>.01){vec3 q=n*700.;q+=vec3(n3(n*160.),n3(n*160.+7.),n3(n*160.+13.))*1.6-.8;vec2 c=cell(q,uT*.22);float gr=smoothstep(0.,.24,c.y-c.x)*(1.-.75*c.x*c.x)*(.88+.24*n3(q*.7));b=mix(b,.66+.5*gr,gf);}'+
- 'float um=0.,pe=0.;for(int i=0;i<6;i++){vec4 s=uSp[i];float d=acos(clamp(dot(n,s.xyz),-1.,1.))/s.w;if(d<3.){vec3 t1=normalize(cross(s.xyz,vec3(.2,1.,.1)));vec3 t2=cross(s.xyz,t1);float an=atan(dot(n,t2),dot(n,t1));float fi=n3(vec3(an*90.,d*2.,float(i)*7.));float w=.18*(n3(vec3(an*5.,1.,float(i)))-.5);um=max(um,1.-smoothstep(.8,1.02,d+w*.4));pe=max(pe,(1.-smoothstep(1.95,2.3,d+w))*(.86+.14*fi));}}'+
- 'vec3 col=mix(vec3(.85,.26,.04),vec3(1.,.80,.45),pow(mu,.45))*b;'+
- 'col+=vec3(.35,.25,.10)*smoothstep(.55,.75,m)*pow(1.-mu,2.)*(1.-pe);col*=mix(vec3(1.),vec3(.66,.42,.26),pe);col*=mix(1.,.15,um);gl_FragColor=vec4(col,1.);}';
-/* faces de la coupe (illustration) : cœur, zone radiative (ondes), zone convective (cellules) */
+ 'vec3 n=normalize(vO);vec3 V=normalize(cameraPosition-vP);float mu=max(dot(normalize(vN),V),0.);float dc=length(cameraPosition-vP);float fp=dc*uPx/max(mu,.12);float t=uT;'+
+ 'vec3 q=n*4.4;vec3 w=vec3(n3(q+vec3(0.,t*.06,0.)),n3(q+vec3(5.2,1.3,t*.05)),n3(q+vec3(1.7,9.2,-t*.055)))-.5;'+
+ 'float m=fbm(n*5.+w*2.4+vec3(0.,0.,t*.025));float vein=1.-abs(2.*fbm(n*12.+w*3.4+vec3(t*.035,0.,0.))-1.);vein*=vein;vein*=vein;'+
+ 'float a1=1.-smoothstep(.2,.55,fp*90.),a2=1.-smoothstep(.2,.55,fp*260.),a3=1.-smoothstep(.2,.55,fp*700.);'+
+ 'float b=.86+.30*(m-.5)+.16*vein+.16*(n3(n*90.+w*5.+vec3(0.,t*.12,0.))-.5)*a1+.07*(n3(n*260.+vec3(t*.2,0.,0.))-.5)*a2+.05*(n3(n*700.-vec3(0.,t*.35,0.))-.5)*a3;'+
+ 'float gf=1.-smoothstep(.00016,.00042,fp);if(gf>.01){vec3 p=n*700.;p+=(vec3(n3(n*150.),n3(n*150.+7.),n3(n*150.+13.))-.5)*2.6+(vec3(n3(n*420.),n3(n*420.+5.),n3(n*420.+9.))-.5)*.7;vec3 c=cell(p,t*.35);'+
+  'float life=fract(c.z*7.13+t*.045);float gr=(1.-.8*c.x*c.x)*smoothstep(.02,.32+.12*c.z,c.y-c.x)*(.72+.42*sin(3.1416*life))*(.9+.2*n3(p*2.3));'+
+  'gr*=1.-.45*smoothstep(.72,1.,life)*(1.-smoothstep(0.,.32,c.x));float bp=smoothstep(.045,0.,c.y-c.x)*smoothstep(.62,.8,n3(p*.9+3.));'+
+  'b=mix(b,(.34+.74*gr+.5*bp)*(.92+.25*(m-.5)),gf);}'+
+ 'float um=0.,pe=0.,pl=0.,pf=.5;for(int i=0;i<6;i++){vec4 s=uSp[i];float fi_=float(i);float ww=s.w*(1.+.06*sin(t*.12+fi_*2.1));float cs=dot(n,s.xyz);float d=acos(clamp(cs,-1.,1.))/ww;'+
+  'pl=max(pl,(1.-smoothstep(2.2,7.,d))*step(0.,cs));'+
+  'if(d<3.){vec3 t1=normalize(cross(s.xyz,vec3(.2,1.,.1)));vec3 t2=cross(s.xyz,t1);float an=atan(dot(n,t2),dot(n,t1));'+
+  'float fi=n3(vec3(an*80.,d*3.-t*.3,fi_*7.))*.7+n3(vec3(an*190.,d*6.-t*.5,fi_*3.))*.3;float sh=.2*(n3(vec3(an*4.,t*.04,fi_))-.5);'+
+  'um=max(um,1.-smoothstep(.72,1.02,d+sh*.5));float pv=1.-smoothstep(1.85,2.3,d+sh);if(pv>pe){pe=pv;pf=fi;}}}'+
+ 'b+=pl*.30*smoothstep(.42,.72,fbm(n*45.+w*2.+vec3(t*.02)))*(.45+1.1*(1.-mu));'+
+ 'float fl=0.;if(uFl>.001){float cd=dot(n,uFlP);vec3 t1=normalize(cross(uFlP,vec3(0.,1.,0.)));vec3 t2=cross(uFlP,t1);vec2 l=vec2(dot(n,t1),dot(n,t2))/.012;'+
+  'float rib=exp(-pow((l.y-.45-.3*sin(l.x*1.5+.5))*7.,2.))+exp(-pow((l.y+.5+.25*sin(l.x*1.7+1.))*7.,2.));rib*=smoothstep(1.9,.4,abs(l.x+.2*l.y))*(.3+1.1*n3(vec3(l*9.,t*.8)))*step(0.,cd);'+
+  'fl=uFl*(rib*2.+exp(-dot(l,l)*.35)*.18);}'+
+ 'float L=1.-.68*(1.-mu)-.22*(1.-mu)*(1.-mu);L=mix(L,.72+.3*mu,gf);float I=b*L;'+
+ 'vec3 col=pal(I*1.1+fl)*(.74+.38*I)+vec3(1.,.95,.85)*fl*.5;col*=mix(vec3(1.),vec3(.62,.40,.27)*(.62+.5*pf),pe);col*=mix(1.,.07,um);col+=vec3(1.,.3,.06)*pow(1.-mu,5.)*.22;gl_FragColor=vec4(col,1.);}';
+/* chromosphère (illustration) : liseré rouge-orangé juste au-dessus du bord, hérissé de spicules qui frémissent ; calculé sur le rayon de visée
+   (point le plus proche du centre), dessiné par une coquille ; uE = éclipse (plus visible) */
 const vW='varying vec3 vP;void main(){vec4 w=modelMatrix*vec4(position,1.);vP=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}';
-const fCut=NOISE+'uniform float uT;varying vec3 vP;void main(){float r=length(vP);if(r>1.)discard;'+
- 'float k=smoothstep(.235,.265,r),k2=smoothstep(.685,.715,r);vec3 core=vec3(1.,.97,.86)*(1.25-.9*r)*(1.+.05*sin(uT*2.));'+
- 'vec3 rad=mix(vec3(1.,.78,.38),vec3(.98,.46,.13),smoothstep(.25,.7,r))*(.96+.04*sin(r*60.-uT*1.5));'+
- 'float cn=n3(vP*14.+vec3(0.,-uT*.15,0.))*.6+n3(vP*31.+uT*.1)*.4;vec3 cv=mix(vec3(.66,.16,.04),vec3(.98,.42,.10),cn)*(1.+.3*smoothstep(.95,1.,r));'+
+const fChr=NOISE+'uniform float uT,uA,uE,uPx;varying vec3 vP;void main(){float cd=length(cameraPosition);if(!gl_FrontFacing&&cd>1.04)discard;'+
+ 'vec3 d=normalize(vP-cameraPosition);float tc=-dot(cameraPosition,d);if(tc<0.)discard;vec3 P=cameraPosition+d*tc;float bb=length(P);float h=(bb-1.)/.035;if(h<0.||h>1.)discard;'+
+ 'vec3 u=P/bb;float fp=tc*uPx;float jv=(1.-smoothstep(.0006,.0025,fp))*smoothstep(1.07,1.2,cd);'+
+ 'float jet=n3(u*900.+vec3(0.,0.,uT*.3))*.65+n3(u*2300.-vec3(uT*.5,0.,0.))*.35;'+
+ 'float Lh=.2+.8*n3(u*240.+vec3(uT*.12));float s=smoothstep(Lh,Lh-.3,h)*(.3+1.1*jet*jet)*jv;float base=exp(-h*7.);'+
+ 'float I=(base*(.8+.4*n3(u*90.+uT*.1))+s*.75)*uA*(1.+uE*1.6);gl_FragColor=vec4(vec3(1.,.32,.13)*I+vec3(1.,.72,.45)*base*base*base*.4*uA,1.);}';
+/* faces de la coupe (illustration) : cœur qui pulse, zone radiative (ondes, lumière qui erre), zone convective (cellules qui montent) */
+const fCut=NOISE+'uniform float uT;varying vec3 vP;void main(){float r=length(vP);if(r>1.)discard;vec3 nr=vP/max(r,.001);'+
+ 'float k=smoothstep(.235,.265,r),k2=smoothstep(.685,.715,r);float ch=n3(vP*22.+vec3(0.,uT*.6,uT*.4));vec3 core=vec3(1.,.97,.86)*(1.3-.9*r)*(1.+.08*sin(uT*2.2)+.12*(ch-.5));'+
+ 'float sp=step(.93,n3(vP*95.+vec3(floor(uT*7.))))*(1.-k2);vec3 rad=mix(vec3(1.,.78,.38),vec3(.98,.46,.13),smoothstep(.25,.7,r))*(.94+.06*sin(r*60.-uT*1.5))+vec3(1.,.95,.8)*sp*.35;'+
+ 'vec3 pc=vP*13.-nr*uT*.35;float cn=n3(pc)*.6+n3(pc*2.3+uT*.08)*.4;float ce=smoothstep(.62,.5,abs(cn-.5)*2.);vec3 cv=mix(vec3(.55,.12,.03),vec3(1.,.48,.12),cn)*(1.+.35*smoothstep(.95,1.,r))*(.85+.25*ce);'+
  'vec3 c=mix(core,rad,k);c=mix(c,cv,k2);c+=vec3(1.,.9,.7)*(exp(-pow((r-.25)*90.,2.))+exp(-pow((r-.7)*90.,2.)))*.35;gl_FragColor=vec4(c,1.);}';
-/* couronne (illustration) : plan tourné vers la caméra ; éclat qui décroît depuis le bord, jets rayonnants ; uCh = chromosphère rose (éclipse) */
+/* couronne (illustration) : plan tourné vers la caméra ; éclat qui décroît depuis le bord, jets rayonnants qui s'écoulent vers l'extérieur (vent solaire)
+   et ondulent ; plus brillante vers l'équateur (grands jets) ; uCh = chromosphère rose (éclipse) */
 const vUv='varying vec2 vU;void main(){vU=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
-const fCor=NOISE+'uniform float uA,uT,uCh;varying vec2 vU;void main(){vec2 p=(vU-.5)*14.;float r=length(p);if(r<1.)discard;float th=atan(p.y,p.x);vec3 q=vec3(cos(th),sin(th),0.);'+
- 'float s1=n3(q*3.+vec3(0.,0.,r*.12-uT*.01)),s2=n3(q*11.+vec3(0.,0.,r*.35-uT*.02)),s3=n3(q*34.+vec3(0.,0.,r*.8));float st=.4+.8*s1*s1+.35*s2+.2*s3;'+
- 'float x=r-1.;float I=(.8*exp(-x*4.5)+.32*exp(-x*1.3)+.05/(r*r))*st*(1.-smoothstep(5.,7.,r));'+
+const fCor=NOISE+'uniform float uA,uT,uCh;varying vec2 vU;void main(){vec2 p=(vU-.5)*14.;float r=length(p);if(r<1.)discard;float th=atan(p.y,p.x)+.025*sin(uT*.18+r*1.3);vec3 q=vec3(cos(th),sin(th),0.);'+
+ 'float s1=n3(q*3.+vec3(0.,0.,r*.12-uT*.025)),s2=n3(q*11.+vec3(0.,0.,r*.35-uT*.07)),s3=n3(q*34.+vec3(0.,0.,r*.8-uT*.16));float st=.4+.8*s1*s1+.35*s2+(.22+.25*uCh)*s3;'+
+ 'st*=.7+.55*pow(abs(q.x),1.5);float x=r-1.;float I=(.85*exp(-x*4.5)+.32*exp(-x*1.3)+.05/(r*r))*st*(1.-smoothstep(5.,7.,r));'+
  'vec3 c=vec3(1.,.95,.88)*I*uA+vec3(1.,.28,.34)*exp(-x*70.)*uCh;gl_FragColor=vec4(c,1.);}';
-/* protubérances (illustration) : tubes lumineux, filaments qui coulent, léger frémissement ; effacées devant le disque (où elles paraîtraient claires sur clair) */
-const vProm='uniform float uT;varying vec2 vU;varying float vF;varying vec3 vW;void main(){vU=uv;vec3 p=position+normal*.003*sin(uT*.7+position.x*30.+position.y*20.);vec4 w=modelMatrix*vec4(p,1.);vW=w.xyz;vec3 N=normalize(mat3(modelMatrix)*normal);vF=abs(dot(N,normalize(cameraPosition-w.xyz)));gl_Position=projectionMatrix*viewMatrix*w;}';
+/* protubérances (illustration) : tubes lumineux (cœur jaune, halo rouge), nœuds de matière qui glissent vers les pieds, frémissement ;
+   uH = hauteur (respiration, ou éruption qui s'élève) ; effacées devant le disque (où elles paraîtraient claires sur clair) */
+const vProm='uniform float uT,uH;varying vec2 vU;varying float vF;varying vec3 vW;void main(){vU=uv;vec3 p=position;float r=length(p);p=p/r*(1.+(r-1.)*uH);'+
+ 'p+=normal*.003*sin(uT*.7+position.x*30.+position.y*20.)+cross(normalize(p),vec3(0.,1.,0.))*(r-1.)*.022*sin(uT*.25+uv.x*5.);'+
+ 'vec4 w=modelMatrix*vec4(p,1.);vW=w.xyz;vec3 N=normalize(mat3(modelMatrix)*normal);vF=abs(dot(N,normalize(cameraPosition-w.xyz)));gl_Position=projectionMatrix*viewMatrix*w;}';
 const fProm=NOISE+'uniform float uT,uA,uS;varying vec2 vU;varying float vF;varying vec3 vW;void main(){float e=smoothstep(0.,.07,vU.x)*smoothstep(1.,.93,vU.x);'+
- 'vec3 d=normalize(vW-cameraPosition);float tc=-dot(cameraPosition,d);float bb=length(cameraPosition+d*tc);e*=1.-(1.-smoothstep(.99,1.04,bb))*step(0.,tc);'+
- 'float f=n3(vec3(vU.x*40.-uT*.25,vU.y*6.2831,uS))*.7+n3(vec3(vU.x*120.+uT*.4,vU.y*3.,uS+5.))*.3;float a=pow(vF,2.)*(.25+.9*f)*e*uA*.85;'+
- 'gl_FragColor=vec4(vec3(1.,.34,.15)*a+vec3(1.,.7,.5)*a*a*.15,1.);}';
+ 'vec3 d=normalize(vW-cameraPosition);float tc=-dot(cameraPosition,d);float bb=length(cameraPosition+d*tc);float ww=.004+.04*clamp((length(cameraPosition)-1.1)/.6,0.,1.);e*=1.-(1.-smoothstep(1.-ww*.25,1.+ww,bb))*step(0.,tc);'+
+ 'float s=abs(vU.x-.5);float kn=n3(vec3(s*34.-uT*.35,vU.y*6.2831,uS));float f=.3+.95*kn*kn+.3*n3(vec3(vU.x*110.+uT*.3,vU.y*3.,uS+5.));'+
+ 'float core=vF*vF*vF,halo=pow(vF,.8);float a=(core*1.1+halo*.35)*f*e*uA;'+
+ 'gl_FragColor=vec4(vec3(1.,.30,.10)*a+vec3(1.,.78,.48)*core*f*e*uA*.45,1.);}';
 
 HF.soleil=function(host){
   const T=window.THREE;host.classList.add('cin','vy3','sol');host.innerHTML='';
@@ -1726,7 +1773,9 @@ HF.soleil=function(host){
 
   /* ----- Le Soleil ----- */
   const spots=[[S0,.022],[S1,.015],[rot(rot(S0,Y,-.035),new T.Vector3().crossVectors(S0,Y).normalize(),.03),.007],[rot(S0,Y,.03),.006],[dir(-25,-14),.016],[dir(-31,-12),.009]].map(([v,w])=>new T.Vector4(v.x,v.y,v.z,w));
-  const sunU={uT:{value:0},uCut:{value:0},uGran:{value:0},uSp:{value:spots}};
+  /* éruption : entre les deux grandes taches */
+  const FLARE=S0.clone().multiplyScalar(.45).add(S1.clone().multiplyScalar(.55)).normalize();
+  const sunU={uT:{value:0},uCut:{value:0},uFl:{value:0},uFlP:{value:FLARE},uPx:{value:.001},uSp:{value:spots}};
   const sun=new T.Mesh(new T.SphereGeometry(1,coarse?110:170,coarse?56:86),new T.ShaderMaterial({uniforms:sunU,vertexShader:vSun,fragmentShader:fSun}));sc.add(sun);
   /* vue en coupe : deux demi-disques qui ferment le quartier ouvert */
   const cutU={uT:sunU.uT},cutMat=new T.ShaderMaterial({uniforms:cutU,vertexShader:vW,fragmentShader:fCut,side:T.DoubleSide}),half=new T.CircleGeometry(.999,96,-Math.PI/2,Math.PI);
@@ -1734,16 +1783,27 @@ HF.soleil=function(host){
   /* couronne */
   const corU={uA:{value:.4},uT:sunU.uT,uCh:{value:0}};
   const corona=new T.Mesh(new T.PlaneGeometry(14,14),new T.ShaderMaterial({uniforms:corU,vertexShader:vUv,fragmentShader:fCor,transparent:true,depthWrite:false,blending:T.AdditiveBlending}));corona.renderOrder=1;sc.add(corona);
-  /* protubérances : arcs de tubes ; vues de profil quand l'axe de l'arc est la direction de visée */
-  const promA={value:1};
-  function prom(c,ax,span,h,n,thick){
-    for(let k=0;k<n;k++){const ph=rng()*TAU,j=(rng()-.5)*.25,pts=[];
-      for(let i=0;i<=48;i++){const u=i/48,d=rot(c,ax,(u-.5)*span*(1+j*.3)).add(ax.clone().multiplyScalar(span*.06*Math.sin(u*Math.PI*2+ph)*(k?1:.3))).normalize();
-        pts.push(d.multiplyScalar(.997+h*(1+j)*Math.pow(Math.sin(Math.PI*u),.75)*(1+.18*Math.sin(u*9+ph))));}
-      const m=new T.ShaderMaterial({uniforms:{uT:sunU.uT,uA:promA,uS:{value:rng()*50}},vertexShader:vProm,fragmentShader:fProm,transparent:true,depthWrite:false,blending:T.AdditiveBlending});
-      const t=new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts),coarse?48:80,thick*(.6+.6*rng()),6,false),m);t.renderOrder=2;sc.add(t);}}
+  /* chromosphère et spicules : coquille juste au-dessus de la surface */
+  const chrU={uT:sunU.uT,uA:{value:1},uE:{value:0},uPx:sunU.uPx};
+  const chromo=new T.Mesh(new T.SphereGeometry(1.04,coarse?96:140,coarse?48:70),new T.ShaderMaterial({uniforms:chrU,vertexShader:vW,fragmentShader:fChr,side:T.DoubleSide,transparent:true,depthWrite:false,blending:T.AdditiveBlending}));chromo.renderOrder=1;sc.add(chromo);
+  /* protubérances : arcs de tubes ; vues de profil quand l'axe de l'arc est la direction de visée. Chaque groupe a sa hauteur (uH) : respiration lente, ou éruption */
+  const promA={value:1},GROUPS=[];
+  /* une arche = un faisceau de brins parallèles et serrés, de même forme (comme sur les images du satellite SDO), légèrement décalés
+     en profondeur et emboîtés en hauteur ; aU : éclat propre (boucles coronales plus pâles) */
+  function prom(c,ax,span,h,n,thick,hU,aU){
+    if(!hU){hU={value:1};GROUPS.push({u:hU,ph:rng()*TAU});}
+    for(let k=0;k<n;k++){const ph=rng()*TAU,j=(rng()-.5)*.06,off=n>1?(k/(n-1)-.5):0,pts=[];
+      for(let i=0;i<=56;i++){const u=i/56,d=rot(c,ax,(u-.5)*span*(1+j)).add(ax.clone().multiplyScalar(span*.05*off)).normalize();
+        pts.push(d.multiplyScalar(.997+h*(1+j)*(1-.07*Math.abs(off))*Math.pow(Math.sin(Math.PI*u),.85)*(1+.03*Math.sin(u*6+ph))));}
+      const m=new T.ShaderMaterial({uniforms:{uT:sunU.uT,uA:aU||promA,uS:{value:rng()*50},uH:hU},vertexShader:vProm,fragmentShader:fProm,transparent:true,depthWrite:false,blending:T.AdditiveBlending});
+      const t=new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts),coarse?48:80,thick*1.5*(.6+.6*rng()),8,false),m);t.renderOrder=2;sc.add(t);}}
   const limbAt=(c,a)=>rot(topOf(c),c,a*D);
-  prom(L5,C5,.30,.30,5,.012);prom(rot(L5,C5,-.62),C5,.18,.13,4,.009);
+  /* la grande protubérance du plan 5 : elle s'élève (éruption) pendant le plan */
+  const ERUPT={value:1};
+  prom(L5,C5,.36,.2,6,.011,ERUPT);
+  /* plan « surface » : des arches sur l'horizon, droit devant */
+  {const ax=new T.Vector3().crossVectors(B3,F3).normalize();prom(rot(B3,ax,.33),rot(F3,ax,.33),.1,.045,5,.0016);prom(rot(rot(B3,ax,.4),B3,-.14),rot(F3,ax,.4),.06,.03,3,.0013);}prom(rot(L5,C5,-.62),C5,.18,.13,4,.009);
+  const LOOPA={value:.32};prom(limbAt(C1,-60),C1,.13,.11,7,.0035,null,LOOPA);prom(limbAt(C1,120),C1,.1,.08,6,.003,null,LOOPA);prom(limbAt(C9,-50),C9,.12,.1,7,.0035,null,LOOPA);
   prom(limbAt(C1,40),C1,.2,.16,3,.012);prom(limbAt(C1,-115),C1,.14,.09,3,.011);prom(limbAt(C9,70),C9,.16,.12,3,.012);
   prom(limbAt(C6,70),C6,.16,.11,3,.008);prom(limbAt(C6,-140),C6,.22,.08,3,.007);prom(limbAt(C2,-35),C2,.1,.06,2,.006);
   for(let i=0;i<6;i++){const c=V(rng()*2-1,(rng()*2-1)*.6,rng()*2-1).normalize(),ax=new T.Vector3().crossVectors(c,V(rng(),rng(),rng())).normalize();prom(c,ax,.08+.15*rng(),.04+.1*rng(),2,.008);}
@@ -1769,25 +1829,27 @@ HF.soleil=function(host){
   const O=()=>V(0,0,0);
   const SHOTS=[
     {id:'soleil',dur:14,t:'Le Soleil, notre étoile',s:'À 150 millions de km de nous. Sa lumière met 8 minutes et 20 secondes pour nous parvenir.',
-      cam:u=>({pos:rot(C1,Y,-5*u*D).multiplyScalar(15-6*sm(u)),tgt:O(),up:Y,fov:36}),p:{cor:.3,glare:.9,gran:0}},
+      cam:u=>({pos:rot(C1,Y,-5*u*D).multiplyScalar(15-6*sm(u)),tgt:O(),up:Y,fov:36}),p:{cor:.3,glare:.9,gran:0},spin:34},
     {id:'taille',dur:15,t:'109 Terres, côte à côte',s:'C’est la largeur du Soleil : 1,4 million de km. Le petit point bleu, c’est la Terre, à la même échelle.',i:'Terre posée près du Soleil pour comparer les tailles : en vrai, elle est à 150 millions de km.',
       cam:u=>{const tg=TOP2.clone().multiplyScalar(1.035);return {pos:tg.clone().add(rot(C2,Y,(3-6*u)*D).multiplyScalar(3)),tgt:tg,up:Y,fov:24-19*sm(u*1.2)};},p:{cor:.12,glare:.25,gran:0},earth:EARTH2,labs:['terre']},
     {id:'surface',dur:15,t:'Une surface qui bouillonne',s:'Environ 5 500 °C. Chaque grain est une bulle de gaz chaud d’environ 1 000 km, qui monte, s’étale et disparaît en une vingtaine de minutes.',i:'Granulation illustrée, en accéléré.',
-      cam:u=>{const ax=new T.Vector3().crossVectors(B3,F3).normalize(),up=rot(B3,ax,.035*u),f=rot(F3,ax,.035*u),pos=up.clone().multiplyScalar(1.032),p=30*D;
+      cam:u=>{const ax=new T.Vector3().crossVectors(B3,F3).normalize(),up=rot(B3,ax,.035*u),f=rot(F3,ax,.035*u),pos=up.clone().multiplyScalar(1.032),p=22*D;
         return {pos,tgt:pos.clone().add(f.multiplyScalar(Math.cos(p)).sub(up.clone().multiplyScalar(Math.sin(p))).multiplyScalar(.05)),up,fov:56};},p:{cor:.1,glare:0,gran:1}},
-    {id:'taches',dur:14,t:'Des taches plus grandes que la Terre',s:'Moins chaudes que le reste de la surface, elles paraissent sombres. Leur nombre suit un cycle d’environ 11 ans.',i:'Taches illustrées ; Terre à l’échelle des tailles.',
+    {id:'taches',dur:14,t:'Des taches plus grandes que la Terre',s:'Moins chaudes que le reste de la surface, elles paraissent sombres. Au-dessus d’elles éclatent parfois des éruptions. Leur nombre suit un cycle d’environ 11 ans.',i:'Taches et éruption illustrées, en accéléré ; Terre à l’échelle des tailles.',
       cam:u=>({pos:rot(S0m,Y,(-7+5*u)*D).multiplyScalar(1.62-.06*sm(u)),tgt:S0m.clone(),up:Y,fov:34}),p:{cor:.1,glare:0,gran:0},earth:EARTH4,labs:['terre']},
     {id:'protuberances',dur:15,t:'Des arches de gaz brûlant',s:'Les protubérances, tenues par le champ magnétique du Soleil. Beaucoup sont bien plus grandes que la Terre, ici à la même échelle.',i:'Protubérances illustrées ; Terre à l’échelle des tailles.',
-      cam:u=>{const tg=L5.clone().multiplyScalar(1.12);return {pos:tg.clone().add(rot(C5,L5,(4-7*u)*D).multiplyScalar(2.15-.25*sm(u))),tgt:tg,up:Y,fov:28};},p:{cor:.15,glare:.3,gran:0},earth:EARTH5,labs:['terre']},
+      cam:u=>{const tg=L5.clone().multiplyScalar(.96);return {pos:tg.clone().add(rot(C5,L5,(4-7*u)*D).multiplyScalar(2.15-.25*sm(u))),tgt:tg,up:rot(L5,C5,-18*D),fov:28};},p:{cor:.15,glare:.3,gran:0},earth:EARTH5,labs:['terre']},
     {id:'couronne',dur:16,t:'La couronne, pendant une éclipse totale',s:'Quand la Lune cache tout le Soleil, son atmosphère apparaît : jusqu’à 2 millions de degrés, bien plus chaude que la surface.',i:'Éclipse, couronne et protubérances illustrées.',
       cam:()=>({pos:C6.clone().multiplyScalar(24),tgt:O(),up:Y,fov:19}),p:{cor:1,glare:.9,gran:0},moon:true},
     {id:'coeur',dur:16,t:'Au cœur, 15 millions de degrés',s:'L’hydrogène y fusionne en hélium : c’est ce qui fait briller le Soleil. L’énergie remonte ensuite jusqu’à la surface.',i:'Vue en coupe illustrée.',
       cam:u=>({pos:dir(45,24).multiplyScalar(4.9-.5*sm(u)),tgt:V(0,-.3,0),up:Y,fov:34}),p:{cor:.2,glare:.25,gran:0},cut:u=>sm((u-.06)/.32),labs:['coeur','rad','conv']},
     {id:'age',dur:15,t:'Il brille depuis 4,6 milliards d’années',s:'Et encore pour environ 5 milliards d’années. À lui seul, il rassemble 99,8 % de la masse du Système solaire.',
-      cam:u=>({pos:rot(dir(10,16),Y,-10*u*D).multiplyScalar(4.5*Math.pow(18,sm(u))),tgt:O(),up:Y,fov:34}),p:{cor:.3,glare:1,gran:0}},
+      cam:u=>({pos:rot(dir(10,16),Y,-10*u*D).multiplyScalar(4.5*Math.pow(18,sm(u))),tgt:O(),up:Y,fov:34}),p:{cor:.3,glare:1,gran:0},spin:40},
     {id:'securite',dur:14,warn:true,t:'Ne le regardez jamais sans protection',s:'Ni à l’œil nu, ni avec des lunettes de soleil, des jumelles ou un télescope sans filtre solaire certifié : la rétine peut être brûlée en quelques secondes, sans douleur.',i:'Lunettes d’éclipse et filtres : norme ISO 12312-2.',
-      cam:u=>({pos:C9.clone().multiplyScalar(6.5-1.2*sm(u)),tgt:O(),up:Y,fov:40}),p:{cor:.35,glare:1.2,gran:0}}];
-  const EC=SHOTS.findIndex(s=>s.moon);
+      cam:u=>({pos:C9.clone().multiplyScalar(6.5-1.2*sm(u)),tgt:O(),up:Y,fov:40}),p:{cor:.35,glare:1.2,gran:0},spin:16}];
+  const EC=SHOTS.findIndex(s=>s.moon),TA=SHOTS.findIndex(s=>s.id==='taches'),PR=SHOTS.findIndex(s=>s.id==='protuberances');
+  /* rotation du Soleil (plans larges, en accéléré) : la caméra suit le Soleil, les étoiles tournent d'autant ; le Soleil paraît tourner sur fond d'étoiles fixes */
+  let spinB=0;
 
   /* ----- Interface : bandeau de sécurité, légende, note, progression, commandes ----- */
   const shade=document.createElement('div');shade.className='sol-shade';shade.setAttribute('aria-hidden','true');host.appendChild(shade);
@@ -1806,7 +1868,7 @@ HF.soleil=function(host){
   paintUI();
   ui.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
     if(a==='play')playing=!playing;else if(a==='next')go(shot+1);else if(a==='prev')go(shot-1);
-    else if(a==='fs'){try{if(document.fullscreenElement)document.exitFullscreen();else host.requestFullscreen();}catch(_){}}paintUI();wake();});
+    else if(a==='fs'){HF.immersion();}paintUI();wake();});
   let idle=0;function wake(){idle=0;host.classList.remove('calm');}
   host.addEventListener('pointermove',wake);
 
@@ -1846,9 +1908,10 @@ HF.soleil=function(host){
     const dt=Math.min(.05,(now-last)/1000||0);last=now;sunU.uT.value=now/1000%3600;
     if(user>0)user-=dt;else{offR*=Math.exp(-dt*.6);offL*=Math.exp(-dt*.6);offD=1+(offD-1)*Math.exp(-dt*.6);}
     if(playing&&!reduce&&user<=0)st+=dt;
-    if(st>=SHOTS[shot].dur){shot=(shot+1)%SHOTS.length;st=0;}
+    if(st>=SHOTS[shot].dur){spinB-=(SHOTS[shot].spin||0)*D;shot=(shot+1)%SHOTS.length;st=0;}
     const S=SHOTS[shot],u=cl(st/S.dur,0,1),N=SHOTS[(shot+1)%SHOTS.length];
     let c=S.cam(u),P=S.p,cut=S.cut?S.cut(u):0,k=0;c.fov=fovEff(c.fov);
+    const sa=-(S.spin||0)*u*D;if(sa){c.pos.applyAxisAngle(Y,sa);c.tgt=c.tgt.clone().applyAxisAngle(Y,sa);c.up=c.up.clone().applyAxisAngle(Y,sa);}
     if(st>S.dur-BL){k=sm((st-(S.dur-BL))/BL);const c2=N.cam(0);c2.fov=fovEff(c2.fov);
       c={pos:arc(c.pos,c2.pos,k),tgt:c.tgt.clone().lerp(c2.tgt,k),up:c.up.clone().lerp(c2.up,k).normalize(),fov:c.fov+(c2.fov-c.fov)*k};
       P=lerpP(P,N.p,k);cut=cut*(1-k)+(N.cut?N.cut(0):0)*k;}
@@ -1858,7 +1921,12 @@ HF.soleil=function(host){
     if(c.pos.length()<1.012)c.pos.setLength(1.012);
     cam.position.copy(c.pos);cam.up.copy(c.up);cam.lookAt(c.tgt);
     const dc=c.pos.length();cam.near=cl((dc-1.15)*.25,.0015,.8);cam.fov=c.fov;cam.updateProjectionMatrix();
-    stars.position.copy(cam.position);corona.quaternion.copy(cam.quaternion);
+    stars.position.copy(cam.position);stars.rotation.y=spinB+sa;corona.quaternion.copy(cam.quaternion);
+    const tt=sunU.uT.value;sunU.uPx.value=2*Math.tan(c.fov*D/2)/Math.max(1,H*R.getPixelRatio());
+    /* éruption au-dessus des taches ; grande protubérance qui s'élève ; les autres respirent */
+    sunU.uFl.value=shot===TA?sm((u-.3)/.05)*(1-sm((u-.4)/.45)):0;
+    ERUPT.value=shot===PR?1+.6*sm((u-.12)/.88):shot===(PR+1)%SHOTS.length?1+.6*(1-sm(st/4)):1;
+    for(const g of GROUPS)g.u.value=1+.08*Math.sin(tt*.22+g.ph);
     /* éclipse : la Lune glisse devant le Soleil, puis repart */
     let f=1;const mv=shot===EC||(k>0&&(shot+1)%SHOTS.length===EC);moon.visible=mv;
     if(mv){const ts=Math.asin(1/dc),tm=ts*1.035,off=ts*2.4*(shot===EC?(1-sm(u/.42))+sm(k):1);
@@ -1869,10 +1937,11 @@ HF.soleil=function(host){
       const dm=f>0?sm(f/.02)*(1-sm((f-.02)/.12)):0;diamond.visible=dm>.01;
       if(diamond.visible){diamond.position.copy(pp).multiplyScalar(-1);diamond.material.opacity=dm;diamond.scale.setScalar(1.4);}}
     else diamond.visible=false;
+    chrU.uE.value=mv?1:0;chrU.uA.value=1-.6*cut;
     corU.uA.value=P.cor*(mv?.2+.8*(1-sm(f/.25)):1);corU.uCh.value=mv?(1-sm(f/.06))*.9:0;
     glare.material.opacity=Math.min(1,P.glare*Math.sqrt(f))*(1-cut)*sm((dc-1.5)/1.5);
     {const fpx=(H/2)/Math.tan(c.fov*D/2),gs=Math.max(5.5,140*dc/Math.max(fpx,1));glare.scale.set(gs,gs,1);}
-    sunU.uGran.value=P.gran;sunU.uCut.value=cut;cutA.visible=cutB.visible=cut>.002;cutB.rotation.y=-cut*Math.PI/2;
+    sunU.uCut.value=cut;cutA.visible=cutB.visible=cut>.002;cutB.rotation.y=-cut*Math.PI/2;
     /* la Terre, dans les plans qui la montrent */
     const ep=(k<.5?S.earth:N.earth)||null;earth.visible=!!ep;if(ep)earth.position.copy(ep);
     R.render(sc,cam);

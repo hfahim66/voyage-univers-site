@@ -1611,6 +1611,35 @@ function initFresh(){
     location.reload();}).catch(function(){});
 }
 
+
+/* ----- Bande-son : effets spéciaux d'espace, sans musique (aucune note, aucune mélodie) -----
+   Tout est calculé dans le navigateur à partir de bruit : un grondement sourd et lent en fond (bruit brun, filtré très bas),
+   et un souffle qui monte et descend avec les déplacements de la caméra (bruit blanc, filtre qui s'ouvre avec la vitesse).
+   Démarre au premier geste (règle des navigateurs) ; interrupteur « Son » dans la barre de route, gardé dans HF.store. */
+var son={ctx:null,on:store.get('son')!==false,master:null,amb:null,wh:null,whF:null,
+  start:function(){if(this.ctx||!this.on)return;var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+    try{var c=this.ctx=new AC();}catch(e){return;}
+    var sr=c.sampleRate,N=sr*6,mk=function(brown){var b=c.createBuffer(1,N,sr),d=b.getChannelData(0),l=0;
+      for(var i=0;i<N;i++){var w=Math.random()*2-1;if(brown){l=(l+.02*w)/1.02;d[i]=l*3.5;}else d[i]=w*.5;}
+      var src=c.createBufferSource();src.buffer=b;src.loop=true;src.start();return src;};
+    this.master=c.createGain();this.master.gain.value=0;this.master.connect(c.destination);
+    /* grondement : bruit brun sous 140 Hz, qui « respire » très lentement */
+    var lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=140;this.amb=c.createGain();this.amb.gain.value=.55;
+    var lfo=c.createOscillator(),lg=c.createGain();lfo.frequency.value=.06;lg.gain.value=.2;lfo.connect(lg).connect(this.amb.gain);lfo.start();
+    mk(true).connect(lp).connect(this.amb).connect(this.master);
+    /* souffle des déplacements */
+    this.whF=c.createBiquadFilter();this.whF.type='bandpass';this.whF.frequency.value=250;this.whF.Q.value=.9;
+    this.wh=c.createGain();this.wh.gain.value=0;mk(false).connect(this.whF).connect(this.wh).connect(this.master);
+    this.master.gain.setTargetAtTime(.5,c.currentTime,1.5);},
+  set:function(on){this.on=on;store.set('son',on);if(on){this.start();if(this.ctx){this.ctx.resume();this.master.gain.setTargetAtTime(.5,this.ctx.currentTime,.4);}}
+    else if(this.ctx)this.master.gain.setTargetAtTime(0,this.ctx.currentTime,.2);},
+  /* m : mouvement de 0 (immobile) à 1 (trajet rapide) */
+  move:function(m){if(!this.ctx)return;var t=this.ctx.currentTime;this.wh.gain.setTargetAtTime(.32*m,t,.35);this.whF.frequency.setTargetAtTime(220+1100*m,t,.45);},
+  /* souffle bref (changement de plan, fondu vers un autre film) */
+  burst:function(){if(!this.ctx)return;var t=this.ctx.currentTime;this.wh.gain.cancelScheduledValues(t);this.wh.gain.setTargetAtTime(.3,t,.25);this.wh.gain.setTargetAtTime(0,t+1.2,.6);
+    this.whF.frequency.cancelScheduledValues(t);this.whF.frequency.setTargetAtTime(900,t,.3);this.whF.frequency.setTargetAtTime(260,t+1.2,.7);}};
+['pointerdown','keydown','touchstart'].forEach(function(t){document.addEventListener(t,function(){son.start();if(son.ctx&&son.ctx.state==='suspended')son.ctx.resume();},{passive:true});});
+
 /* ----- La route : « un voyage, huit escales » -----
    Règle simple, la même partout : le film ne s'arrête jamais tout seul (on peut tourner ou zoomer pendant qu'il continue ;
    seul ❚❚ met en pause), et rien ne s'affiche au milieu de l'écran.
@@ -1628,7 +1657,8 @@ function initRoute(){
   bar.innerHTML='<ol>'+E.map(function(e){
       return '<li><a href="'+e.file+'" data-n="'+e.num+'" title="Étape '+e.num+' : '+e.title+'"><i aria-hidden="true"></i><span aria-hidden="true">'+e.nom+'</span><b class="sr">Étape '+e.num+' : '+e.title+'</b></a></li>';}).join('')+
     '</ol><span class="u-route-cur" aria-live="polite"></span><a class="u-route-go" href="voyage.html" hidden></a>'+
-    '<label class="u-auto" title="Tout défile seul : les plans, les étapes et le retour"><input type="checkbox" role="switch"><i aria-hidden="true"></i><span>Auto</span></label>';
+    '<label class="u-auto" title="Tout défile seul : les plans, les étapes et le retour"><input type="checkbox" role="switch"><i aria-hidden="true"></i><span>Auto</span></label>'+
+    '<label class="u-auto u-son" title="Effets sonores d’espace (sans musique)"><input type="checkbox" role="switch"><i aria-hidden="true"></i><span>Son</span></label>';
   scene.parentNode.insertBefore(bar,scene);scene.parentNode.classList.add('u-route-host');
   var links=[].slice.call(bar.querySelectorAll('ol a')),go=bar.querySelector('.u-route-go'),txt=bar.querySelector('.u-route-cur'),shown=-1,goAct=null;
   function paint(n){if(n===shown)return;shown=n;
@@ -1638,7 +1668,7 @@ function initRoute(){
   function setGo(html,href,act){if(!html){go.hidden=true;goAct=null;return;}go.hidden=false;goAct=act;if(go.innerHTML!==html)go.innerHTML=html;go.setAttribute('href',href);}
   /* changer de film : fondu au noir, puis la page suivante */
   var gone=false;
-  function leave(url){if(gone)return;gone=true;var fd=document.createElement('div');fd.className='u-fade';fd.setAttribute('aria-hidden','true');scene.parentNode.appendChild(fd);
+  function leave(url){if(gone)return;gone=true;son.burst();var fd=document.createElement('div');fd.className='u-fade';fd.setAttribute('aria-hidden','true');scene.parentNode.appendChild(fd);
     requestAnimationFrame(function(){fd.classList.add('on');});setTimeout(function(){location.href=url;},900);}
   function voyTo(n){var v=HF._voy;if(!v)return;var i=v.ids.indexOf(RESUME[n]);if(i>=0)v.go(i);}
   bar.addEventListener('click',function(ev){var a=ev.target.closest('ol a');
@@ -1648,9 +1678,10 @@ function initRoute(){
   /* interrupteur « Auto » : par défaut tout est manuel (⏮ ⏭, ← →) ; « Auto » fait tout défiler seul. Gardé d'une page à l'autre. */
   var sw=bar.querySelector('.u-auto input');sw.checked=HF.auto!==false;
   sw.addEventListener('change',function(){HF.auto=sw.checked;store.set('auto',sw.checked);});
+  var sws=bar.querySelector('.u-son input');sws.checked=son.on;sws.addEventListener('change',function(){son.set(sws.checked);});
   /* film en cours : n° du plan et nombre de plans, quel que soit le moteur */
   function film(){var f=HF._voy||HF._vl||HF._eto||HF._sys||HF._sol||HF._cin;if(!f||!f.state)return null;var s=f.state();
-    return {i:f.stage!=null?f.stage:s.shot,n:f.ids?f.ids.length:f.n,id:s.ids||s.id,playing:s.playing!==false,mode:s.mode,rev:!!s.rev,desc:!!s.desc,left:s.left||0};}
+    return {i:f.stage!=null?f.stage:s.shot,n:f.ids?f.ids.length:f.n,id:s.ids||s.id,playing:s.playing!==false,mode:s.mode,rev:!!s.rev,desc:!!s.desc,left:s.left||0,tu:s.tu||0};}
   /* Grand voyage : à chaque étape, on entre dans son film — tout seul en mode Auto (à la fin de la tenue), ou avec ⏭ / → en mode manuel
      (aussi pendant le trajet vers l'étape). Jamais pendant le retour ni la descente, ni à l'étape d'où l'on revient (voyage.html#étape).
      À la dernière étape, le bouton « Revenir au point de départ ». */
@@ -1690,11 +1721,16 @@ function initRoute(){
     if(HF.auto===false){armed=false;wait=0;return;}
     if(f.i===f.n-1&&f.playing)armed=true;
     if(!armed)return;
-    if(f.i===f.n-1){if(f.playing&&(wait+=.5)>=30)leave('voyage.html#'+RESUME[cur]);return;}   /* garde-fou : dernier plan très long */
+    if(f.i===f.n-1){if(f.playing&&(wait+=.25)>=30)leave('voyage.html#'+RESUME[cur]);return;}   /* garde-fou : dernier plan très long */
     if(f.i===0&&wait>=4)leave('voyage.html#'+RESUME[cur]);
     else{armed=false;wait=0;}
   }
-  setInterval(function(){var f=film();if(!f)return;if(isVoy)voyTick(f);else escTick(f);},500);
+  var lastI=-1;
+  setInterval(function(){var f=film();if(!f)return;if(isVoy)voyTick(f);else escTick(f);
+    /* son : trajets du voyage (souffle qui suit la vitesse), changements de plan dans les films (souffle bref) */
+    if(isVoy||f.mode){var m=f.mode==='travel'?Math.sin(Math.PI*(f.tu||0)):0;son.move(m);}
+    else if(f.i!==lastI&&lastI>=0)son.burst();
+    lastI=f.i;},250);
   /* les flèches marchent partout : si la scène n'a pas le focus (clic ailleurs, plein écran), on lui transmet la touche */
   var KEYS=['ArrowLeft','ArrowRight','PageUp','PageDown'];
   document.addEventListener('keydown',function(e){if(KEYS.indexOf(e.key)<0||e.defaultPrevented)return;var t=e.target;

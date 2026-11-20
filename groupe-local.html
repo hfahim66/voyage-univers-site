@@ -1574,6 +1574,8 @@ function immersion(leave){
   window.addEventListener('message',function(e){if(e.source!==f.contentWindow||!e.data)return;
     if(e.data.imm==='url'&&typeof e.data.url==='string')last=e.data.url;else if(e.data.imm==='exit'&&d.fullscreenElement)d.exitFullscreen();});
   d.addEventListener('fullscreenchange',function(){if(!d.fullscreenElement)location.href=last;});
+  /* flèches tapées sur la coque (focus hors du cadre) : transmises au film du cadre */
+  d.addEventListener('keydown',function(e){if(['ArrowLeft','ArrowRight','PageUp','PageDown'].indexOf(e.key)<0)return;e.preventDefault();try{f.contentWindow.postMessage({imm:'key',key:e.key},'*');f.contentWindow.focus();}catch(_){}});
 }
 /* dans le cadre : signaler chaque page vue à la coque */
 if(IN_SHELL){root.classList.add('in-imm');try{window.parent.postMessage({imm:'url',url:location.href},'*');}catch(e){}}
@@ -1654,23 +1656,36 @@ function initRoute(){
      À la dernière étape, le bouton « Revenir au point de départ ». */
   var vid='',skip=decodeURIComponent(location.hash.slice(1)),skipNow=false;
   window.addEventListener('hashchange',function(){skip=decodeURIComponent(location.hash.slice(1));vid='';});
+  /* ordre des plans du grand voyage (comme voyage.js) : les étapes et l'arrêt Voyager 1 */
+  var ORDER=['terre','soleil','planetes','voyager','voisines','galaxie','groupe','toile','univers'];
+  /* reculer depuis le plan « id » du voyage : film précédent (à son dernier plan, #fin) ou arrêt du voyage (#id~) ; null au tout début */
+  function backFrom(id){var p=ORDER[ORDER.indexOf(id)-1];if(!p)return null;var j=RESUME.indexOf(p);return j>0?E[j-1].file+'#fin':'voyage.html#'+p+'~';}
+  /* Grand voyage : en arrivant à une étape, son film s'ouvre aussitôt (pas de titre qui se répète). Jamais pendant le retour ni la descente.
+     À la dernière étape, le bouton « Revenir au point de départ ». */
   function voyTick(f){var n=VOY[f.id];if(n)paint(n);
     if(f.id!==vid){vid=f.id;skipNow=!!skip&&vid===skip;if(skipNow)skip='';}
     if(f.id==='univers'&&!f.rev&&!f.desc)setGo('⟲ Revenir au point de départ','voyage.html#retour',function(){if(HF._voy)HF._voy.retour();});else setGo(null);
     var j=RESUME.indexOf(vid);
-    if(j>0&&!skipNow&&!f.rev&&!f.desc&&f.mode==='hold'&&f.playing&&f.left>0&&f.left<=1.2&&HF.auto!==false&&HF.autoEtape!==false)leave(E[j-1].file);}   /* HF.autoEtape=false : tests (test.py) */
-  function filmHere(){var f=film();if(!f||f.rev||f.desc||HF.autoEtape===false)return null;var j=RESUME.indexOf(f.id);return j>0&&!(skipNow&&f.id===vid)?E[j-1].file:null;}
-  if(isVoy){var enter=function(e){var u=filmHere();if(u){e.stopPropagation();e.preventDefault();leave(u);}};
-    scene.addEventListener('click',function(e){if(e.target.closest('[data-a=next]'))enter(e);},true);
-    scene.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='PageDown')enter(e);},true);}
-  /* Escale : quand le film est fini (dernier plan vu au moins 4 s, puis le film repart au premier plan), retour au grand voyage
-     à l'étape (mode Auto). ⏭ (ou →) au dernier plan, ⏮ (ou ←) au premier : on retourne dans le voyage. */
+    if(j>0&&!skipNow&&!f.rev&&!f.desc&&f.mode==='hold'&&HF.autoEtape!==false)leave(E[j-1].file);}   /* HF.autoEtape=false : tests (test.py) */
+  /* ⏮ ⏭ et ← → , partout le même sens : → avance (dans le voyage, entre dans le film de l'étape vers laquelle on va) ;
+     ← recule (au début d'un film : dernier plan du film précédent ; dans le voyage : idem, ou l'arrêt précédent). */
+  var fwd=function(e){return e.type==='click'?!!e.target.closest('[data-a=next]'):(e.key==='ArrowRight'||e.key==='PageDown');},
+      bwd=function(e){return e.type==='click'?!!e.target.closest('[data-a=prev]'):(e.key==='ArrowLeft'||e.key==='PageUp');},
+      take=function(e,url){e.stopPropagation();e.preventDefault();if(url)leave(url);};
+  if(isVoy){var onKey=function(e){var f=film();if(!f||f.rev||f.desc||HF.autoEtape===false)return;
+      if(fwd(e)){var j=RESUME.indexOf(f.id);if(j>0&&!(skipNow&&f.id===vid))take(e,E[j-1].file);}
+      else if(bwd(e)){var u=backFrom(f.id);if(u&&u.indexOf('voyage.html')<0)take(e,u);else if(!u)take(e,null);}};
+    scene.addEventListener('click',onKey,true);scene.addEventListener('keydown',onKey,true);}
+  /* Film d'une étape : → au dernier plan, le voyage continue ; ← au premier plan, on recule (rien avant la toute première étape).
+     #fin : ouvrir le film à son dernier plan (quand on recule depuis l'étape suivante). Mode Auto : à la fin du film, le voyage continue. */
   var armed=false,wait=0;
   if(!isVoy){
-    var onLast=function(){var f=film();return f&&f.i===f.n-1;},cont=function(e){e.stopPropagation();e.preventDefault();leave('voyage.html#'+RESUME[cur]);};
-    var onFirst=function(){var f=film();return f&&f.i===0;};
-    scene.addEventListener('click',function(e){if(e.target.closest('[data-a=next]')&&onLast()||e.target.closest('[data-a=prev]')&&onFirst())cont(e);},true);
-    scene.addEventListener('keydown',function(e){if((e.key==='ArrowRight'||e.key==='PageDown')&&onLast()||(e.key==='ArrowLeft'||e.key==='PageUp')&&onFirst())cont(e);},true);}
+    var onEsc=function(e){var f=film();if(!f)return;
+      if(fwd(e)&&f.i===f.n-1)take(e,'voyage.html#'+RESUME[cur]);
+      else if(bwd(e)&&f.i===0)take(e,backFrom(RESUME[cur]));};
+    scene.addEventListener('click',onEsc,true);scene.addEventListener('keydown',onEsc,true);
+    if(location.hash==='#fin'){var tries=0,jf=setInterval(function(){var f=film();if(!f&&++tries<50)return;clearInterval(jf);if(!f)return;
+      var o=HF._voy||HF._vl||HF._eto||HF._sys||HF._sol;if(o&&o.go)o.go(f.n-1,true);else if(HF._cin)for(var i=0;i<f.n&&HF._cin.state().shot!==f.n-1;i++)HF._cin.next();},100);}}
   function escTick(f){
     if(HF.auto===false){armed=false;wait=0;return;}
     if(f.i===f.n-1&&f.playing)armed=true;
@@ -1680,6 +1695,13 @@ function initRoute(){
     else{armed=false;wait=0;}
   }
   setInterval(function(){var f=film();if(!f)return;if(isVoy)voyTick(f);else escTick(f);},500);
+  /* les flèches marchent partout : si la scène n'a pas le focus (clic ailleurs, plein écran), on lui transmet la touche */
+  var KEYS=['ArrowLeft','ArrowRight','PageUp','PageDown'];
+  document.addEventListener('keydown',function(e){if(KEYS.indexOf(e.key)<0||e.defaultPrevented)return;var t=e.target;
+    if(scene.contains(t)||(t&&t.closest&&t.closest('input,textarea,select,[contenteditable],.u-menu:not([hidden])')))return;
+    e.preventDefault();scene.dispatchEvent(new KeyboardEvent('keydown',{key:e.key,bubbles:true,cancelable:true}));});
+  window.addEventListener('message',function(e){if(e.data&&e.data.imm==='key'&&KEYS.indexOf(e.data.key)>=0)scene.dispatchEvent(new KeyboardEvent('keydown',{key:e.data.key,bubbles:true,cancelable:true}));});
+  setTimeout(function(){try{if(!document.activeElement||document.activeElement===document.body)scene.focus({preventScroll:true});}catch(_){}},300);
   /* aide discrète, en haut de la scène (3 premières fois) : reculer ou avancer (← → ou ⏮ ⏭), tourner, et le film continue */
   var nh=+store.get('aide-tourner')||0;
   if(nh<3){store.set('aide-tourner',nh+1);setTimeout(function(){var h=document.createElement('div');h.className='u-hint';h.setAttribute('aria-hidden','true');
@@ -2244,7 +2266,6 @@ HF.voyage=function(host,opt){
     {id:'ici',hold:11,drift:0,f:()=>({p:dA.clone().multiplyScalar(1e18),d:dA.clone().negate(),up:perp(N,dA),fov:32,z0:lg(1e18-1e8),z:lg(1e18-1e8)}),
       ov:(F,w)=>{W1(F,w,{lg:.6});F.h[1]=Math.max(F.h[1],.9*w);F.h[2]=Math.max(F.h[2],.5*w);},
       t:'Andromède, vue d’ici',l:'2,5 millions d’années-lumière',s:'Par une nuit d’automne sans Lune, loin des villes : une petite tache floue près de Cassiopée. C’est une autre galaxie.',i:'Galaxie : illustration, à sa vraie place dans le ciel. À l’œil nu, on n’en voit que le cœur.',labs:['g0','g1']},
-    {id:'mw',hold:10,f:()=>aim(GC,mixd(GZ,GX,48),20*KPC,1.3),t:'Notre galaxie, vue de loin',l:'≈ 100 000 années-lumière',s:'Quittons la Voie lactée : autour d’elle, d’autres galaxies.',i:'Illustration : forme et bras d’après les observations.',labs:['mw','ici']},
     {id:'magellan',hold:11,f:()=>{const v=unit(MC.clone().sub(GC)),s=lineShot(GC.clone().lerp(MC,.45),perp(GZ.clone().add(GY.clone().multiplyScalar(.6)),v),v,GC.distanceTo(MC)+30*KPC,40,1.25);s.z0=s.z+.1;return s;},
       ov:(F,w)=>W1(F,w,{lg:.55}),t:'Les Nuages de Magellan',l:'160 000 et 200 000 années-lumière',s:'Deux petites galaxies qui accompagnent la nôtre. On les voit à l’œil nu… depuis l’hémisphère Sud seulement.',i:ill,labs:['mw','g2','g3']},
     {id:'route',hold:11,f:()=>{const s=lineShot(GC.clone().lerp(M31,.5),perp(GZ.clone().add(GX.clone().multiplyScalar(.4)),vA),vA,M31.distanceTo(GC),40,1.45);s.z0=s.z-.12;return s;},
@@ -2260,8 +2281,6 @@ HF.voyage=function(host,opt){
       i:'Flèche : sens du mouvement (illustration).',labs:['mw','g0','fleche']}];},
   structures:()=>{const ill='Galaxies et filaments : illustrations ; amas nommés à leur vraie place.',dC=unit(CLU[6].p.clone().sub(SUNP)),dS=unit(CLU[7].p.clone().sub(SUNP));
     return [
-    {id:'groupe',hold:11,f:()=>aim(GC.clone().lerp(M31,.5),mixd(SG,dV,30),5*MPC,1.5),ov:near(2,.6),
-      t:'Le Groupe local, vu de loin',l:'≈ 10 millions d’années-lumière',s:'Notre galaxie et Andromède ne sont plus que deux taches. Tout autour, d’autres groupes de galaxies.',i:ill,labs:['mw','g0']},
     {id:'vierge',hold:12,f:()=>aim(CLU[0].p,mixd(dV.clone().negate(),side(dV),55),6*MPC),ov:near(1.5,.7),
       t:'L’amas de la Vierge',l:'54 millions d’années-lumière',s:'Plus de 1 000 galaxies serrées les unes contre les autres. En son cœur, la géante M87, dont le trou noir a été photographié en 2019.',i:ill,labs:['c0']},
     {id:'voisinage',hold:11,f:()=>{const s=lineShot(SUNP.clone().lerp(CLU[0].p,.5),perp(SG,dV),dV,CLU[0].p.distanceTo(SUNP)+14*MPC,40,1.3);s.z0=s.z-.1;return s;},ov:near(2,.6),
@@ -2278,7 +2297,6 @@ HF.voyage=function(host,opt){
       t:'Les grands vides',l:'Des centaines de millions d’années-lumière',s:'Entre les filaments, d’immenses régions presque sans galaxies. Chaque point de lumière est une galaxie, avec ses milliards d’étoiles.',i:'Illustration.',labs:['nous2']}];},
   univers:()=>{const ill='Illustration : la toile et le fond diffus sont dessinés.';
     return [
-    {id:'toile',hold:10,f:()=>aim(SUNP,mixd(SG,dV,35),300*MPC,1.4),t:'Au-delà des amas',l:'Des centaines de millions d’années-lumière',s:'La toile des galaxies, tout autour de nous. Continuons à reculer.',i:'Filaments : illustration.',labs:['nous2']},
     {id:'profond',hold:11,drift:10,f:()=>aim(SUNP,mixd(SG,dV,80),2.2*GPC,1.5),t:'Plus loin, plus tôt',l:'Des milliards d’années-lumière',s:'Regarder loin, c’est voir le passé : la lumière des galaxies les plus lointaines est partie il y a plus de 13 milliards d’années.',i:ill,labs:['nous']},
     {id:'bulle',hold:12,f:SV('univers'),t:'L’univers observable',l:'≈ 93 milliards d’années-lumière de diamètre',s:'Tout ce dont la lumière a pu nous parvenir depuis le Big Bang : des centaines de milliards de galaxies.',i:'Point de vue imaginaire. '+ill,labs:['nous','cmb']},
     {id:'expansion',hold:13,drift:12,f:()=>aim(SUNP,mixd(N,SG,60),R_OBS*1.15,1.15),t:'13,8 milliards d’années, 46 milliards d’années-lumière',l:'L’espace s’étire',s:'La plus vieille lumière voyage depuis 13,8 milliards d’années. Pendant ce temps, l’espace s’est étiré : sa source est aujourd’hui à ≈ 46 milliards d’années-lumière.',i:'Point de vue imaginaire. '+ill,labs:['nous','cmb']},
@@ -2286,8 +2304,7 @@ HF.voyage=function(host,opt){
       t:'Le fond diffus cosmologique',l:'380 000 ans après le Big Bang',s:'La plus vieille lumière, venue de toutes les directions. Elle s’est refroidie : 2,7 degrés au-dessus du zéro absolu (−270 °C), avec des écarts d’à peine un cent-millième.',
       i:'Illustration : taches et couleurs exagérées. La vraie carte a été dressée par le satellite Planck (ESA).',labs:[]},
     {id:'centre',hold:11,f:()=>aim(SUNP,mixd(SG.clone().negate(),N,40),R_OBS*1.2,1.1),t:'Chacun au centre',l:'Un univers sans centre',s:'Nous sommes au centre de notre univers observable, comme le serait n’importe quel observateur, dans n’importe quelle galaxie.',i:'Point de vue imaginaire.',labs:['nous']},
-    {id:'point-bleu',hold:13,f:()=>({p:V3(0,0,0),d:dirLatRel(76,24),up:N,fov:38,z0:lg(5*RE),z:lg(3.4*RE)}),t:'Retour au point bleu pâle',l:'Ici, maintenant',
-      s:'En 1990, à 6 milliards de km, Voyager 1 a photographié la Terre : un point minuscule dans un rayon de Soleil. C’est là que nous vivons tous.',ch:['voyage.html#retour','⟲ Revoir tout le chemin, de l’Univers à la Terre'],labs:[]}];}};
+];}};
   if(CHAP&&CHAPS[CHAP])ST=CHAPS[CHAP]();
   /* Grand voyage : un seul voyage, les films des 8 étapes sont dedans. Le voyage relie les étapes ; en arrivant à une étape, il n'affiche
      que son nom quelques secondes, puis le film de l'étape prend le relais (core.js). Les plans que les films montrent déjà sont retirés :
@@ -2350,14 +2367,15 @@ HF.voyage=function(host,opt){
   /* ⏮ ⏭ (et ← →) : toujours « continuer dans le sens du film ». Pendant le retour : une étape vers la Terre (⏭) ou vers le large (⏮),
      sans annuler le retour ; pendant la descente : ⏭ la passe ; à la dernière étape du voyage : ⏭ lance le retour. */
   function step(d){
-    if(desc){if(d>0)endDesc();return;}
+    if(desc){endDesc();return;}
     if(rev){const to=cl(curIdx()-d,0,ST.length-1);const s0=snap();offY=offP=offZ=0;user=0;travel(s0,to,true);hideStage();return;}
     if(!CHAP&&d>0&&curIdx()===ST.length-1){startRev();return;}
+    if(!CHAP&&curIdx()+d<0)return;
     go(curIdx()+d);}
   function descTick(){
     if(desc===1&&descT>=tr.dur){desc=2;descT=0;hv0=2*H_ALT*Math.tan(fovEff(38)*D/2);}
     if(desc===2&&descT>=(reduce?.01:D_ZOOM)){desc=3;descT=0;}
-    if(desc===3&&descT>=D_STAY&&playing)endDesc();}
+    if(desc===3&&descT>=D_STAY&&playing&&HF.auto!==false)endDesc();}
   function photo(dt){const want=desc>=2?1:0;phA+=(want-phA)*Math.min(1,dt*(want?1.5:2.2));
     if(!want&&phA<.004){if(ph.style.opacity!=='0')ph.style.opacity='0';return;}
     const cw=Math.round(W*DPR),chh=Math.round(H*DPR);if(ph.width!==cw||ph.height!==chh){ph.width=cw;ph.height=chh;}
@@ -2386,8 +2404,7 @@ HF.voyage=function(host,opt){
   function showStage(){const S=ST[k];shown=k;
     if(rev)cap.innerHTML='<div class="vy3-ci vy3-rev"><small class="vy3-revn">Retour vers la Terre · '+(ST.length-k)+' / '+ST.length+'</small><b>'+val(S.t)+'</b><em>'+val(S.l)+'</em></div>';
     else if(home)cap.innerHTML='<div class="vy3-ci"><b>De retour sur Terre</b><em>Le point de départ</em><span>Tout ce chemin a été parcouru, et mesuré, depuis cette petite planète.</span><button type="button" class="vy3-ch" data-encore>▶ Repartir pour le grand voyage</button></div>';
-    else if(!CHAP&&ETAPE[S.id])cap.innerHTML='<div class="vy3-ci vy3-rev"><small class="vy3-revn">Étape '+ETAPE[S.id]+' sur 8</small><b>'+(ETITLE[ETAPE[S.id]-1]||val(S.t))+'</b><em>'+val(S.l)+'</em>'+
-      (k===ST.length-1?'<button type="button" class="vy3-ch" data-retour>⟲ Revenir au point de départ</button>':'')+'</div>';
+    else if(!CHAP&&ETAPE[S.id]&&HF.autoEtape!==false)cap.innerHTML='';   /* étape : pas de titre, son film s'ouvre aussitôt (core.js) */
     else cap.innerHTML='<div class="vy3-ci"><b>'+val(S.t)+'</b><em>'+val(S.l)+'</em><span>'+val(S.s)+'</span>'+(S.i?'<small>'+S.i+'</small>':'')+(S.ch?'<a class="vy3-ch" href="'+S.ch[0]+'">'+S.ch[1]+' →</a>':'')+
       (!CHAP&&k===ST.length-1?'<button type="button" class="vy3-ch" data-retour>⟲ Revenir au point de départ</button>':'')+'</div>';
     cap.classList.remove('in');void cap.offsetWidth;cap.classList.add('in');
@@ -2499,7 +2516,10 @@ HF.voyage=function(host,opt){
   document.addEventListener('visibilitychange',()=>{visible=!document.hidden;kick();});
   showStage();kick();
   /* reprise du grand voyage à une étape précise (voyage.html#galaxie), depuis une escale */
-  if(!CHAP){const fromHash=()=>{const h=decodeURIComponent(location.hash.slice(1));if(h==='retour'){go(ST.length-1,true);startRev();return;}const hi=ST.findIndex(s=>s.id===h);if(hi>0)go(hi,true);};fromHash();window.addEventListener('hashchange',fromHash);}
+  if(!CHAP){const fromHash=()=>{const h=decodeURIComponent(location.hash.slice(1));if(h==='retour'){go(ST.length-1,true);cur=apply(stState(ST.length-1,1));startRev();return;}
+    /* « étape~ » : s'arrêter sur ce plan du voyage (← depuis un film) ; « étape » : retour d'un film, on repart aussitôt vers la suite */
+    const stop=h.endsWith('~'),hi=ST.findIndex(s=>s.id===(stop?h.slice(0,-1):h));if(hi<0)return;go(hi,true);if(stop)return;
+    cur=apply(stState(hi,1));if(hi===ST.length-1)startRev();else{travel(cur,hi+1);hideStage();}};fromHash();window.addEventListener('hashchange',fromHash);}
   /* pour les captures : figer le trajet vers le plan n à la fraction u (pause) */
   function seek(n,u){k=(n-1+ST.length)%ST.length;offY=offP=offZ=0;user=0;travel(apply(stState(k,1)),n);t=u*tr.dur;playing=false;paintUI();hideStage();}
   return {go,seek,get stage(){return curIdx();},ids:ST.map(s=>s.id),state:()=>({k,mode,t,playing,rev,home,desc,left:mode==='hold'&&!desc?Math.max(0,holdOf(k)-t):0,ids:ST[curIdx()].id,cap:cap.textContent,dist:dist.textContent,lE:lg(camPos.length())}),renderer:R,retour(){if(rev||desc)return;if(curIdx()!==ST.length-1)go(ST.length-1,true);startRev();},descend(){k=0;mode='hold';t=0;startDesc();},finish(){while(JOBS.length||job)runJobs(1000);}};

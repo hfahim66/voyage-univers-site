@@ -1576,6 +1576,8 @@ function immersion(leave){
   window.addEventListener('message',function(e){if(e.source!==f.contentWindow||!e.data)return;
     if(e.data.imm==='url'&&typeof e.data.url==='string')last=e.data.url;else if(e.data.imm==='exit'&&d.fullscreenElement)d.exitFullscreen();});
   d.addEventListener('fullscreenchange',function(){if(!d.fullscreenElement)location.href=last;});
+  /* flèches tapées sur la coque (focus hors du cadre) : transmises au film du cadre */
+  d.addEventListener('keydown',function(e){if(['ArrowLeft','ArrowRight','PageUp','PageDown'].indexOf(e.key)<0)return;e.preventDefault();try{f.contentWindow.postMessage({imm:'key',key:e.key},'*');f.contentWindow.focus();}catch(_){}});
 }
 /* dans le cadre : signaler chaque page vue à la coque */
 if(IN_SHELL){root.classList.add('in-imm');try{window.parent.postMessage({imm:'url',url:location.href},'*');}catch(e){}}
@@ -1656,23 +1658,36 @@ function initRoute(){
      À la dernière étape, le bouton « Revenir au point de départ ». */
   var vid='',skip=decodeURIComponent(location.hash.slice(1)),skipNow=false;
   window.addEventListener('hashchange',function(){skip=decodeURIComponent(location.hash.slice(1));vid='';});
+  /* ordre des plans du grand voyage (comme voyage.js) : les étapes et l'arrêt Voyager 1 */
+  var ORDER=['terre','soleil','planetes','voyager','voisines','galaxie','groupe','toile','univers'];
+  /* reculer depuis le plan « id » du voyage : film précédent (à son dernier plan, #fin) ou arrêt du voyage (#id~) ; null au tout début */
+  function backFrom(id){var p=ORDER[ORDER.indexOf(id)-1];if(!p)return null;var j=RESUME.indexOf(p);return j>0?E[j-1].file+'#fin':'voyage.html#'+p+'~';}
+  /* Grand voyage : en arrivant à une étape, son film s'ouvre aussitôt (pas de titre qui se répète). Jamais pendant le retour ni la descente.
+     À la dernière étape, le bouton « Revenir au point de départ ». */
   function voyTick(f){var n=VOY[f.id];if(n)paint(n);
     if(f.id!==vid){vid=f.id;skipNow=!!skip&&vid===skip;if(skipNow)skip='';}
     if(f.id==='univers'&&!f.rev&&!f.desc)setGo('⟲ Revenir au point de départ','voyage.html#retour',function(){if(HF._voy)HF._voy.retour();});else setGo(null);
     var j=RESUME.indexOf(vid);
-    if(j>0&&!skipNow&&!f.rev&&!f.desc&&f.mode==='hold'&&f.playing&&f.left>0&&f.left<=1.2&&HF.auto!==false&&HF.autoEtape!==false)leave(E[j-1].file);}   /* HF.autoEtape=false : tests (test.py) */
-  function filmHere(){var f=film();if(!f||f.rev||f.desc||HF.autoEtape===false)return null;var j=RESUME.indexOf(f.id);return j>0&&!(skipNow&&f.id===vid)?E[j-1].file:null;}
-  if(isVoy){var enter=function(e){var u=filmHere();if(u){e.stopPropagation();e.preventDefault();leave(u);}};
-    scene.addEventListener('click',function(e){if(e.target.closest('[data-a=next]'))enter(e);},true);
-    scene.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='PageDown')enter(e);},true);}
-  /* Escale : quand le film est fini (dernier plan vu au moins 4 s, puis le film repart au premier plan), retour au grand voyage
-     à l'étape (mode Auto). ⏭ (ou →) au dernier plan, ⏮ (ou ←) au premier : on retourne dans le voyage. */
+    if(j>0&&!skipNow&&!f.rev&&!f.desc&&f.mode==='hold'&&HF.autoEtape!==false)leave(E[j-1].file);}   /* HF.autoEtape=false : tests (test.py) */
+  /* ⏮ ⏭ et ← → , partout le même sens : → avance (dans le voyage, entre dans le film de l'étape vers laquelle on va) ;
+     ← recule (au début d'un film : dernier plan du film précédent ; dans le voyage : idem, ou l'arrêt précédent). */
+  var fwd=function(e){return e.type==='click'?!!e.target.closest('[data-a=next]'):(e.key==='ArrowRight'||e.key==='PageDown');},
+      bwd=function(e){return e.type==='click'?!!e.target.closest('[data-a=prev]'):(e.key==='ArrowLeft'||e.key==='PageUp');},
+      take=function(e,url){e.stopPropagation();e.preventDefault();if(url)leave(url);};
+  if(isVoy){var onKey=function(e){var f=film();if(!f||f.rev||f.desc||HF.autoEtape===false)return;
+      if(fwd(e)){var j=RESUME.indexOf(f.id);if(j>0&&!(skipNow&&f.id===vid))take(e,E[j-1].file);}
+      else if(bwd(e)){var u=backFrom(f.id);if(u&&u.indexOf('voyage.html')<0)take(e,u);else if(!u)take(e,null);}};
+    scene.addEventListener('click',onKey,true);scene.addEventListener('keydown',onKey,true);}
+  /* Film d'une étape : → au dernier plan, le voyage continue ; ← au premier plan, on recule (rien avant la toute première étape).
+     #fin : ouvrir le film à son dernier plan (quand on recule depuis l'étape suivante). Mode Auto : à la fin du film, le voyage continue. */
   var armed=false,wait=0;
   if(!isVoy){
-    var onLast=function(){var f=film();return f&&f.i===f.n-1;},cont=function(e){e.stopPropagation();e.preventDefault();leave('voyage.html#'+RESUME[cur]);};
-    var onFirst=function(){var f=film();return f&&f.i===0;};
-    scene.addEventListener('click',function(e){if(e.target.closest('[data-a=next]')&&onLast()||e.target.closest('[data-a=prev]')&&onFirst())cont(e);},true);
-    scene.addEventListener('keydown',function(e){if((e.key==='ArrowRight'||e.key==='PageDown')&&onLast()||(e.key==='ArrowLeft'||e.key==='PageUp')&&onFirst())cont(e);},true);}
+    var onEsc=function(e){var f=film();if(!f)return;
+      if(fwd(e)&&f.i===f.n-1)take(e,'voyage.html#'+RESUME[cur]);
+      else if(bwd(e)&&f.i===0)take(e,backFrom(RESUME[cur]));};
+    scene.addEventListener('click',onEsc,true);scene.addEventListener('keydown',onEsc,true);
+    if(location.hash==='#fin'){var tries=0,jf=setInterval(function(){var f=film();if(!f&&++tries<50)return;clearInterval(jf);if(!f)return;
+      var o=HF._voy||HF._vl||HF._eto||HF._sys||HF._sol;if(o&&o.go)o.go(f.n-1,true);else if(HF._cin)for(var i=0;i<f.n&&HF._cin.state().shot!==f.n-1;i++)HF._cin.next();},100);}}
   function escTick(f){
     if(HF.auto===false){armed=false;wait=0;return;}
     if(f.i===f.n-1&&f.playing)armed=true;
@@ -1682,6 +1697,13 @@ function initRoute(){
     else{armed=false;wait=0;}
   }
   setInterval(function(){var f=film();if(!f)return;if(isVoy)voyTick(f);else escTick(f);},500);
+  /* les flèches marchent partout : si la scène n'a pas le focus (clic ailleurs, plein écran), on lui transmet la touche */
+  var KEYS=['ArrowLeft','ArrowRight','PageUp','PageDown'];
+  document.addEventListener('keydown',function(e){if(KEYS.indexOf(e.key)<0||e.defaultPrevented)return;var t=e.target;
+    if(scene.contains(t)||(t&&t.closest&&t.closest('input,textarea,select,[contenteditable],.u-menu:not([hidden])')))return;
+    e.preventDefault();scene.dispatchEvent(new KeyboardEvent('keydown',{key:e.key,bubbles:true,cancelable:true}));});
+  window.addEventListener('message',function(e){if(e.data&&e.data.imm==='key'&&KEYS.indexOf(e.data.key)>=0)scene.dispatchEvent(new KeyboardEvent('keydown',{key:e.data.key,bubbles:true,cancelable:true}));});
+  setTimeout(function(){try{if(!document.activeElement||document.activeElement===document.body)scene.focus({preventScroll:true});}catch(_){}},300);
   /* aide discrète, en haut de la scène (3 premières fois) : reculer ou avancer (← → ou ⏮ ⏭), tourner, et le film continue */
   var nh=+store.get('aide-tourner')||0;
   if(nh<3){store.set('aide-tourner',nh+1);setTimeout(function(){var h=document.createElement('div');h.className='u-hint';h.setAttribute('aria-hidden','true');
@@ -1998,7 +2020,7 @@ HF.etoiles=function(host){
         const d0=fit((b.x+b.r)-(a.x-.05)+.4,2.4,40),d1=fit((z.x+z.r)-(c.x-c.r),2*z.r,40)*1.1,e=sm((u-.14)/.78),d=d0*Math.pow(d1/d0,e),f=(d-d0)/(d1-d0);
         return {pos:t0.clone().lerp(t1,f).add(V(0,.14,1).normalize().multiplyScalar(d)),tgt:t0.clone().lerp(t1,f),up:N,fov:40};},p:{fld:.35},labs:['betel','rigel','soleil','sirius','proxima','terre'],
       lab:k=>k==='sirius'?'Sirius · 1,7 fois le Soleil':k==='rigel'?'Rigel · ≈ 79 fois':k==='betel'?'Bételgeuse · ≈ 760 fois':AT[k].n},
-    {id:'lumiere',sp:'c',dur:16,tr:4,t:'Regarder loin, c’est voir le passé',l:()=>'Lumière de Sirius : '+parti('sirius'),s:'Celle de Rigel voyage depuis plus de 800 ans : ce soir, vous la verrez telle qu’elle était au Moyen Âge.',
+    {id:'lumiere',sp:'c',dur:16,tr:4,t:'Une lumière venue d’un autre temps',l:()=>'Lumière de Sirius : '+parti('sirius'),s:'Celle de Rigel voyage depuis plus de 800 ans : ce soir, vous la verrez telle qu’elle était au Moyen Âge.',
       i:'Durées calculées avec les distances du catalogue HYG.',
       cam:u=>{const c=unit(unit(P_('sirius')).add(unit(P_('ald'))).add(unit(centroid(ORI))).add(unit(P_('procyon')))),d=c.clone().applyAxisAngle(N,(-2+4*u)*D);return {pos:V(),tgt:d,up:perp(N,d),fov:66};},
       p:{fld:1,ori:.35},labs:['sirius','procyon','ald','bet','rig','cap'],lab:k=>ST[k].n+' · '+parti(k)},

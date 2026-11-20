@@ -1574,6 +1574,8 @@ function immersion(leave){
   window.addEventListener('message',function(e){if(e.source!==f.contentWindow||!e.data)return;
     if(e.data.imm==='url'&&typeof e.data.url==='string')last=e.data.url;else if(e.data.imm==='exit'&&d.fullscreenElement)d.exitFullscreen();});
   d.addEventListener('fullscreenchange',function(){if(!d.fullscreenElement)location.href=last;});
+  /* flèches tapées sur la coque (focus hors du cadre) : transmises au film du cadre */
+  d.addEventListener('keydown',function(e){if(['ArrowLeft','ArrowRight','PageUp','PageDown'].indexOf(e.key)<0)return;e.preventDefault();try{f.contentWindow.postMessage({imm:'key',key:e.key},'*');f.contentWindow.focus();}catch(_){}});
 }
 /* dans le cadre : signaler chaque page vue à la coque */
 if(IN_SHELL){root.classList.add('in-imm');try{window.parent.postMessage({imm:'url',url:location.href},'*');}catch(e){}}
@@ -1654,23 +1656,36 @@ function initRoute(){
      À la dernière étape, le bouton « Revenir au point de départ ». */
   var vid='',skip=decodeURIComponent(location.hash.slice(1)),skipNow=false;
   window.addEventListener('hashchange',function(){skip=decodeURIComponent(location.hash.slice(1));vid='';});
+  /* ordre des plans du grand voyage (comme voyage.js) : les étapes et l'arrêt Voyager 1 */
+  var ORDER=['terre','soleil','planetes','voyager','voisines','galaxie','groupe','toile','univers'];
+  /* reculer depuis le plan « id » du voyage : film précédent (à son dernier plan, #fin) ou arrêt du voyage (#id~) ; null au tout début */
+  function backFrom(id){var p=ORDER[ORDER.indexOf(id)-1];if(!p)return null;var j=RESUME.indexOf(p);return j>0?E[j-1].file+'#fin':'voyage.html#'+p+'~';}
+  /* Grand voyage : en arrivant à une étape, son film s'ouvre aussitôt (pas de titre qui se répète). Jamais pendant le retour ni la descente.
+     À la dernière étape, le bouton « Revenir au point de départ ». */
   function voyTick(f){var n=VOY[f.id];if(n)paint(n);
     if(f.id!==vid){vid=f.id;skipNow=!!skip&&vid===skip;if(skipNow)skip='';}
     if(f.id==='univers'&&!f.rev&&!f.desc)setGo('⟲ Revenir au point de départ','voyage.html#retour',function(){if(HF._voy)HF._voy.retour();});else setGo(null);
     var j=RESUME.indexOf(vid);
-    if(j>0&&!skipNow&&!f.rev&&!f.desc&&f.mode==='hold'&&f.playing&&f.left>0&&f.left<=1.2&&HF.auto!==false&&HF.autoEtape!==false)leave(E[j-1].file);}   /* HF.autoEtape=false : tests (test.py) */
-  function filmHere(){var f=film();if(!f||f.rev||f.desc||HF.autoEtape===false)return null;var j=RESUME.indexOf(f.id);return j>0&&!(skipNow&&f.id===vid)?E[j-1].file:null;}
-  if(isVoy){var enter=function(e){var u=filmHere();if(u){e.stopPropagation();e.preventDefault();leave(u);}};
-    scene.addEventListener('click',function(e){if(e.target.closest('[data-a=next]'))enter(e);},true);
-    scene.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='PageDown')enter(e);},true);}
-  /* Escale : quand le film est fini (dernier plan vu au moins 4 s, puis le film repart au premier plan), retour au grand voyage
-     à l'étape (mode Auto). ⏭ (ou →) au dernier plan, ⏮ (ou ←) au premier : on retourne dans le voyage. */
+    if(j>0&&!skipNow&&!f.rev&&!f.desc&&f.mode==='hold'&&HF.autoEtape!==false)leave(E[j-1].file);}   /* HF.autoEtape=false : tests (test.py) */
+  /* ⏮ ⏭ et ← → , partout le même sens : → avance (dans le voyage, entre dans le film de l'étape vers laquelle on va) ;
+     ← recule (au début d'un film : dernier plan du film précédent ; dans le voyage : idem, ou l'arrêt précédent). */
+  var fwd=function(e){return e.type==='click'?!!e.target.closest('[data-a=next]'):(e.key==='ArrowRight'||e.key==='PageDown');},
+      bwd=function(e){return e.type==='click'?!!e.target.closest('[data-a=prev]'):(e.key==='ArrowLeft'||e.key==='PageUp');},
+      take=function(e,url){e.stopPropagation();e.preventDefault();if(url)leave(url);};
+  if(isVoy){var onKey=function(e){var f=film();if(!f||f.rev||f.desc||HF.autoEtape===false)return;
+      if(fwd(e)){var j=RESUME.indexOf(f.id);if(j>0&&!(skipNow&&f.id===vid))take(e,E[j-1].file);}
+      else if(bwd(e)){var u=backFrom(f.id);if(u&&u.indexOf('voyage.html')<0)take(e,u);else if(!u)take(e,null);}};
+    scene.addEventListener('click',onKey,true);scene.addEventListener('keydown',onKey,true);}
+  /* Film d'une étape : → au dernier plan, le voyage continue ; ← au premier plan, on recule (rien avant la toute première étape).
+     #fin : ouvrir le film à son dernier plan (quand on recule depuis l'étape suivante). Mode Auto : à la fin du film, le voyage continue. */
   var armed=false,wait=0;
   if(!isVoy){
-    var onLast=function(){var f=film();return f&&f.i===f.n-1;},cont=function(e){e.stopPropagation();e.preventDefault();leave('voyage.html#'+RESUME[cur]);};
-    var onFirst=function(){var f=film();return f&&f.i===0;};
-    scene.addEventListener('click',function(e){if(e.target.closest('[data-a=next]')&&onLast()||e.target.closest('[data-a=prev]')&&onFirst())cont(e);},true);
-    scene.addEventListener('keydown',function(e){if((e.key==='ArrowRight'||e.key==='PageDown')&&onLast()||(e.key==='ArrowLeft'||e.key==='PageUp')&&onFirst())cont(e);},true);}
+    var onEsc=function(e){var f=film();if(!f)return;
+      if(fwd(e)&&f.i===f.n-1)take(e,'voyage.html#'+RESUME[cur]);
+      else if(bwd(e)&&f.i===0)take(e,backFrom(RESUME[cur]));};
+    scene.addEventListener('click',onEsc,true);scene.addEventListener('keydown',onEsc,true);
+    if(location.hash==='#fin'){var tries=0,jf=setInterval(function(){var f=film();if(!f&&++tries<50)return;clearInterval(jf);if(!f)return;
+      var o=HF._voy||HF._vl||HF._eto||HF._sys||HF._sol;if(o&&o.go)o.go(f.n-1,true);else if(HF._cin)for(var i=0;i<f.n&&HF._cin.state().shot!==f.n-1;i++)HF._cin.next();},100);}}
   function escTick(f){
     if(HF.auto===false){armed=false;wait=0;return;}
     if(f.i===f.n-1&&f.playing)armed=true;
@@ -1680,6 +1695,13 @@ function initRoute(){
     else{armed=false;wait=0;}
   }
   setInterval(function(){var f=film();if(!f)return;if(isVoy)voyTick(f);else escTick(f);},500);
+  /* les flèches marchent partout : si la scène n'a pas le focus (clic ailleurs, plein écran), on lui transmet la touche */
+  var KEYS=['ArrowLeft','ArrowRight','PageUp','PageDown'];
+  document.addEventListener('keydown',function(e){if(KEYS.indexOf(e.key)<0||e.defaultPrevented)return;var t=e.target;
+    if(scene.contains(t)||(t&&t.closest&&t.closest('input,textarea,select,[contenteditable],.u-menu:not([hidden])')))return;
+    e.preventDefault();scene.dispatchEvent(new KeyboardEvent('keydown',{key:e.key,bubbles:true,cancelable:true}));});
+  window.addEventListener('message',function(e){if(e.data&&e.data.imm==='key'&&KEYS.indexOf(e.data.key)>=0)scene.dispatchEvent(new KeyboardEvent('keydown',{key:e.data.key,bubbles:true,cancelable:true}));});
+  setTimeout(function(){try{if(!document.activeElement||document.activeElement===document.body)scene.focus({preventScroll:true});}catch(_){}},300);
   /* aide discrète, en haut de la scène (3 premières fois) : reculer ou avancer (← → ou ⏮ ⏭), tourner, et le film continue */
   var nh=+store.get('aide-tourner')||0;
   if(nh<3){store.set('aide-tourner',nh+1);setTimeout(function(){var h=document.createElement('div');h.className='u-hint';h.setAttribute('aria-hidden','true');
@@ -1899,11 +1921,9 @@ HF.voielactee=function(host){
       cam:u=>{const d=HDIR.clone().applyAxisAngle(N,(4-8*u)*D);return {pos:d.multiplyScalar(fit(1.3/AUK,1.3/AUK,40)*(1.06-.06*sm(u))),tgt:GC.clone(),up:perp(N,d),fov:40};},p:{bh:1,merc:.7},labs:['ombre','mercure']},
     {id:'compte',dur:16,tr:7,t:'Des centaines de milliards d’étoiles',l:'Entre 100 et 400 milliards',s:'Personne ne peut les compter une à une. Le satellite Gaia en a mesuré près de 2 milliards : à peine 1 % environ.',
       i:'Fourchette : NASA. Gaia : ESA. Forme de la galaxie : illustration.',cam:u=>orbit(GC,fit(asp<1?26:36,12,40),150-30*u,14+8*u,40),labs:['mw'],lab:{mw:'La Voie lactée'},ill:1},
-    {id:'lumiere',dur:18,tr:6,t:'Regarder loin, c’est voir le passé',l:'Du centre jusqu’à nous : 26 700 ans',s:'La lumière du centre de la galaxie que l’on voit ce soir est partie à la préhistoire. Pour traverser toute la galaxie, il lui faut environ 100 000 ans.',
+    {id:'lumiere',dur:18,tr:6,t:'26 700 ans de route pour la lumière',l:'Du centre jusqu’à nous : 26 700 ans',s:'La lumière du centre de la galaxie que l’on voit ce soir est partie à la préhistoire. Pour traverser toute la galaxie, il lui faut environ 100 000 ans.',
       cam:u=>orbit(V(-1,0,0),fit(asp<1?28:40,30,40),0,68,40),p:{ring:1},labs:['sol','centre','bord'],lab:{sol:'Le Soleil',centre:'Centre : 26 700 ans',bord:'Autre bord : ≈ 76 000 ans'},light:true,ill:1},
-    {id:'fin',dur:16,tr:6,t:'Et au-delà ?',l:'Prochaine étape : le Groupe local',s:'Deux petites galaxies tournent autour de la nôtre : les Nuages de Magellan. Plus loin, Andromède nous attend, à 2,5 millions d’années-lumière.',
-      i:'Galaxies : illustrations, à leur vraie place.',
-      cam:u=>{const e=sm(u),t=GC.clone().lerp(MC[0].p.clone().lerp(MC[1].p,.4),.72*e);return orbit(t,fit(40,30,40)*Math.pow(5.5,e),160+20*u,22,40);},labs:['mw','lmc','smc'],lab:{mw:'La Voie lactée'},ill:1}];
+];
   const P0={sky:0,line:0,orb:0,ring:0,s2:0,merc:0,bh:0};
   const prm=S=>Object.assign({},P0,S.p);
 
@@ -2018,7 +2038,7 @@ HF.voielactee=function(host){
     if(aStar>.002){starU.uA.value=aStar;const C=cam(starCam,fov,1e-4,1e5);C.position.copy(c.pos.clone().sub(SUN).multiplyScalar(1000).applyMatrix4(M2E));C.quaternion.copy(qE);R.clearDepth();R.render(starSc,C);}
     /* 3. la galaxie (s'efface près du Soleil, la carte s'efface tout près du centre) */
     const aGal=smr(.08,1.6,dS)*(1-P.sky);
-    if(aGal>.002){diskA.value=aGal*smr(.08,.9,dG);ptsA.value=aGal*(.3+.7*smr(.003,.08,dG));halo.material.opacity=.22*aGal*smr(.6,3,dG);mcA.value=aGal*Math.max(smr(70,180,dG),(S.id==='fin'?1:0)*(1-k)+(Nx.id==='fin'?k:0));
+    if(aGal>.002){diskA.value=aGal*smr(.08,.9,dG);ptsA.value=aGal*(.3+.7*smr(.003,.08,dG));halo.material.opacity=.22*aGal*smr(.6,3,dG);mcA.value=aGal*smr(70,180,dG);
       sunA.value=aGal*smr(.3,2,dS)*(dG>.5?1:0);lnA.value=P.line*aGal;orbA.value=P.orb*aGal;ringA.value=P.ring*aGal*(lightR>.05?1:0);
       const C=cam(galCam,fov,cl(Math.min(dG,dS)*.01,1e-6,.5),3000);C.position.copy(c.pos);C.quaternion.copy(c.q);R.clearDepth();R.render(galSc,C);}
     /* 4. le cœur : étoiles serrées, S2, Sagittarius A*, ombre du trou noir */

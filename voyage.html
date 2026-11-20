@@ -1434,7 +1434,7 @@ html.present .cs-when{font-size:18px}html.present .cs-cred{font-size:14px}
 .u-route-go{flex:none;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid rgba(244,184,96,.7);background:rgba(244,184,96,.1);color:var(--or);font-weight:700;font-size:14.5px;text-decoration:none;white-space:nowrap}
 .u-route-go:hover,.u-route-go:focus-visible{background:rgba(244,184,96,.22)}
 @media (max-width:1099px){.u-route ol a span{display:none}.u-route ol{height:34px}.u-route ol::before{top:15px}.u-route-cur{display:block;flex:0 1 auto;max-width:26ch}}
-@media (max-width:760px){.u-route-host{--route-h:100px}.u-route{flex-wrap:wrap;padding:2px 6px 6px}.u-route ol{flex:1 1 calc(100% - 104px)}
+@media (max-width:760px){.u-route-host{--route-h:96px}.u-route{flex-wrap:wrap;padding:2px 6px 6px}.u-route ol{flex:1 1 100%}
   .u-route-cur{flex:1 1 0;max-width:none;padding-left:6px}.u-route-go{padding:0 14px;font-size:14px}.u-route-go span{display:none}}
 html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17px}
 .u-doors{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;max-width:780px;margin:24px auto 0;text-align:left}
@@ -1452,9 +1452,11 @@ html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17p
 .u-imm-body{margin:0;background:#000;overflow:hidden}.u-imm{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:#000}
 
 /* barre de route (core.js) : « Voir l'escale » s'illumine en approchant d'une escale ; fondu au noir à la fin d'une escale */
-.u-route-go.pulse{animation:goPulse 2s ease-in-out 3}
-@keyframes goPulse{0%,100%{box-shadow:0 0 0 0 rgba(244,184,96,0);background:rgba(244,184,96,.1)}50%{box-shadow:0 0 0 5px rgba(244,184,96,.22),0 0 22px rgba(244,184,96,.55);background:rgba(244,184,96,.3)}}
 .u-fade{position:absolute;inset:0;z-index:30;background:#000;opacity:0;transition:opacity .9s ease-in;pointer-events:none}.u-fade.on{opacity:1}
+/* le seul bouton de la barre (caché quand il n'a rien à proposer) ; aide « glissez pour tourner » en haut de la scène */
+.u-route-go[hidden]{display:none}
+.u-hint{position:absolute;z-index:8;top:calc(var(--route-h) + 14px);left:50%;transform:translateX(-50%);max-width:calc(100% - 24px);padding:9px 18px;border-radius:999px;background:rgba(4,8,20,.78);border:1px solid rgba(191,208,255,.3);color:#E4E8F6;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;opacity:0;transition:opacity .7s}
+.u-hint.on{opacity:1}
 
 </style>
 </head>
@@ -1482,7 +1484,7 @@ html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17p
 <div class="u-fact"><b>Ce qui est illustré</b><p>La surface du Soleil, la forme de la Voie lactée et des galaxies voisines (à leur vraie place et à leur vraie taille), les filaments de la toile cosmique (les amas nommés sont à leur vraie place) et le fond diffus. Les planètes et la sonde sont agrandies. C’est indiqué à l’écran.</p></div>
 </div>
 <h3>Comment voyager</h3>
-<ul class="u-p"><li>Tout se déroule seul, en 13 étapes ; à la fin, on revient sur Terre.</li><li><b>Glisser</b> pour tourner, <b>molette</b> ou <b>pincement</b> pour reculer ou avancer : le voyage reprend seul après quelques secondes.</li><li><b>Clavier</b> (et télécommande de présentation) : ← → pour les étapes, Espace pour la pause.</li></ul>
+<ul class="u-p"><li>Tout se déroule seul : 13 étapes, avec une escale à chaque grande étape (« ⏭ Passer l’escale » pour continuer le voyage), puis le retour au point de départ.</li><li><b>Glisser</b> pour tourner, <b>molette</b> ou <b>pincement</b> pour reculer ou avancer : le voyage continue pendant ce temps.</li><li><b>Clavier</b> (et télécommande de présentation) : ← → pour les étapes, Espace pour la pause.</li></ul>
 <h3>Sources des chiffres</h3>
 <ul class="u-p"><li>Soleil et Lune : J. Meeus, <i>Astronomical Algorithms</i> ; planètes : éléments orbitaux approchés du JPL (E. M. Standish).</li>
 <li>Voyager 1 à un jour-lumière en novembre 2026 : NASA JPL.</li>
@@ -1588,9 +1590,12 @@ function initOnline(){
 }
 
 /* ----- La route : « un voyage, huit escales » -----
-   Barre au-dessus du film (grand voyage et escales) : points des 8 escales, ◀ ▶, et le passage entre les deux
-   (« Voir l'escale » dans le grand voyage, « Reprendre le grand voyage » à cet endroit dans une escale).
-   À la fin d'une escale, fondu au noir et retour au grand voyage (sauf si l'on touche à quelque chose). */
+   Règle simple, la même partout : le film ne s'arrête jamais tout seul (on peut tourner ou zoomer pendant qu'il continue ;
+   seul ❚❚ met en pause), et rien ne s'affiche au milieu de l'écran.
+   - Grand voyage : on fait escale par défaut à chaque grande étape (fondu au noir, film de l'escale), puis on revient au voyage.
+   - Escale : un seul bouton, « ⏭ Passer l'escale » ; à la fin du film, retour au voyage, qui continue vers l'escale suivante.
+   - Fin du voyage : retour au point de départ (tout seul, ou tout de suite avec « ⟲ Revenir au point de départ »).
+   Barre au-dessus du film : les 8 escales en points (où l'on est ; toucher un point pour y aller) et ce seul bouton. */
 /* étapes du grand voyage → escale ; escale → étape où reprendre le voyage */
 var VOY={terre:1,'terre-lune':1,lune:1,soleil:2,planetes:3,voyager:3,voisines:4,orion:4,'orion-cote':4,galaxie:5,groupe:6,toile:7,univers:8};
 var RESUME=['','terre-lune','soleil','planetes','voisines','galaxie','groupe','toile','univers'];
@@ -1598,54 +1603,55 @@ function initRoute(){
   var dj=document.getElementById('escales'),scene=document.querySelector('.cin-full');if(!dj||!scene)return;
   var E=JSON.parse(dj.textContent),cur=+document.body.dataset.escale,isVoy=cur===0;
   var bar=document.createElement('nav');bar.className='u-route';bar.setAttribute('aria-label','La route du voyage : les 8 escales');
-  bar.innerHTML='<button type="button" class="u-route-b" data-d="-1" aria-label="Escale précédente">◀</button><ol>'+E.map(function(e){
+  bar.innerHTML='<ol>'+E.map(function(e){
       return '<li><a href="'+e.file+'" data-n="'+e.num+'" title="Escale '+e.num+' : '+e.title+'"><i aria-hidden="true"></i><span aria-hidden="true">'+e.nom+'</span><b class="sr">Escale '+e.num+' : '+e.title+'</b></a></li>';}).join('')+
-    '</ol><button type="button" class="u-route-b" data-d="1" aria-label="Escale suivante">▶</button><span class="u-route-cur" aria-live="polite"></span><a class="u-route-go" href="voyage.html"></a>';
+    '</ol><span class="u-route-cur" aria-live="polite"></span><a class="u-route-go" href="voyage.html" hidden></a>';
   scene.parentNode.insertBefore(bar,scene);scene.parentNode.classList.add('u-route-host');
-  var links=[].slice.call(bar.querySelectorAll('ol a')),go=bar.querySelector('.u-route-go'),txt=bar.querySelector('.u-route-cur'),shown=-1;
+  var links=[].slice.call(bar.querySelectorAll('ol a')),go=bar.querySelector('.u-route-go'),txt=bar.querySelector('.u-route-cur'),shown=-1,goAct=null;
   function paint(n){if(n===shown)return;shown=n;
     links.forEach(function(a,i){a.classList.toggle('on',i+1===n);a.classList.toggle('past',i+1<n);if(i+1===n)a.setAttribute('aria-current','step');else a.removeAttribute('aria-current');});
-    var e=E[n-1];txt.textContent=e?(isVoy?'Grand voyage · ':'')+'Escale '+e.num+' · '+e.title:'';
-    if(isVoy){go.href=e.file;go.innerHTML='▶ Voir l’escale<span> : '+e.title+'</span>';}
-    else{go.href='voyage.html#'+RESUME[n];go.innerHTML='▶ Reprendre le grand voyage';}
-    [].forEach.call(bar.querySelectorAll('.u-route-b'),function(b){var t=n+(+b.dataset.d);b.disabled=t<1||t>E.length;});}
-  function voyTo(n){var v=HF._voy;if(!v)return;var i=v.ids.indexOf(RESUME[n]);if(i>=0)v.go(i);}
-  bar.addEventListener('click',function(ev){var b=ev.target.closest('.u-route-b'),a=ev.target.closest('ol a');
-    if(b){var t=shown+(+b.dataset.d);if(t<1||t>E.length)return;if(isVoy)voyTo(t);else location.href=E[t-1].file;}
-    else if(a&&isVoy){ev.preventDefault();voyTo(+a.dataset.n);}});
-  paint(isVoy?1:cur);
-  /* film en cours : n° du plan et nombre de plans, quel que soit le moteur */
-  function film(){var f=HF._voy||HF._vl||HF._eto||HF._sys||HF._sol||HF._cin;if(!f||!f.state)return null;var s=f.state();
-    return {i:f.stage!=null?f.stage:s.shot,n:f.ids?f.ids.length:f.n,id:s.ids||s.id,playing:s.playing!==false,mode:s.mode,rev:!!s.rev,desc:!!s.desc,left:s.left||0};}
-  /* Rien au milieu de l'écran (l'immersion avant tout) ; on passe d'un film à l'autre par un fondu au noir. */
+    var e=E[n-1];txt.textContent=e?(isVoy?'Grand voyage · ':'')+'Escale '+e.num+' · '+e.title:'';}
+  /* le seul bouton de la barre : html = texte, act = action au clic (null : bouton caché) */
+  function setGo(html,href,act){if(!html){go.hidden=true;goAct=null;return;}go.hidden=false;goAct=act;if(go.innerHTML!==html)go.innerHTML=html;go.setAttribute('href',href);}
+  /* changer de film : fondu au noir, puis la page suivante */
   var gone=false;
   function leave(url){if(gone)return;gone=true;var fd=document.createElement('div');fd.className='u-fade';fd.setAttribute('aria-hidden','true');scene.parentNode.appendChild(fd);
     requestAnimationFrame(function(){fd.classList.add('on');});setTimeout(function(){location.href=url;},900);}
-  /* Grand voyage : par défaut, on entre dans chaque escale. On arrive à l'étape (le bouton « ▶ Voir l'escale » s'illumine), on la voit
-     pendant sa tenue, puis fondu et film de l'escale. Un geste sur la scène pendant l'arrêt : on reste dans le voyage, qui continue.
-     Jamais pendant le voyage retour ni la descente finale, ni à l'étape où l'on revient d'une escale (voyage.html#étape). */
-  var vid='',skip=decodeURIComponent(location.hash.slice(1)),keep=false;
-  if(isVoy)['pointerdown','keydown','wheel'].forEach(function(t){scene.addEventListener(t,function(){keep=true;},{passive:true});});
+  function voyTo(n){var v=HF._voy;if(!v)return;var i=v.ids.indexOf(RESUME[n]);if(i>=0)v.go(i);}
+  bar.addEventListener('click',function(ev){var a=ev.target.closest('ol a');
+    if(ev.target.closest('.u-route-go')){if(goAct){ev.preventDefault();goAct();}return;}
+    if(!a)return;ev.preventDefault();if(isVoy)voyTo(+a.dataset.n);else if(+a.dataset.n!==cur)leave(a.getAttribute('href'));});
+  paint(isVoy?1:cur);
+  if(!isVoy)setGo('⏭ Passer l’escale','voyage.html#'+RESUME[cur],function(){leave('voyage.html#'+RESUME[cur]);});
+  /* film en cours : n° du plan et nombre de plans, quel que soit le moteur */
+  function film(){var f=HF._voy||HF._vl||HF._eto||HF._sys||HF._sol||HF._cin;if(!f||!f.state)return null;var s=f.state();
+    return {i:f.stage!=null?f.stage:s.shot,n:f.ids?f.ids.length:f.n,id:s.ids||s.id,playing:s.playing!==false,mode:s.mode,rev:!!s.rev,desc:!!s.desc,left:s.left||0};}
+  /* Grand voyage : escale par défaut à la fin de la tenue de chaque grande étape (jamais pendant le retour ni la descente,
+     ni à l'étape où l'on revient d'une escale : voyage.html#étape). À la dernière étape, le bouton « Revenir au point de départ ». */
+  var vid='',skip=decodeURIComponent(location.hash.slice(1)),skipNow=false;
+  window.addEventListener('hashchange',function(){skip=decodeURIComponent(location.hash.slice(1));vid='';});
   function voyTick(f){var n=VOY[f.id];if(n)paint(n);
-    if(f.id!==vid){vid=f.id;keep=false;go.classList.remove('pulse');
-      if(skip&&vid===skip){keep=true;skip='';}
-      if(!f.rev&&!f.desc&&RESUME.indexOf(vid)>0){void go.offsetWidth;go.classList.add('pulse');}}
+    if(f.id!==vid){vid=f.id;skipNow=!!skip&&vid===skip;if(skipNow)skip='';}
+    if(f.id==='univers'&&!f.rev&&!f.desc)setGo('⟲ Revenir au point de départ','voyage.html#retour',function(){if(HF._voy)HF._voy.retour();});else setGo(null);
     var j=RESUME.indexOf(vid);
-    if(j>0&&!keep&&!f.rev&&!f.desc&&f.mode==='hold'&&f.playing&&f.left>0&&f.left<=1.2)leave(E[j-1].file);}
-  /* Escale : quand le film est fini (dernier plan vu au moins 4 s, puis le film repart au premier plan), fondu au noir et retour
-     au grand voyage, là où on l'avait quitté. Un geste sur la scène pendant le dernier plan : on reste sur l'escale (il se réarme au tour suivant). */
-  var calm=true,armed=false,wait=0;
-  function stop(){calm=false;armed=false;wait=0;}
-  if(!isVoy)['pointerdown','keydown','wheel'].forEach(function(t){scene.addEventListener(t,stop,{passive:true});});
+    if(j>0&&!skipNow&&!f.rev&&!f.desc&&f.mode==='hold'&&f.playing&&f.left>0&&f.left<=1.2)leave(E[j-1].file);}
+  /* Escale : quand le film est fini (dernier plan vu au moins 4 s, puis le film repart au premier plan), retour au grand voyage
+     à l'étape de l'escale. Un saut vers un autre plan avec ⏮ ⏭ n'est pas la fin. */
+  var armed=false,wait=0;
   function escTick(f){
-    if(f.i<f.n-1&&!armed)calm=true;
-    if(f.i===f.n-1&&calm&&f.playing)armed=true;
+    if(f.i===f.n-1&&f.playing)armed=true;
     if(!armed)return;
     if(f.i===f.n-1){if(f.playing&&(wait+=.5)>=30)leave('voyage.html#'+RESUME[cur]);return;}   /* garde-fou : dernier plan très long */
-    if(f.i===0&&wait>=4)leave('voyage.html#'+RESUME[cur]);   /* le film repart au début : il est fini */
-    else{armed=false;wait=0;}                                 /* saut vers un autre plan : ce n'est pas la fin */
+    if(f.i===0&&wait>=4)leave('voyage.html#'+RESUME[cur]);
+    else{armed=false;wait=0;}
   }
   setInterval(function(){var f=film();if(!f)return;if(isVoy)voyTick(f);else escTick(f);},500);
+  /* aide discrète, en haut de la scène (3 premières fois) : on peut tourner, et le film continue */
+  var nh=+store.get('aide-tourner')||0;
+  if(nh<3){store.set('aide-tourner',nh+1);setTimeout(function(){var h=document.createElement('div');h.className='u-hint';h.setAttribute('aria-hidden','true');
+    h.textContent=HF.coarse()?'Glissez pour tourner · pincez pour zoomer · le film continue':'Glissez pour tourner · molette pour zoomer · le film continue';
+    scene.parentNode.appendChild(h);requestAnimationFrame(function(){h.classList.add('on');});
+    var off=function(){h.classList.remove('on');setTimeout(function(){h.remove();},700);};setTimeout(off,6500);scene.addEventListener('pointerdown',off,{once:true});},2500);}
 }
 
 window.HF={store:store,applyTheme:applyTheme,immersion:function(){immersion();},inImmersion:function(){return IN_SHELL;},
@@ -2303,7 +2309,7 @@ HF.voyage=function(host,opt){
   function descTick(){
     if(desc===1&&descT>=tr.dur){desc=2;descT=0;hv0=2*H_ALT*Math.tan(fovEff(38)*D/2);}
     if(desc===2&&descT>=(reduce?.01:D_ZOOM)){desc=3;descT=0;}
-    if(desc===3&&descT>=D_STAY&&playing&&user<=0)endDesc();}
+    if(desc===3&&descT>=D_STAY&&playing)endDesc();}
   function photo(dt){const want=desc>=2?1:0;phA+=(want-phA)*Math.min(1,dt*(want?1.5:2.2));
     if(!want&&phA<.004){if(ph.style.opacity!=='0')ph.style.opacity='0';return;}
     const cw=Math.round(W*DPR),chh=Math.round(H*DPR);if(ph.width!==cw||ph.height!==chh){ph.width=cw;ph.height=chh;}
@@ -2351,7 +2357,7 @@ HF.voyage=function(host,opt){
   let idle=0;function wake(){idle=0;host.classList.remove('calm');}
   host.addEventListener('pointermove',wake);
 
-  /* ===== Gestes : glisser = tourner, pincer/molette = reculer ou avancer ; le voyage reprend après 8 s de calme ===== */
+  /* ===== Gestes : glisser = tourner, pincer/molette = reculer ou avancer ; le voyage continue, le point de vue revient doucement 8 s après le geste ===== */
   const el=R.domElement;el.style.touchAction='none';const ptr=new Map();let pinch0=0;
   el.addEventListener('pointerdown',e=>{ptr.set(e.pointerId,[e.clientX,e.clientY]);try{el.setPointerCapture(e.pointerId);}catch(_){}user=8;wake();});
   el.addEventListener('pointermove',e=>{if(!ptr.has(e.pointerId))return;const p=ptr.get(e.pointerId);
@@ -2384,11 +2390,12 @@ HF.voyage=function(host,opt){
     G=TL.set(simMs);TL.tick(dt,simMs);MOON.copy(TL.MOONP).multiplyScalar(RE);sunU.uT.value=now/1000;
     /* fil du voyage */
     if(user>0)user-=dt;else{offY*=Math.exp(-dt*.7);offP*=Math.exp(-dt*.7);offZ*=Math.exp(-dt*.7);if(Math.abs(offY)+Math.abs(offP)+Math.abs(offZ)<.01)offY=offP=offZ=0;}
-    const adv=playing&&user<=0;
-    if(desc){if(user<=0)descT+=dt;descTick();cur=travelState(desc===1?cl(descT/tr.dur,0,1):1);}
+    const adv=playing;
+    if(desc){descT+=dt;descTick();cur=travelState(desc===1?cl(descT/tr.dur,0,1):1);}
     else{
-    if(mode==='hold'){if(adv&&!reduce)t+=dt;if(t>=(rev?REV_HOLD:ST[k].hold)){const s0=snap();offY=offP=offZ=0;if(home)home=false;travel(s0,rev?k-1:k+1,rev);hideStage();}}
-    if(mode==='travel'){if(user<=0&&(playing||tr.fast))t+=dt;if(t>=tr.dur){k=(tr.to+ST.length)%ST.length;mode='hold';t=0;if(rev&&k===0){rev=false;startDesc();}else showStage();}}
+    if(mode==='hold'){if(adv&&!reduce)t+=dt;if(t>=(rev?REV_HOLD:ST[k].hold)){if(!CHAP&&!rev&&k===ST.length-1)startRev();   /* fin du voyage : retour au point de départ, tout seul */
+      else{const s0=snap();offY=offP=offZ=0;if(home)home=false;travel(s0,rev?k-1:k+1,rev);hideStage();}}}
+    if(mode==='travel'){if(playing||tr.fast)t+=dt;if(t>=tr.dur){k=(tr.to+ST.length)%ST.length;mode='hold';t=0;if(rev&&k===0){rev=false;startDesc();}else showStage();}}
     cur=desc?travelState(0):mode==='hold'?holdState():travelState(cl(t/tr.dur,0,1));}
     const c=eff(cur);camQ.copy(c.q);const back=V3(0,0,1).applyQuaternion(camQ);
     camPos.copy(c.p).add(back.multiplyScalar(Math.pow(10,c.z)));
@@ -2444,7 +2451,7 @@ HF.voyage=function(host,opt){
   if(!CHAP){const fromHash=()=>{const h=decodeURIComponent(location.hash.slice(1));if(h==='retour'){go(ST.length-1,true);startRev();return;}const hi=ST.findIndex(s=>s.id===h);if(hi>0)go(hi,true);};fromHash();window.addEventListener('hashchange',fromHash);}
   /* pour les captures : figer le trajet vers le plan n à la fraction u (pause) */
   function seek(n,u){k=(n-1+ST.length)%ST.length;offY=offP=offZ=0;user=0;travel(apply(stState(k,1)),n);t=u*tr.dur;playing=false;paintUI();hideStage();}
-  return {go,seek,get stage(){return curIdx();},ids:ST.map(s=>s.id),state:()=>({k,mode,t,playing,rev,home,desc,left:mode==='hold'&&!desc?Math.max(0,(rev?REV_HOLD:ST[k].hold)-t):0,ids:ST[curIdx()].id,cap:cap.textContent,dist:dist.textContent,lE:lg(camPos.length())}),renderer:R,descend(){k=0;mode='hold';t=0;startDesc();},finish(){while(JOBS.length||job)runJobs(1000);}};
+  return {go,seek,get stage(){return curIdx();},ids:ST.map(s=>s.id),state:()=>({k,mode,t,playing,rev,home,desc,left:mode==='hold'&&!desc?Math.max(0,(rev?REV_HOLD:ST[k].hold)-t):0,ids:ST[curIdx()].id,cap:cap.textContent,dist:dist.textContent,lE:lg(camPos.length())}),renderer:R,retour(){if(rev||desc)return;if(curIdx()!==ST.length-1)go(ST.length-1,true);startRev();},descend(){k=0;mode='hold';t=0;startDesc();},finish(){while(JOBS.length||job)runJobs(1000);}};
 };
 })();
 

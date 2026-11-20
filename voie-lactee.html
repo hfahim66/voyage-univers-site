@@ -1455,8 +1455,17 @@ html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17p
 .u-fade{position:absolute;inset:0;z-index:30;background:#000;opacity:0;transition:opacity .9s ease-in;pointer-events:none}.u-fade.on{opacity:1}
 /* le seul bouton de la barre (caché quand il n'a rien à proposer) ; aide « glissez pour tourner » en haut de la scène */
 .u-route-go[hidden]{display:none}
-.u-hint{position:absolute;z-index:8;top:calc(var(--route-h) + 14px);left:50%;transform:translateX(-50%);max-width:calc(100% - 24px);padding:9px 18px;border-radius:999px;background:rgba(4,8,20,.78);border:1px solid rgba(191,208,255,.3);color:#E4E8F6;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;opacity:0;transition:opacity .7s}
+.u-hint{position:absolute;z-index:8;top:calc(var(--route-h) + 58px);left:50%;transform:translateX(-50%);max-width:calc(100% - 24px);padding:9px 18px;border-radius:999px;background:rgba(4,8,20,.78);border:1px solid rgba(191,208,255,.3);color:#E4E8F6;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;opacity:0;transition:opacity .7s}
 .u-hint.on{opacity:1}
+.u-doors.one{grid-template-columns:minmax(0,560px);justify-content:center}
+/* interrupteur « Auto » de la barre de route (core.js) : manuel par défaut */
+.u-auto{position:relative;flex:none;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 6px 0 10px;color:#DDE4F7;font-size:14px;font-weight:700;cursor:pointer;user-select:none}
+.u-auto input{position:absolute;opacity:0;width:1px;height:1px;margin:0}
+.u-auto i{position:relative;width:40px;height:22px;border-radius:999px;background:rgba(191,208,255,.18);border:1px solid rgba(191,208,255,.4);transition:background .25s,border-color .25s}
+.u-auto i::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .25s}
+.u-auto input:checked+i{background:var(--or);border-color:var(--or)}
+.u-auto input:checked+i::after{transform:translateX(18px)}
+.u-auto input:focus-visible+i{outline:2px solid var(--or);outline-offset:2px}
 
 </style>
 </head>
@@ -1466,30 +1475,30 @@ html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17p
  <a class="u-brand" href="index.html" aria-label="Voyage dans l’Univers — accueil"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2230%22%20fill%3D%22%23060A18%22%2F%3E%3Cellipse%20cx%3D%2232%22%20cy%3D%2232%22%20rx%3D%2225%22%20ry%3D%229%22%20fill%3D%22none%22%20stroke%3D%22%23BFD0FF%22%20stroke-width%3D%222.5%22%20transform%3D%22rotate(-24%2032%2032)%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%229%22%20fill%3D%22%234f7fe0%22%2F%3E%3Ccircle%20cx%3D%2252%22%20cy%3D%2222%22%20r%3D%224%22%20fill%3D%22%23F4B860%22%2F%3E%3C%2Fsvg%3E" alt="" width="30" height="30"><span>Voyage dans l’Univers</span></a>
  <div class="u-actions">
   <button class="u-btn" id="presentBtn" type="button" aria-pressed="false" title="Textes agrandis et plein écran, pour une salle"><span aria-hidden="true">⛶</span><span class="lbl"> Présentation</span></button>
-  <button class="u-btn" id="menuBtn" type="button" aria-controls="chapitres" aria-expanded="false"><span aria-hidden="true">☰</span><span class="lbl"> Escales</span></button>
+  <button class="u-btn" id="menuBtn" type="button" aria-controls="chapitres" aria-expanded="false"><span aria-hidden="true">☰</span><span class="lbl"> Étapes</span></button>
  </div>
 </header>
-<nav class="u-menu" id="chapitres" aria-label="Le grand voyage et ses escales" hidden><div class="u-menu-in">
+<nav class="u-menu" id="chapitres" aria-label="Le grand voyage et ses étapes" hidden><div class="u-menu-in">
 <div class="u-menu-top"><b>Le voyage</b><button type="button" class="u-btn" data-close>✕ Fermer</button></div>
-<a class="u-menu-big" href="index.html">Accueil</a><a class="u-menu-big" href="voyage.html">▶ Le grand voyage <small>tout l’Univers d’un seul trait</small></a><b class="u-menu-h">Les 8 escales <small>s’arrêter pour voir en détail</small></b>
+<a class="u-menu-big" href="index.html">Accueil</a><a class="u-menu-big" href="voyage.html">▶ Le grand voyage <small>tout l’Univers d’un seul trait</small></a><b class="u-menu-h">Les 8 étapes <small>pour aller directement à l’une d’elles</small></b>
 <div class="u-menu-ch"><a href="terre-lune.html"><span class="n">1</span><span><b>La Terre et la Lune</b><small>1,3 seconde-lumière</small></span></a><a href="soleil.html"><span class="n">2</span><span><b>Le Soleil</b><small>8 minutes-lumière</small></span></a><a href="systeme-solaire.html"><span class="n">3</span><span><b>Le Système solaire</b><small>4 heures-lumière</small></span></a><a href="etoiles.html"><span class="n">4</span><span><b>Les étoiles proches</b><small>4,2 années-lumière</small></span></a><a href="voie-lactee.html" aria-current="page"><span class="n">5</span><span><b>La Voie lactée</b><small>100 000 années-lumière</small></span></a><a href="groupe-local.html"><span class="n">6</span><span><b>Le Groupe local</b><small>2,5 millions d’années-lumière</small></span></a><a href="structures.html"><span class="n">7</span><span><b>Les grandes structures</b><small>500 millions d’années-lumière</small></span></a><a href="univers.html"><span class="n">8</span><span><b>L’Univers observable</b><small>13,8 milliards d’années</small></span></a></div><a class="u-menu-big" href="a-propos.html">À propos, sources et crédits</a></div></nav>
 <script type="application/json" id="escales">[{"num":1,"file":"terre-lune.html","title":"La Terre et la Lune","nom":"Terre et Lune"},{"num":2,"file":"soleil.html","title":"Le Soleil","nom":"Soleil"},{"num":3,"file":"systeme-solaire.html","title":"Le Système solaire","nom":"Planètes"},{"num":4,"file":"etoiles.html","title":"Les étoiles proches","nom":"Étoiles"},{"num":5,"file":"voie-lactee.html","title":"La Voie lactée","nom":"Voie lactée"},{"num":6,"file":"groupe-local.html","title":"Le Groupe local","nom":"Groupe local"},{"num":7,"file":"structures.html","title":"Les grandes structures","nom":"Structures"},{"num":8,"file":"univers.html","title":"L’Univers observable","nom":"Univers"}]</script>
 <section aria-label="La Voie lactée en 3D"><h1 class="sr">La Voie lactée</h1><div id="voielactee" class="cin cin-full"></div></section>
 <main id="contenu">
-<header class="u-ch-head"><div class="u-eyebrow">Escale 5 · 100 000 années-lumière</div><h2 class="u-h2" style="margin-top:6px">La Voie lactée</h2>
+<header class="u-ch-head"><div class="u-eyebrow">Étape 5 · 100 000 années-lumière</div><h2 class="u-h2" style="margin-top:6px">La Voie lactée</h2>
 <p class="u-lead">Notre galaxie : une immense roue d’étoiles qui tourne lentement. Nous la voyons de l’intérieur, comme une bande de lumière dans le ciel.</p></header>
 <h2 class="u-h2">En quelques chiffres</h2>
 <div class="u-kpis reveal"><div class="u-kpi"><strong>≈ 100 000 années-lumière</strong><span>d’un bord à l’autre</span></div><div class="u-kpi"><strong>100 à 400 milliards</strong><span>d’étoiles : on ne sait pas les compter plus précisément</span></div><div class="u-kpi"><strong>26 700 années-lumière</strong><span>du Soleil au centre de la galaxie</span></div><div class="u-kpi"><strong>≈ 230 millions d’années</strong><span>pour que le Soleil en fasse le tour (220 à 250 selon les mesures)</span></div><div class="u-kpi"><strong>≈ 4 millions</strong><span>de fois la masse du Soleil : Sagittarius A*, le trou noir du centre</span></div><div class="u-kpi"><strong>16 ans</strong><span>pour que l’étoile S2 fasse le tour de ce trou noir</span></div></div>
 <div class="u-facts">
 <div class="u-fact"><b>Ce qui est réel</b><p>Le ciel des premiers plans : une carte de la NASA faite avec les mesures du satellite Gaia, et 10 000 étoiles du catalogue HYG. La place du Soleil, à 26 700 années-lumière du centre (instrument GRAVITY, ESO). L’orbite de l’étoile S2 autour du trou noir, mesurée depuis 30 ans.</p></div>
 <div class="u-fact"><b>Ce qui est illustré</b><p>Personne n’a jamais vu notre galaxie de l’extérieur : sa forme (barre, bras, poussière) est dessinée d’après les mesures faites de l’intérieur. Elle tourne ici d’un bloc et en accéléré. L’ombre du trou noir est dessinée d’après l’image de l’EHT. C’est indiqué à l’écran.</p></div>
-<div class="u-fact"><b>Comment regarder</b><p>Tout se déroule seul, en 13 plans. <b>Glisser</b> pour tourner, <b>molette</b> ou <b>pincement</b> pour s’approcher : le film continue pendant ce temps. Au clavier : ← → pour les plans, Espace pour la pause.</p></div>
+<div class="u-fact"><b>Comment regarder</b><p>13 plans : avancez avec <b>⏭</b> ou <b>→</b>, reculez avec <b>⏮</b> ou <b>←</b> ; l’interrupteur <b>Auto</b>, en haut, fait tout défiler seul. <b>Glisser</b> pour tourner, <b>molette</b> ou <b>pincement</b> pour s’approcher : le film continue pendant ce temps. Au clavier : ← → pour les plans, Espace pour la pause.</p></div>
 </div>
 <section class="u-fact vl-obs" aria-labelledby="obs"><h3 id="obs">La voir de ses yeux</h3><ul>
 <li>Il faut un ciel <b>sans Lune</b> et <b>loin des éclairages</b> : en ville, la Voie lactée est invisible. Laissez vos yeux s’habituer au noir une vingtaine de minutes, sans regarder d’écran.</li>
 <li>En France, elle est la plus belle <b>les soirs d’été</b>, vers le sud, où se trouve la direction du centre, dans le Sagittaire. En automne et en hiver, elle passe plus haut, plus pâle, par Cassiopée et Persée.</li>
 <li>Des jumelles montrent qu’elle est faite d’innombrables étoiles. Ne les pointez jamais vers le Soleil, même couchant.</li></ul></section>
-<nav class="u-next" aria-label="Escales voisines"><a href="etoiles.html"><small>← Escale 4</small><b>Les étoiles proches</b></a><a href="groupe-local.html" style="text-align:right"><small>Escale 6 →</small><b>Le Groupe local</b></a></nav>
+<nav class="u-next" aria-label="Étapes voisines"><a href="etoiles.html"><small>← Étape 4</small><b>Les étoiles proches</b></a><a href="groupe-local.html" style="text-align:right"><small>Étape 6 →</small><b>Le Groupe local</b></a></nav>
 <details class="u-src"><summary>Sources de cette page</summary><ul><li><a href="https://science.nasa.gov/universe/exoplanets/our-milky-way-galaxy-how-big-is-space/" rel="noopener" target="_blank">NASA Science — « Our Milky Way Galaxy: How Big is Space? » (environ 100 000 années-lumière, 100 à 400 milliards d’étoiles)</a><small> · Données publiques de la NASA</small></li><li><a href="https://starchild.gsfc.nasa.gov/docs/StarChild/questions/question18.html" rel="noopener" target="_blank">NASA Goddard (StarChild) — le Soleil fait le tour de la galaxie en ≈ 230 millions d’années, à ≈ 828 000 km/h (d’autres mesures donnent 220 à 250 millions d’années)</a><small> · Données publiques de la NASA</small></li><li><a href="https://arxiv.org/abs/1904.05721" rel="noopener" target="_blank">Collaboration GRAVITY (2019), Astronomy & Astrophysics 625, L10 — distance du centre galactique : 8 178 parsecs (≈ 26 700 années-lumière) ; masse de Sagittarius A* : 4,15 millions de masses solaires</a><small> · Article scientifique ; valeurs numériques citées</small></li><li><a href="https://www.eso.org/public/news/eso2208/" rel="noopener" target="_blank">ESO, communiqué eso2208 (12 mai 2022) — première image de Sagittarius A* par l’Event Horizon Telescope : ≈ 4 millions de fois la masse du Soleil, à ≈ 27 000 années-lumière</a><small> · Texte ESO (CC BY 4.0) ; chiffres cités, image non reproduite</small></li><li><a href="https://www.eso.org/public/news/eso1825/" rel="noopener" target="_blank">ESO, communiqué eso1825 (2018) — l’étoile S2 fait le tour du trou noir en 16 ans et passe au plus près à plus de 25 millions de km/h</a><small> · Texte ESO (CC BY 4.0) ; chiffres cités</small></li><li><a href="https://arxiv.org/abs/2004.07187" rel="noopener" target="_blank">Collaboration GRAVITY (2020), Astronomy & Astrophysics 636, L5 — éléments de l’orbite de S2 (demi-grand axe 0,1251″, excentricité 0,8846, période 16,05 ans)</a><small> · Article scientifique ; valeurs numériques citées</small></li><li><a href="https://www.esa.int/Science_Exploration/Space_Science/Gaia/Gaia_sees_strange_stars_in_most_detailed_Milky_Way_survey_to_date" rel="noopener" target="_blank">ESA — Gaia DR3 (13 juin 2022) : près de 2 milliards d’étoiles de notre galaxie</a><small> · Texte ESA ; chiffres cités</small></li><li><a href="https://arxiv.org/abs/1910.03357" rel="noopener" target="_blank">Disposition des bras, de la barre et du Soleil : M. J. Reid et al. (2019), The Astrophysical Journal 885, 131 ; E. Churchwell et al. (2009), PASP 121, 213 (Spitzer GLIMPSE) — repris de façon simplifiée</a><small> · Articles scientifiques ; disposition générale reprise</small></li><li><a href="https://arxiv.org/abs/1903.08096" rel="noopener" target="_blank">Distances des Nuages de Magellan : G. Pietrzyński et al. (2019), Nature 567, 200 (49,6 kpc) ; D. Graczyk et al. (2020), ApJ 904, 13 (62,4 kpc)</a><small> · Articles scientifiques ; valeurs numériques citées</small></li><li><a href="https://svs.gsfc.nasa.gov/4851" rel="noopener" target="_blank">NASA/Goddard Space Flight Center Scientific Visualization Studio — Deep Star Maps 2020, panorama de la Voie lactée (Gaia DR2 : ESA/Gaia/DPAC)</a><small> · Image NASA, crédit « NASA/Goddard Space Flight Center Scientific Visualization Studio. Gaia DR2 : ESA/Gaia/DPAC »</small></li><li><a href="https://www.astronexus.com/projects/hyg" rel="noopener" target="_blank">Catalogue d’étoiles HYG v4.2 (D. Nash, astronexus) — extrait de ≈ 10 000 étoiles (assets/etoiles.bin, tools/etoiles.mjs)</a><small> · CC BY-SA 4.0 ; l’extrait reste sous CC BY-SA 4.0</small></li><li>La Voie lactée vue de l’extérieur (carte vue de dessus calculée une fois par tools/voielactee.py, étoiles semées sur le même modèle, Nuages de Magellan, ombre du trou noir) : illustration calculée pour ce projet (src/anims/voielactee.js), pas une observation<small> · CC BY-NC-SA 4.0 (comme le site)</small></li><li><a href="https://github.com/mrdoob/three.js" rel="noopener" target="_blank">three.js r128 — moteur 3D</a><small> · Licence MIT</small></li></ul></details>
 <footer class="u-foot"><span>Voyage dans l’Univers · version 0.1 · textes sous licence <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr" rel="license noopener">CC BY-NC-SA 4.0</a></span><span>Images : NASA. Détail des sources et licences dans <a href="a-propos.html">À propos</a>.</span></footer>
 </main>
@@ -1608,20 +1617,21 @@ function initFresh(){
    - Fin du voyage : retour au point de départ (tout seul, ou tout de suite avec « ⟲ Revenir au point de départ »).
    Barre au-dessus du film : les 8 escales en points (où l'on est ; toucher un point pour y aller) et ce seul bouton. */
 /* étapes du grand voyage → escale ; escale → étape où reprendre le voyage */
-var VOY={terre:1,'terre-lune':1,lune:1,soleil:2,planetes:3,voyager:3,voisines:4,orion:4,'orion-cote':4,galaxie:5,groupe:6,toile:7,univers:8};
-var RESUME=['','terre-lune','soleil','planetes','voisines','galaxie','groupe','toile','univers'];
+var VOY={terre:1,soleil:2,planetes:3,voyager:3,voisines:4,galaxie:5,groupe:6,toile:7,univers:8};
+var RESUME=['','terre','soleil','planetes','voisines','galaxie','groupe','toile','univers'];
 function initRoute(){
   var dj=document.getElementById('escales'),scene=document.querySelector('.cin-full');if(!dj||!scene)return;
   var E=JSON.parse(dj.textContent),cur=+document.body.dataset.escale,isVoy=cur===0;
-  var bar=document.createElement('nav');bar.className='u-route';bar.setAttribute('aria-label','La route du voyage : les 8 escales');
+  var bar=document.createElement('nav');bar.className='u-route';bar.setAttribute('aria-label','Les 8 étapes du grand voyage');
   bar.innerHTML='<ol>'+E.map(function(e){
-      return '<li><a href="'+e.file+'" data-n="'+e.num+'" title="Escale '+e.num+' : '+e.title+'"><i aria-hidden="true"></i><span aria-hidden="true">'+e.nom+'</span><b class="sr">Escale '+e.num+' : '+e.title+'</b></a></li>';}).join('')+
-    '</ol><span class="u-route-cur" aria-live="polite"></span><a class="u-route-go" href="voyage.html" hidden></a>';
+      return '<li><a href="'+e.file+'" data-n="'+e.num+'" title="Étape '+e.num+' : '+e.title+'"><i aria-hidden="true"></i><span aria-hidden="true">'+e.nom+'</span><b class="sr">Étape '+e.num+' : '+e.title+'</b></a></li>';}).join('')+
+    '</ol><span class="u-route-cur" aria-live="polite"></span><a class="u-route-go" href="voyage.html" hidden></a>'+
+    '<label class="u-auto" title="Tout défile seul : les plans, les étapes et le retour"><input type="checkbox" role="switch"><i aria-hidden="true"></i><span>Auto</span></label>';
   scene.parentNode.insertBefore(bar,scene);scene.parentNode.classList.add('u-route-host');
   var links=[].slice.call(bar.querySelectorAll('ol a')),go=bar.querySelector('.u-route-go'),txt=bar.querySelector('.u-route-cur'),shown=-1,goAct=null;
   function paint(n){if(n===shown)return;shown=n;
     links.forEach(function(a,i){a.classList.toggle('on',i+1===n);a.classList.toggle('past',i+1<n);if(i+1===n)a.setAttribute('aria-current','step');else a.removeAttribute('aria-current');});
-    var e=E[n-1];txt.textContent=e?(isVoy?'Grand voyage · ':'')+'Escale '+e.num+' · '+e.title:'';}
+    var e=E[n-1];txt.textContent=e?'Étape '+e.num+' · '+e.title:'';}
   /* le seul bouton de la barre : html = texte, act = action au clic (null : bouton caché) */
   function setGo(html,href,act){if(!html){go.hidden=true;goAct=null;return;}go.hidden=false;goAct=act;if(go.innerHTML!==html)go.innerHTML=html;go.setAttribute('href',href);}
   /* changer de film : fondu au noir, puis la page suivante */
@@ -1633,27 +1643,36 @@ function initRoute(){
     if(ev.target.closest('.u-route-go')){if(goAct){ev.preventDefault();goAct();}return;}
     if(!a)return;ev.preventDefault();if(isVoy)voyTo(+a.dataset.n);else if(+a.dataset.n!==cur)leave(a.getAttribute('href'));});
   paint(isVoy?1:cur);
-  if(!isVoy)setGo('⏭ Passer l’escale','voyage.html#'+RESUME[cur],function(){leave('voyage.html#'+RESUME[cur]);});
+  /* interrupteur « Auto » : par défaut tout est manuel (⏮ ⏭, ← →) ; « Auto » fait tout défiler seul. Gardé d'une page à l'autre. */
+  var sw=bar.querySelector('.u-auto input');sw.checked=HF.auto!==false;
+  sw.addEventListener('change',function(){HF.auto=sw.checked;store.set('auto',sw.checked);});
   /* film en cours : n° du plan et nombre de plans, quel que soit le moteur */
   function film(){var f=HF._voy||HF._vl||HF._eto||HF._sys||HF._sol||HF._cin;if(!f||!f.state)return null;var s=f.state();
     return {i:f.stage!=null?f.stage:s.shot,n:f.ids?f.ids.length:f.n,id:s.ids||s.id,playing:s.playing!==false,mode:s.mode,rev:!!s.rev,desc:!!s.desc,left:s.left||0};}
-  /* Grand voyage : escale par défaut à la fin de la tenue de chaque grande étape (jamais pendant le retour ni la descente,
-     ni à l'étape où l'on revient d'une escale : voyage.html#étape). À la dernière étape, le bouton « Revenir au point de départ ». */
+  /* Grand voyage : à chaque étape, on entre dans son film — tout seul en mode Auto (à la fin de la tenue), ou avec ⏭ / → en mode manuel
+     (aussi pendant le trajet vers l'étape). Jamais pendant le retour ni la descente, ni à l'étape d'où l'on revient (voyage.html#étape).
+     À la dernière étape, le bouton « Revenir au point de départ ». */
   var vid='',skip=decodeURIComponent(location.hash.slice(1)),skipNow=false;
   window.addEventListener('hashchange',function(){skip=decodeURIComponent(location.hash.slice(1));vid='';});
   function voyTick(f){var n=VOY[f.id];if(n)paint(n);
     if(f.id!==vid){vid=f.id;skipNow=!!skip&&vid===skip;if(skipNow)skip='';}
     if(f.id==='univers'&&!f.rev&&!f.desc)setGo('⟲ Revenir au point de départ','voyage.html#retour',function(){if(HF._voy)HF._voy.retour();});else setGo(null);
     var j=RESUME.indexOf(vid);
-    if(j>0&&!skipNow&&!f.rev&&!f.desc&&f.mode==='hold'&&f.playing&&f.left>0&&f.left<=1.2)leave(E[j-1].file);}
+    if(j>0&&!skipNow&&!f.rev&&!f.desc&&f.mode==='hold'&&f.playing&&f.left>0&&f.left<=1.2&&HF.auto!==false&&HF.autoEtape!==false)leave(E[j-1].file);}   /* HF.autoEtape=false : tests (test.py) */
+  function filmHere(){var f=film();if(!f||f.rev||f.desc||HF.autoEtape===false)return null;var j=RESUME.indexOf(f.id);return j>0&&!(skipNow&&f.id===vid)?E[j-1].file:null;}
+  if(isVoy){var enter=function(e){var u=filmHere();if(u){e.stopPropagation();e.preventDefault();leave(u);}};
+    scene.addEventListener('click',function(e){if(e.target.closest('[data-a=next]'))enter(e);},true);
+    scene.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='PageDown')enter(e);},true);}
   /* Escale : quand le film est fini (dernier plan vu au moins 4 s, puis le film repart au premier plan), retour au grand voyage
-     à l'étape de l'escale. ⏭ (ou →) au dernier plan : on continue dans le voyage, sans attendre. ⏮ vers un plan précédent n'est pas la fin. */
+     à l'étape (mode Auto). ⏭ (ou →) au dernier plan, ⏮ (ou ←) au premier : on retourne dans le voyage. */
   var armed=false,wait=0;
   if(!isVoy){
     var onLast=function(){var f=film();return f&&f.i===f.n-1;},cont=function(e){e.stopPropagation();e.preventDefault();leave('voyage.html#'+RESUME[cur]);};
-    scene.addEventListener('click',function(e){if(e.target.closest('[data-a=next]')&&onLast())cont(e);},true);
-    scene.addEventListener('keydown',function(e){if((e.key==='ArrowRight'||e.key==='PageDown')&&onLast())cont(e);},true);}
+    var onFirst=function(){var f=film();return f&&f.i===0;};
+    scene.addEventListener('click',function(e){if(e.target.closest('[data-a=next]')&&onLast()||e.target.closest('[data-a=prev]')&&onFirst())cont(e);},true);
+    scene.addEventListener('keydown',function(e){if((e.key==='ArrowRight'||e.key==='PageDown')&&onLast()||(e.key==='ArrowLeft'||e.key==='PageUp')&&onFirst())cont(e);},true);}
   function escTick(f){
+    if(HF.auto===false){armed=false;wait=0;return;}
     if(f.i===f.n-1&&f.playing)armed=true;
     if(!armed)return;
     if(f.i===f.n-1){if(f.playing&&(wait+=.5)>=30)leave('voyage.html#'+RESUME[cur]);return;}   /* garde-fou : dernier plan très long */
@@ -1661,15 +1680,15 @@ function initRoute(){
     else{armed=false;wait=0;}
   }
   setInterval(function(){var f=film();if(!f)return;if(isVoy)voyTick(f);else escTick(f);},500);
-  /* aide discrète, en haut de la scène (3 premières fois) : on peut tourner, et le film continue */
+  /* aide discrète, en haut de la scène (3 premières fois) : reculer ou avancer (← → ou ⏮ ⏭), tourner, et le film continue */
   var nh=+store.get('aide-tourner')||0;
   if(nh<3){store.set('aide-tourner',nh+1);setTimeout(function(){var h=document.createElement('div');h.className='u-hint';h.setAttribute('aria-hidden','true');
-    h.textContent=HF.coarse()?'Glissez pour tourner · pincez pour zoomer · le film continue':'Glissez pour tourner · molette pour zoomer · le film continue';
+    h.textContent=HF.coarse()?'Touchez ⏮ ⏭ pour reculer ou avancer · glissez pour tourner':'Cliquez sur ⏮ ⏭ ou utilisez les flèches ← → pour reculer ou avancer · glissez pour tourner';
     scene.parentNode.appendChild(h);requestAnimationFrame(function(){h.classList.add('on');});
-    var off=function(){h.classList.remove('on');setTimeout(function(){h.remove();},700);};setTimeout(off,6500);scene.addEventListener('pointerdown',off,{once:true});},2500);}
+    var off=function(){h.classList.remove('on');setTimeout(function(){h.remove();},700);};setTimeout(off,8500);scene.addEventListener('pointerdown',off,{once:true});},2500);}
 }
 
-window.HF={store:store,applyTheme:applyTheme,immersion:function(){immersion();},inImmersion:function(){return IN_SHELL;},
+window.HF={store:store,applyTheme:applyTheme,auto:store.get('auto')===true,immersion:function(){immersion();},inImmersion:function(){return IN_SHELL;},
   coarse:function(){return root.classList.contains('coarse');},
   reduced:function(){try{return window.matchMedia('(prefers-reduced-motion:reduce)').matches;}catch(e){return false;}},
   fr:function(n,d){d=d==null?0:d;return Number(n).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});}
@@ -1882,8 +1901,8 @@ HF.voielactee=function(host){
       i:'Fourchette : NASA. Gaia : ESA. Forme de la galaxie : illustration.',cam:u=>orbit(GC,fit(asp<1?26:36,12,40),150-30*u,14+8*u,40),labs:['mw'],lab:{mw:'La Voie lactée'},ill:1},
     {id:'lumiere',dur:18,tr:6,t:'Regarder loin, c’est voir le passé',l:'Du centre jusqu’à nous : 26 700 ans',s:'La lumière du centre de la galaxie que l’on voit ce soir est partie à la préhistoire. Pour traverser toute la galaxie, il lui faut environ 100 000 ans.',
       cam:u=>orbit(V(-1,0,0),fit(asp<1?28:40,30,40),0,68,40),p:{ring:1},labs:['sol','centre','bord'],lab:{sol:'Le Soleil',centre:'Centre : 26 700 ans',bord:'Autre bord : ≈ 76 000 ans'},light:true,ill:1},
-    {id:'fin',dur:16,tr:6,t:'Et au-delà ?',l:'Prochaine escale : le Groupe local',s:'Deux petites galaxies tournent autour de la nôtre : les Nuages de Magellan. Plus loin, Andromède nous attend, à 2,5 millions d’années-lumière.',
-      i:'Galaxies : illustrations, à leur vraie place.',ch:['groupe-local.html','Escale suivante : le Groupe local'],
+    {id:'fin',dur:16,tr:6,t:'Et au-delà ?',l:'Prochaine étape : le Groupe local',s:'Deux petites galaxies tournent autour de la nôtre : les Nuages de Magellan. Plus loin, Andromède nous attend, à 2,5 millions d’années-lumière.',
+      i:'Galaxies : illustrations, à leur vraie place.',
       cam:u=>{const e=sm(u),t=GC.clone().lerp(MC[0].p.clone().lerp(MC[1].p,.4),.72*e);return orbit(t,fit(40,30,40)*Math.pow(5.5,e),160+20*u,22,40);},labs:['mw','lmc','smc'],lab:{mw:'La Voie lactée'},ill:1}];
   const P0={sky:0,line:0,orb:0,ring:0,s2:0,merc:0,bh:0};
   const prm=S=>Object.assign({},P0,S.p);
@@ -1915,7 +1934,7 @@ HF.voielactee=function(host){
   function paintUI(){const b=ui.querySelector('[data-a=play]');b.textContent=playing?'❚❚':'▶';b.setAttribute('aria-label',playing?'Pause':'Reprendre');}
   paintUI();
   ui.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
-    if(a==='play')playing=!playing;else if(a==='next')go(shot+1);else if(a==='prev')go(shot-1);
+    if(a==='play')playing=!playing;else if(a==='next')nextP();else if(a==='prev')go(shot-1);
     else if(a==='fs'){HF.immersion();}paintUI();wake();});
   let idle=0;function wake(){idle=0;host.classList.remove('calm');}
   host.addEventListener('pointermove',wake);
@@ -1931,7 +1950,7 @@ HF.voielactee=function(host){
   const up=e=>{ptr.delete(e.pointerId);pinch0=0;};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
   el.addEventListener('wheel',e=>{e.preventDefault();offD=cl(offD*Math.exp(e.deltaY*.0012),.3,4);user=8;wake();},{passive:false});
   host.tabIndex=0;host.setAttribute('role','region');host.setAttribute('aria-label','La Voie lactée en 3D : ← → pour changer de plan, Espace pour la pause');
-  host.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='PageDown'){go(shot+1);e.preventDefault();}
+  host.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='PageDown'){nextP();e.preventDefault();}
     else if(e.key==='ArrowLeft'||e.key==='PageUp'){go(shot-1);e.preventDefault();}
     else if(e.key==='Home'){go(0);e.preventDefault();}
     else if(e.key===' '){playing=!playing;paintUI();e.preventDefault();}wake();});
@@ -1939,7 +1958,9 @@ HF.voielactee=function(host){
   /* ===== Plans, trajets, légendes ===== */
   let shot=0,st=0,last=0,visible=true,capKey=-1,capOut=false;
   const trOf=n=>SHOTS[n].tr||3.5,yoOf=S=>S.look?(asp<1?.08:.03):(asp<1?.12:.11);
-  function go(n,instant){shot=(n+SHOTS.length)%SHOTS.length;const S=SHOTS[shot];st=typeof instant==='number'?instant*S.dur:instant?Math.max(1.5,Math.min(S.dur*.5,S.dur-trOf((shot+1)%SHOTS.length)-3.2)):0;offR=offL=0;offD=1;user=0;capKey=-1;}
+  /* ⏭ / → : glisser vers le plan suivant (au lieu d'une coupe) ; si le glissement a déjà commencé, sauter au plan suivant */
+  let nx=false;function nextP(){const he=Math.max(0,SHOTS[shot].dur-trOf((shot+1)%SHOTS.length));if(st<he){st=he;nx=true;}else go(shot+1);}
+  function go(n,instant){nx=false;shot=(n+SHOTS.length)%SHOTS.length;const S=SHOTS[shot];st=typeof instant==='number'?instant*S.dur:instant?Math.max(1.5,Math.min(S.dur*.5,S.dur-trOf((shot+1)%SHOTS.length)-3.2)):0;offR=offL=0;offD=1;user=0;capKey=-1;}
   const qOf=c=>new T.Quaternion().setFromRotationMatrix(new T.Matrix4().lookAt(c.pos,c.tgt,c.up));
   const st0=c=>({pos:c.pos.clone(),tgt:c.tgt.clone(),q:qOf(c),fov:fovEff(c.fov)});
   /* trajet : on approche (ou on quitte) le point visé de façon géométrique ; orientation par quaternions */
@@ -1972,7 +1993,9 @@ HF.voielactee=function(host){
     const dt=Math.min(.05,(now-last)/1000||0);last=now;tU.value=now/1000%3600;
     if(user>0)user-=dt;else{offR*=Math.exp(-dt*.6);offL*=Math.exp(-dt*.6);offD=1+(offD-1)*Math.exp(-dt*.6);}
     if(playing&&!reduce)st+=dt;
-    if(st>=SHOTS[shot].dur){shot=(shot+1)%SHOTS.length;st=0;}
+    /* mode manuel (HF.auto===false, interrupteur « Auto » de core.js) : le plan reste là, juste avant le glissement vers le suivant ; ⏭ / → lance ce glissement */
+    if(HF.auto===false&&!nx)st=Math.min(st,Math.max(0,SHOTS[shot].dur-trOf((shot+1)%SHOTS.length)));
+    if(st>=SHOTS[shot].dur){nx=false;shot=(shot+1)%SHOTS.length;st=0;}
     const S=SHOTS[shot],u=cl(st/S.dur,0,1),nI=(shot+1)%SHOTS.length,Nx=SHOTS[nI],BL=trOf(nI),hold=S.dur-BL;
     let c=st0(S.cam(u)),P=prm(S),k=0,lk=!!S.look;
     if(st>hold){k=sm((st-hold)/BL);c=blend(c,st0(Nx.cam(0)),k);P=lerpP(P,prm(Nx),k);if(k>.5)lk=!!Nx.look;}

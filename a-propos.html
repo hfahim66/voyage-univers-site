@@ -1583,6 +1583,18 @@ function initOnline(){
   });
 }
 
+/* ----- En ligne : toujours la dernière version publiée -----
+   L'hébergeur laisse les pages 10 min dans le cache du navigateur. Au chargement, une requête d'en-tête seulement (HEAD, sans cache)
+   compare la date de la page en ligne à celle de la page affichée ; si une version plus récente existe, on recharge une fois. */
+function initFresh(){
+  if(!/^https?:$/.test(location.protocol)||!window.fetch)return;
+  var shown=Date.parse(document.lastModified);if(!shown)return;
+  fetch(location.pathname,{method:'HEAD',cache:'no-store'}).then(function(r){
+    var lm=Date.parse(r.headers.get('Last-Modified')||'');if(!lm||lm<=shown+2000)return;
+    var k='frais:'+location.pathname+':'+lm;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1');}catch(e){return;}
+    location.reload();}).catch(function(){});
+}
+
 /* ----- La route : « un voyage, huit escales » -----
    Règle simple, la même partout : le film ne s'arrête jamais tout seul (on peut tourner ou zoomer pendant qu'il continue ;
    seul ❚❚ met en pause), et rien ne s'affiche au milieu de l'écran.
@@ -1630,8 +1642,12 @@ function initRoute(){
     var j=RESUME.indexOf(vid);
     if(j>0&&!skipNow&&!f.rev&&!f.desc&&f.mode==='hold'&&f.playing&&f.left>0&&f.left<=1.2)leave(E[j-1].file);}
   /* Escale : quand le film est fini (dernier plan vu au moins 4 s, puis le film repart au premier plan), retour au grand voyage
-     à l'étape de l'escale. Un saut vers un autre plan avec ⏮ ⏭ n'est pas la fin. */
+     à l'étape de l'escale. ⏭ (ou →) au dernier plan : on continue dans le voyage, sans attendre. ⏮ vers un plan précédent n'est pas la fin. */
   var armed=false,wait=0;
+  if(!isVoy){
+    var onLast=function(){var f=film();return f&&f.i===f.n-1;},cont=function(e){e.stopPropagation();e.preventDefault();leave('voyage.html#'+RESUME[cur]);};
+    scene.addEventListener('click',function(e){if(e.target.closest('[data-a=next]')&&onLast())cont(e);},true);
+    scene.addEventListener('keydown',function(e){if((e.key==='ArrowRight'||e.key==='PageDown')&&onLast())cont(e);},true);}
   function escTick(f){
     if(f.i===f.n-1&&f.playing)armed=true;
     if(!armed)return;
@@ -1653,7 +1669,7 @@ window.HF={store:store,applyTheme:applyTheme,immersion:function(){immersion();},
   reduced:function(){try{return window.matchMedia('(prefers-reduced-motion:reduce)').matches;}catch(e){return false;}},
   fr:function(n,d){d=d==null?0:d;return Number(n).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});}
 };
-document.addEventListener('DOMContentLoaded',function(){initMenu();initPresent();initReveal();initOnline();initRoute();});
+document.addEventListener('DOMContentLoaded',function(){initMenu();initPresent();initReveal();initOnline();initRoute();initFresh();});
 })();
 
 </script>

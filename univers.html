@@ -1587,6 +1587,18 @@ function initOnline(){
   });
 }
 
+/* ----- En ligne : toujours la dernière version publiée -----
+   L'hébergeur laisse les pages 10 min dans le cache du navigateur. Au chargement, une requête d'en-tête seulement (HEAD, sans cache)
+   compare la date de la page en ligne à celle de la page affichée ; si une version plus récente existe, on recharge une fois. */
+function initFresh(){
+  if(!/^https?:$/.test(location.protocol)||!window.fetch)return;
+  var shown=Date.parse(document.lastModified);if(!shown)return;
+  fetch(location.pathname,{method:'HEAD',cache:'no-store'}).then(function(r){
+    var lm=Date.parse(r.headers.get('Last-Modified')||'');if(!lm||lm<=shown+2000)return;
+    var k='frais:'+location.pathname+':'+lm;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1');}catch(e){return;}
+    location.reload();}).catch(function(){});
+}
+
 /* ----- La route : « un voyage, huit escales » -----
    Règle simple, la même partout : le film ne s'arrête jamais tout seul (on peut tourner ou zoomer pendant qu'il continue ;
    seul ❚❚ met en pause), et rien ne s'affiche au milieu de l'écran.
@@ -1634,8 +1646,12 @@ function initRoute(){
     var j=RESUME.indexOf(vid);
     if(j>0&&!skipNow&&!f.rev&&!f.desc&&f.mode==='hold'&&f.playing&&f.left>0&&f.left<=1.2)leave(E[j-1].file);}
   /* Escale : quand le film est fini (dernier plan vu au moins 4 s, puis le film repart au premier plan), retour au grand voyage
-     à l'étape de l'escale. Un saut vers un autre plan avec ⏮ ⏭ n'est pas la fin. */
+     à l'étape de l'escale. ⏭ (ou →) au dernier plan : on continue dans le voyage, sans attendre. ⏮ vers un plan précédent n'est pas la fin. */
   var armed=false,wait=0;
+  if(!isVoy){
+    var onLast=function(){var f=film();return f&&f.i===f.n-1;},cont=function(e){e.stopPropagation();e.preventDefault();leave('voyage.html#'+RESUME[cur]);};
+    scene.addEventListener('click',function(e){if(e.target.closest('[data-a=next]')&&onLast())cont(e);},true);
+    scene.addEventListener('keydown',function(e){if((e.key==='ArrowRight'||e.key==='PageDown')&&onLast())cont(e);},true);}
   function escTick(f){
     if(f.i===f.n-1&&f.playing)armed=true;
     if(!armed)return;
@@ -1657,7 +1673,7 @@ window.HF={store:store,applyTheme:applyTheme,immersion:function(){immersion();},
   reduced:function(){try{return window.matchMedia('(prefers-reduced-motion:reduce)').matches;}catch(e){return false;}},
   fr:function(n,d){d=d==null?0:d;return Number(n).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});}
 };
-document.addEventListener('DOMContentLoaded',function(){initMenu();initPresent();initReveal();initOnline();initRoute();});
+document.addEventListener('DOMContentLoaded',function(){initMenu();initPresent();initReveal();initOnline();initRoute();initFresh();});
 })();
 
 </script>
@@ -2304,6 +2320,13 @@ HF.voyage=function(host,opt){
     tr={A:snap(),B:{p:G,z:lg(H_ALT),q:q0({d:nG,up:perp(N,nG)}),fov:38},peak:0,bump:false,dur:reduce?.01:D_DIVE,to:0,fast:false,from:0};
     desc=1;descT=0;descCap=-1;capSet('<b>Retour chez nous</b><em>Cap sur la France</em>');}
   function endDesc(){desc=0;pin.classList.remove('on');const s0=snap();travel(s0,0);hideStage();}
+  /* ⏮ ⏭ (et ← →) : toujours « continuer dans le sens du film ». Pendant le retour : une étape vers la Terre (⏭) ou vers le large (⏮),
+     sans annuler le retour ; pendant la descente : ⏭ la passe ; à la dernière étape du voyage : ⏭ lance le retour. */
+  function step(d){
+    if(desc){if(d>0)endDesc();return;}
+    if(rev){const to=cl(curIdx()-d,0,ST.length-1);const s0=snap();offY=offP=offZ=0;user=0;travel(s0,to,true);hideStage();return;}
+    if(!CHAP&&d>0&&curIdx()===ST.length-1){startRev();return;}
+    go(curIdx()+d);}
   function descTick(){
     if(desc===1&&descT>=tr.dur){desc=2;descT=0;hv0=2*H_ALT*Math.tan(fovEff(38)*D/2);}
     if(desc===2&&descT>=(reduce?.01:D_ZOOM)){desc=3;descT=0;}
@@ -2329,7 +2352,7 @@ HF.voyage=function(host,opt){
   function paintUI(){const b=ui.querySelector('[data-a=play]');b.textContent=playing?'❚❚':'▶';b.setAttribute('aria-label',playing?'Pause du voyage':'Reprendre le voyage');}
   paintUI();
   ui.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
-    if(a==='play')playing=!playing;else if(a==='next')go(curIdx()+1);else if(a==='prev')go(curIdx()-1);
+    if(a==='play')playing=!playing;else if(a==='next')step(1);else if(a==='prev')step(-1);
     else if(a==='fs'){HF.immersion();}paintUI();wake();});
   const curIdx=()=>mode==='travel'?tr.to:k;
   let shown=-1;
@@ -2365,8 +2388,8 @@ HF.voyage=function(host,opt){
   const up=e=>{ptr.delete(e.pointerId);pinch0=0;};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
   el.addEventListener('wheel',e=>{e.preventDefault();offZ=cl(offZ+e.deltaY*.0016,-1.2,3);user=8;wake();},{passive:false});
   host.tabIndex=0;host.setAttribute('role','region');host.setAttribute('aria-label',(opt.label||'Le grand voyage en 3D')+' : ← → pour changer d’étape, Espace pour la pause');
-  host.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='PageDown'){go(curIdx()+1);e.preventDefault();}
-    else if(e.key==='ArrowLeft'||e.key==='PageUp'){go(curIdx()-1);e.preventDefault();}
+  host.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='PageDown'){step(1);e.preventDefault();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){step(-1);e.preventDefault();}
     else if(e.key==='Home'){go(0);e.preventDefault();}
     else if(e.key===' '){playing=!playing;paintUI();e.preventDefault();}wake();});
 

@@ -1473,6 +1473,44 @@ html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17p
 .vy3-big:hover,.vy3-big:focus-visible{background:#ffd08a}
 @keyframes bigPulse{0%,100%{box-shadow:0 0 0 0 rgba(244,184,96,.45),0 10px 40px rgba(0,0,0,.5)}50%{box-shadow:0 0 0 18px rgba(244,184,96,0),0 10px 40px rgba(0,0,0,.5)}}
 
+/* Escale sur la Lune (lune.js) : surcouche plein écran par-dessus le film de l'étape 1, qui se met en pause */
+.u-lu{position:absolute;inset:0;z-index:6;background:#01040a;color:#fff;animation:luIn .6s ease both}
+.u-lu[hidden]{display:none}
+@keyframes luIn{from{opacity:0}to{opacity:1}}
+.u-lu-cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}.u-lu-cv:active{cursor:grabbing}
+.u-lu-cap{position:absolute;left:22px;top:18px;width:min(380px,34vw);text-shadow:0 2px 14px #000;pointer-events:none}
+.u-lu-cap.in{animation:cinIn 1s cubic-bezier(.2,.7,.2,1) both}
+.u-lu-eye{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--or)}
+.u-lu-t{margin:6px 0 0;font-size:clamp(22px,2.5vw,34px);font-weight:900;line-height:1.1;letter-spacing:-.01em}
+.u-lu-x{margin:8px 0 0;font-size:15.5px;line-height:1.45;color:#E4E8F6}
+.u-lu-facts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.u-lu-facts span{padding:4px 10px;border-radius:999px;background:rgba(4,8,20,.6);border:1px solid rgba(255,255,255,.14);font-size:13px;color:#C5CCE8;text-shadow:none}
+.u-lu-note{position:absolute;right:14px;top:14px;max-width:30%;text-align:right;font-size:11px;color:#929FCC}
+.u-lu-bot{position:absolute;left:0;right:0;bottom:calc(12px + env(safe-area-inset-bottom));padding:0 16px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.u-lu-age{position:relative;width:min(760px,100%);padding-top:16px}
+.u-lu-range{display:block;width:100%;height:44px;margin:0;accent-color:var(--or);cursor:pointer;background:transparent}
+.u-lu-now{position:absolute;top:0;transform:translateX(-50%);font-size:11px;font-weight:700;color:var(--or);white-space:nowrap;pointer-events:none}
+.u-lu-now::after{content:'';position:absolute;left:50%;top:100%;margin-left:-4px;border:4px solid transparent;border-top-color:var(--or)}
+.u-lu-marks{position:relative;height:16px;font-size:11px;color:#929FCC}
+.u-lu-marks span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.u-lu-marks span.start{transform:none}.u-lu-marks span.end{transform:translateX(-100%)}
+.u-lu-marks i{display:none;font-style:normal}.u-lu-marks em{font-style:normal}
+.u-lu-val{display:block;text-align:center;font-size:13px;color:#E4E8F6;margin-top:2px;font-variant-numeric:tabular-nums}
+.u-lu-row{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px 14px}
+.u-lu-steps,.u-lu-ctl{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.u-lu-steps .cin-b{padding:0 14px;font-size:14px}
+.u-lu-steps .cin-b.on{border-color:var(--or);color:var(--or);background:rgba(244,184,96,.14)}
+.u-lu .cin-b:focus-visible{outline:3px solid var(--or);outline-offset:2px}
+.cin-b.cin-lune{border-color:var(--or);color:var(--or)}
+@media(max-width:899px){
+  .u-lu-cap{left:12px;right:12px;top:10px;width:auto}
+  .u-lu-t{font-size:21px}.u-lu-x{font-size:14px;margin-top:5px}.u-lu-facts{margin-top:6px}.u-lu-facts span{font-size:12px;padding:3px 8px}
+  .u-lu-note{display:none}.u-lu-steps span{display:none}.u-lu-steps .cin-b{padding:0;min-width:44px}
+  .u-lu-marks em{display:none}.u-lu-marks i{display:inline}.u-lu-bot{gap:4px}.u-lu-val{display:none}}
+@media(max-width:899px) and (max-height:720px){.u-lu-x{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}}
+html.present .u-lu-t{font-size:clamp(32px,3.4vw,52px)}html.present .u-lu-x{font-size:21px}html.present .u-lu-facts span{font-size:16px}html.present .u-lu-cap{width:min(520px,36vw)}
+@media(prefers-reduced-motion:reduce){.u-lu,.u-lu-cap.in{animation:none}}
+
 </style>
 </head>
 <body class="">
@@ -1797,7 +1835,8 @@ function initRoute(){
      #fin : ouvrir le film à son dernier plan (quand on recule depuis l'étape suivante). Mode Auto : à la fin du film, le voyage continue. */
   var armed=false,wait=0;
   if(!isVoy){
-    var onEsc=function(e){var f=film();if(!f)return;
+    var onEsc=function(e){var f=film();if(!f||(e.type==='keydown'&&e.target.closest&&e.target.closest('input')))return;   /* curseur (escale sur la Lune) : ses flèches restent à lui */
+     
       if(fwd(e)&&f.i===f.n-1)take(e,'voyage.html#'+RESUME[cur]);
       else if(bwd(e)&&f.i===0)take(e,backFrom(RESUME[cur]));};
     scene.addEventListener('click',onEsc,true);scene.addEventListener('keydown',onEsc,true);
@@ -2126,11 +2165,11 @@ HF.cinema=function(host,opt){
   /* ----- Les plans de la caméra -----
      o : orbite (dist, rel = angle depuis la direction du Soleil, lat, fov) ; h : à l'horizon (dist, rel, lat, down = regard vers le bas) ; m : vers la Lune */
   const SHOTS=FOND?[{k:'h',dist:1.24,rel:118,lat:22,down:21,fov:52,dur:1e9}]:[
-    {k:'o',dist:7.5,dist1:3.9,rel:48,lat:18,fov:36,dur:14,t:'La Terre, en ce moment même',s:'Éclairée par le Soleil, à l’heure de votre appareil.'},
-    {k:'o',dist:3.0,rel:92,lat:26,fov:38,dur:14,t:'Une moitié dans le jour, l’autre dans la nuit',s:'Sur cette ligne, le Soleil se lève ou se couche, à cet instant.'},
+    {k:'o',dist:7.5,dist1:3.9,rel:48,lat:18,fov:36,dur:14,t:'La Terre tourne',s:'Éclairée par le Soleil, à partir de l’heure de votre appareil. Le temps est accéléré : regardez l’horloge.'},
+    {k:'o',dist:3.0,rel:92,lat:26,fov:38,dur:14,t:'Une moitié dans le jour, l’autre dans la nuit',s:'Sur cette ligne, le Soleil se lève ou se couche, à l’heure affichée.'},
     {k:'o',dist:2.1,rel:30,lat:-8,fov:40,glint:true,dur:13,t:'Le Soleil se reflète sur l’océan',s:'L’eau couvre environ 71 % de la surface de la Terre.'},
     {k:'o',dist:2.25,rel:150,lat:34,fov:40,dur:14,t:'La nuit, les villes s’allument',s:'Les lumières vues par satellite (NASA, 2016).'},
-    {k:'h',dist:1.24,rel:118,lat:22,down:21,fov:52,dur:15,t:'Un lever de Soleil, vu de l’espace',s:'L’atmosphère s’illumine : une couche d’air très fine, presque tout tient dans les 20 premiers kilomètres.'},
+    {k:'h',dist:1.24,rel:118,lat:22,down:21,fov:52,dur:15,t:'Un lever de Soleil, vu de l’espace',s:'L’atmosphère s’illumine : une couche d’air très fine. Presque tout l’air tient dans les 20 premiers kilomètres.'},
     {k:'m',dur:15,t:'Et la Lune',s:null}];
   const sFrame=()=>{const n=new T.Vector3(0,1,0),e1=SUN.clone().sub(n.clone().multiplyScalar(SUN.y));if(e1.lengthSq()<1e-6)e1.set(1,0,0);e1.normalize();return [e1,new T.Vector3().crossVectors(n,e1),n];};
   function shotCam(S,u){const [e1,e2,n]=sFrame();
@@ -2152,12 +2191,12 @@ HF.cinema=function(host,opt){
     cap=document.createElement('div');cap.className='cin-cap';cap.setAttribute('aria-live','polite');host.appendChild(cap);
     clock=document.createElement('div');clock.className='cin-clock';host.appendChild(clock);
     ui=document.createElement('div');ui.className='cin-ui';
-    ui.innerHTML='<button type="button" class="cin-b" data-a="play" aria-label="Pause du temps"></button><button type="button" class="cin-b wide" data-a="speed"></button><button type="button" class="cin-b wide" data-a="now">Maintenant</button><button type="button" class="cin-b" data-a="next" aria-label="Plan suivant">⏭</button><button type="button" class="cin-b" data-a="fs" aria-label="Plein écran">⛶</button>';
+    ui.innerHTML='<button type="button" class="cin-b" data-a="play" aria-label="Pause du temps"></button><button type="button" class="cin-b wide" data-a="speed"></button><button type="button" class="cin-b wide" data-a="now">Maintenant</button><button type="button" class="cin-b wide cin-lune" data-a="lune" hidden><span aria-hidden="true">☾</span> Les phases de la Lune</button><button type="button" class="cin-b" data-a="next" aria-label="Plan suivant">⏭</button><button type="button" class="cin-b" data-a="fs" aria-label="Plein écran">⛶</button>';
     host.appendChild(ui);
     const note=document.createElement('div');note.className='cin-note';note.textContent='Nuages : illustration calculée. Le reste : images NASA et positions calculées.';host.appendChild(note);
     ui.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
       if(a==='play')playing=!playing;else if(a==='speed'){sp=(sp+1)%SPEEDS.length;playing=true;}else if(a==='now'){simMs=Date.now();sp=0;playing=true;}
-      else if(a==='next'){nextP();offR=offL=0;offD=1;}else if(a==='fs'){HF.immersion();}
+      else if(a==='next'){nextP();offR=offL=0;offD=1;}else if(a==='fs'){HF.immersion();}else if(a==='lune'){openLune(0);}
       paintUI();wake();});
   }
   function paintUI(){if(!ui)return;const q=s=>ui.querySelector(s);q('[data-a=play]').textContent=playing?'❚❚':'▶';q('[data-a=play]').setAttribute('aria-label',playing?'Pause du temps':'Reprendre le temps');q('[data-a=speed]').textContent=SPEEDS[sp][1];}
@@ -2177,15 +2216,23 @@ HF.cinema=function(host,opt){
     const up=e=>{ptr.delete(e.pointerId);pinch0=0;};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
     el.addEventListener('wheel',e=>{e.preventDefault();offD=cl(offD*Math.exp(e.deltaY*.0012),.55,2.6);user=8;wake();},{passive:false});
     host.tabIndex=0;host.setAttribute('role','region');host.setAttribute('aria-label','La Terre en 3D : ← → pour changer de plan, Espace pour le temps');
-    host.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='PageDown'){nextP();e.preventDefault();}
+    host.addEventListener('keydown',e=>{if(LU&&LU.isOpen){LU.key(e);wake();return;}if(e.key==='ArrowRight'||e.key==='PageDown'){nextP();e.preventDefault();}
       else if(e.key==='ArrowLeft'||e.key==='PageUp'){shot=(shot+SHOTS.length-1)%SHOTS.length;st=0;e.preventDefault();}
       else if(e.key===' '){playing=!playing;paintUI();e.preventDefault();}wake();});
   }
 
+  /* ----- Escale sur la Lune (lune.js) : après le dernier plan « Et la Lune », par-dessus le film, qui se met en pause.
+     → / ⏭ ou « ☾ Les phases de la Lune » y entrent (seule en mode Auto) ; ← à sa première partie, ✕ ou Échap ramènent à « Et la Lune » ;
+     → à sa dernière partie : le grand voyage continue (core.js). Adresse directe : terre-lune.html#lune. ----- */
+  const LU=!FOND&&HF.lune?HF.lune(host,{onClose:()=>{shot=SHOTS.length-1;st=0;nx=false;wake();try{host.focus({preventScroll:true});}catch(e){}},
+    onEnd:()=>{LU.close();shot=0;st=0;nx=false;}}):null;
+  const lb=ui&&ui.querySelector('[data-a=lune]');
+  function openLune(i){if(!LU)return;LU.open(i);wake();}
+
   /* ----- Boucle ----- */
   let shot=0,st=0,last=0,visible=true,capKey=-1;const BL=3.2;
   /* ⏭ / → : glisser vers le plan suivant (au lieu d'une coupe) ; si le glissement a déjà commencé, sauter au plan suivant */
-  let nx=false;function nextP(){const he=Math.max(0,SHOTS[shot].dur-BL);if(st<he){st=he;nx=true;}else{shot=(shot+1)%SHOTS.length;st=0;nx=false;}}
+  let nx=false;function nextP(){if(LU&&shot===SHOTS.length-1){openLune(0);return;}const he=Math.max(0,SHOTS[shot].dur-BL);if(st<he){st=he;nx=true;}else{shot=(shot+1)%SHOTS.length;st=0;nx=false;}}
   /* passage d'un plan à l'autre en arc autour de la Terre (direction et distance interpolées séparément) : jamais à travers elle */
   function arc(a,b,k){const la=a.length(),lb=b.length(),ua=a.clone().normalize(),ub=b.clone().normalize(),w=Math.acos(cl(ua.dot(ub),-1,1));
     let u;if(w<1e-3||Math.PI-w<1e-3)u=ua.lerp(ub,k);else u=ua.multiplyScalar(Math.sin((1-k)*w)/Math.sin(w)).add(ub.multiplyScalar(Math.sin(k*w)/Math.sin(w)));
@@ -2193,6 +2240,7 @@ HF.cinema=function(host,opt){
   function size(){const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
   const fmt=ms=>new Date(ms).toLocaleString('fr-FR',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
   function frame(now){if(!visible){raf=0;return;}raf=requestAnimationFrame(frame);
+    if(LU&&LU.isOpen){last=now;return;}   /* escale sur la Lune ouverte : le film est en pause */
     const dt=Math.min(.05,(now-last)/1000||0);last=now;
     if(playing)simMs+=dt*1000*(sp===0?1:SPEEDS[sp][0]);
     G=astro();
@@ -2204,9 +2252,11 @@ HF.cinema=function(host,opt){
     /* mode manuel (HF.auto===false, interrupteur « Auto » de core.js) : le plan reste là, juste avant le glissement vers le suivant ; ⏭ / → lance ce glissement */
     if(HF.auto===false&&!nx&&!FOND)st=Math.min(st,Math.max(0,SHOTS[shot].dur-BL));
     const S=SHOTS[shot],u=cl(st/S.dur,0,1);
-    if(st>=S.dur){shot=(shot+1)%SHOTS.length;st=0;nx=false;}
+    const toLune=LU&&shot===SHOTS.length-1;
+    if(toLune&&HF.auto!==false&&st>=S.dur-BL){openLune(0);return;}
+    if(st>=S.dur&&!toLune){shot=(shot+1)%SHOTS.length;st=0;nx=false;}
     let c=shotCam(S,u);
-    if(st>S.dur-BL&&SHOTS.length>1){const N=SHOTS[(shot+1)%SHOTS.length],k=sm((st-(S.dur-BL))/BL),c2=shotCam(N,0);
+    if(st>S.dur-BL&&SHOTS.length>1&&!toLune){const N=SHOTS[(shot+1)%SHOTS.length],k=sm((st-(S.dur-BL))/BL),c2=shotCam(N,0);
       c={pos:arc(c.pos,c2.pos,k),tgt:c.tgt.clone().lerp(c2.tgt,k),up:c.up.clone().lerp(c2.up,k).normalize(),fov:c.fov+(c2.fov-c.fov)*k};}
     /* reprise en main : rotation autour de la Terre et distance */
     if(offR||offL||offD!==1){const q=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),offR*D),r=c.pos.clone().applyQuaternion(q),ax=new T.Vector3().crossVectors(r,new T.Vector3(0,1,0)).normalize();
@@ -2215,8 +2265,9 @@ HF.cinema=function(host,opt){
     cam.position.copy(c.pos);cam.up.copy(c.up);cam.lookAt(c.tgt);if(Math.abs(cam.fov-c.fov)>.01){cam.fov=c.fov;cam.updateProjectionMatrix();}
     R.render(sc,cam);
     /* légendes et horloge */
-    if(cap){let t=S.t,s=S.s;if(S.k==='m'){const km=MOONP.length()*RE;t='Et la Lune, à '+HF.fr(Math.round(km/1000)*1000)+' km';s='Sa lumière nous parvient en '+HF.fr(km/C,2)+' seconde. Elle est à sa vraie place, ce soir.';}
+    if(cap){let t=S.t,s=S.s;if(S.k==='m'){const km=MOONP.length()*RE;t='Et la Lune, à '+HF.fr(Math.round(km/1000)*1000)+' km';s='Sa lumière nous parvient en '+HF.fr(km/C,2)+' seconde. Elle est à sa vraie place, à l’heure affichée.';}
       const html='<b>'+t+'</b>'+(s?'<span>'+s+'</span>':'');if(shot!==capKey){capKey=shot;cap.innerHTML=html;cap._h=html;cap.classList.remove('in');void cap.offsetWidth;cap.classList.add('in');}else if(cap._h!==html){cap.innerHTML=html;cap._h=html;}
+      if(lb)lb.hidden=!LU||shot!==SHOTS.length-1;
       clock.textContent=fmt(simMs)+(sp?' · accéléré':'');
       idle+=dt;if(idle>3.5&&!host.classList.contains('calm'))host.classList.add('calm');}
   }
@@ -2225,7 +2276,10 @@ HF.cinema=function(host,opt){
   try{new IntersectionObserver(es=>{visible=es[0].isIntersecting&&!document.hidden;kick();}).observe(host);}catch(e){}
   document.addEventListener('visibilitychange',()=>{visible=!document.hidden;kick();});
   kick();
-  return {get shot(){return shot;},n:SHOTS.length,next(){shot=(shot+1)%SHOTS.length;st=0;},state:()=>({shot,simMs,sp,playing}),renderer:R};
+  if(LU&&location.hash==='#lune')setTimeout(()=>openLune(0),0);
+  if(LU)window.addEventListener('hashchange',()=>{if(location.hash==='#lune')openLune(0);});
+  return {get shot(){return LU&&LU.isOpen?SHOTS.length+LU.part:shot;},n:SHOTS.length+(LU?LU.n:0),
+    next(){if(LU&&LU.isOpen){LU.go(LU.part+1);return;}if(LU&&shot===SHOTS.length-1){openLune(0);return;}shot=(shot+1)%SHOTS.length;st=0;},lune:LU,state:()=>LU&&LU.isOpen?{shot:SHOTS.length+LU.part,id:'lune',simMs,sp,playing:LU.playing}:({shot,simMs,sp,playing}),renderer:R};
 };
 })();
 

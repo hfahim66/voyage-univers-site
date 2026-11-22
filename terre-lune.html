@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#060A18">
 <meta name="robots" content="noindex, nofollow">
-<meta name="description" content="La Terre en ce moment, éclairée par le Soleil, et la Lune à sa vraie place : étape 1 du voyage dans l’Univers.">
+<meta name="description" content="La Terre éclairée par le Soleil, le jour et la nuit qui défilent, et la Lune à sa vraie place : étape 1 du voyage dans l’Univers.">
 <title>La Terre et la Lune · Voyage dans l’Univers</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2230%22%20fill%3D%22%23060A18%22%2F%3E%3Cellipse%20cx%3D%2232%22%20cy%3D%2232%22%20rx%3D%2225%22%20ry%3D%229%22%20fill%3D%22none%22%20stroke%3D%22%23BFD0FF%22%20stroke-width%3D%222.5%22%20transform%3D%22rotate(-24%2032%2032)%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%229%22%20fill%3D%22%234f7fe0%22%2F%3E%3Ccircle%20cx%3D%2252%22%20cy%3D%2222%22%20r%3D%224%22%20fill%3D%22%23F4B860%22%2F%3E%3C%2Fsvg%3E">
 <style>
@@ -1473,6 +1473,44 @@ html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17p
 .vy3-big:hover,.vy3-big:focus-visible{background:#ffd08a}
 @keyframes bigPulse{0%,100%{box-shadow:0 0 0 0 rgba(244,184,96,.45),0 10px 40px rgba(0,0,0,.5)}50%{box-shadow:0 0 0 18px rgba(244,184,96,0),0 10px 40px rgba(0,0,0,.5)}}
 
+/* Escale sur la Lune (lune.js) : surcouche plein écran par-dessus le film de l'étape 1, qui se met en pause */
+.u-lu{position:absolute;inset:0;z-index:6;background:#01040a;color:#fff;animation:luIn .6s ease both}
+.u-lu[hidden]{display:none}
+@keyframes luIn{from{opacity:0}to{opacity:1}}
+.u-lu-cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}.u-lu-cv:active{cursor:grabbing}
+.u-lu-cap{position:absolute;left:22px;top:18px;width:min(380px,34vw);text-shadow:0 2px 14px #000;pointer-events:none}
+.u-lu-cap.in{animation:cinIn 1s cubic-bezier(.2,.7,.2,1) both}
+.u-lu-eye{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--or)}
+.u-lu-t{margin:6px 0 0;font-size:clamp(22px,2.5vw,34px);font-weight:900;line-height:1.1;letter-spacing:-.01em}
+.u-lu-x{margin:8px 0 0;font-size:15.5px;line-height:1.45;color:#E4E8F6}
+.u-lu-facts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.u-lu-facts span{padding:4px 10px;border-radius:999px;background:rgba(4,8,20,.6);border:1px solid rgba(255,255,255,.14);font-size:13px;color:#C5CCE8;text-shadow:none}
+.u-lu-note{position:absolute;right:14px;top:14px;max-width:30%;text-align:right;font-size:11px;color:#929FCC}
+.u-lu-bot{position:absolute;left:0;right:0;bottom:calc(12px + env(safe-area-inset-bottom));padding:0 16px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.u-lu-age{position:relative;width:min(760px,100%);padding-top:16px}
+.u-lu-range{display:block;width:100%;height:44px;margin:0;accent-color:var(--or);cursor:pointer;background:transparent}
+.u-lu-now{position:absolute;top:0;transform:translateX(-50%);font-size:11px;font-weight:700;color:var(--or);white-space:nowrap;pointer-events:none}
+.u-lu-now::after{content:'';position:absolute;left:50%;top:100%;margin-left:-4px;border:4px solid transparent;border-top-color:var(--or)}
+.u-lu-marks{position:relative;height:16px;font-size:11px;color:#929FCC}
+.u-lu-marks span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.u-lu-marks span.start{transform:none}.u-lu-marks span.end{transform:translateX(-100%)}
+.u-lu-marks i{display:none;font-style:normal}.u-lu-marks em{font-style:normal}
+.u-lu-val{display:block;text-align:center;font-size:13px;color:#E4E8F6;margin-top:2px;font-variant-numeric:tabular-nums}
+.u-lu-row{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px 14px}
+.u-lu-steps,.u-lu-ctl{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.u-lu-steps .cin-b{padding:0 14px;font-size:14px}
+.u-lu-steps .cin-b.on{border-color:var(--or);color:var(--or);background:rgba(244,184,96,.14)}
+.u-lu .cin-b:focus-visible{outline:3px solid var(--or);outline-offset:2px}
+.cin-b.cin-lune{border-color:var(--or);color:var(--or)}
+@media(max-width:899px){
+  .u-lu-cap{left:12px;right:12px;top:10px;width:auto}
+  .u-lu-t{font-size:21px}.u-lu-x{font-size:14px;margin-top:5px}.u-lu-facts{margin-top:6px}.u-lu-facts span{font-size:12px;padding:3px 8px}
+  .u-lu-note{display:none}.u-lu-steps span{display:none}.u-lu-steps .cin-b{padding:0;min-width:44px}
+  .u-lu-marks em{display:none}.u-lu-marks i{display:inline}.u-lu-bot{gap:4px}.u-lu-val{display:none}}
+@media(max-width:899px) and (max-height:720px){.u-lu-x{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}}
+html.present .u-lu-t{font-size:clamp(32px,3.4vw,52px)}html.present .u-lu-x{font-size:21px}html.present .u-lu-facts span{font-size:16px}html.present .u-lu-cap{width:min(520px,36vw)}
+@media(prefers-reduced-motion:reduce){.u-lu,.u-lu-cap.in{animation:none}}
+
 </style>
 </head>
 <body class="" data-escale="1">
@@ -1509,7 +1547,7 @@ html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17p
 <figure class="u-live" data-enligne="https://eyes.nasa.gov/apps/solar-system/#/moon/distance?to=earth&amp;embed=true" data-titre="NASA’s Eyes on the Solar System : la Terre et la Lune"><div class="u-live-stage" data-stage><div class="u-poster" aria-hidden="true"><span class="e" style="background-image:url(assets/terre-jour.jpg)"></span><span class="l"><span>≈ 384 400 km · 1,3 seconde-lumière</span></span><span class="m" style="background-image:url(assets/moon2k.jpg)"></span></div></div>
 <figcaption><button type="button" class="u-cta" data-go>▶ Ouvrir la vue de la NASA</button><span class="u-off" data-off hidden>Disponible avec une connexion à internet. Tout le reste de la page fonctionne sans.</span><small>NASA’s Eyes on the Solar System · NASA/JPL-Caltech. <a href="https://eyes.nasa.gov/apps/solar-system/#/moon/distance?to=earth" rel="noopener" target="_blank">Ouvrir dans un nouvel onglet</a></small></figcaption></figure>
 <nav class="u-next" aria-label="Étapes voisines"><a href="voyage.html"><small>← Revenir</small><b>Le grand voyage</b></a><a href="soleil.html" style="text-align:right"><small>Étape 2 →</small><b>Le Soleil</b></a></nav>
-<details class="u-src"><summary>Sources de cette page</summary><ul><li><a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html" rel="noopener" target="_blank">NASA NSSDCA — Earth Fact Sheet (D. R. Williams)</a><small> · Données publiques de la NASA</small></li><li><a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html" rel="noopener" target="_blank">NASA NSSDCA — Moon Fact Sheet (D. R. Williams)</a><small> · Données publiques de la NASA</small></li><li><a href="https://science.nasa.gov/moon/" rel="noopener" target="_blank">NASA Science — Earth’s Moon : en profondeur (éloignement de 3,8 cm par an, mesuré par laser)</a><small> · Données publiques de la NASA</small></li><li><a href="https://pubs.usgs.gov/gip/geotime/age.html" rel="noopener" target="_blank">USGS — Âge de la Terre (4,54 milliards d’années, ± 1 %)</a><small> · Domaine public (gouvernement des États-Unis)</small></li><li>J. Meeus, Astronomical Algorithms (2e éd., 1998) — positions du Soleil et de la Lune<small> · Méthodes publiées, réimplémentées</small></li><li><a href="https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-topography-bathymetry/" rel="noopener" target="_blank">NASA Earth Observatory — Blue Marble Next Generation, avril 2004 (R. Stöckli)</a><small> · Image NASA : libre de droits, crédit « NASA Earth Observatory »</small></li><li><a href="https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/" rel="noopener" target="_blank">NASA Earth Observatory — Black Marble 2016 (lumières nocturnes, Suomi NPP VIIRS)</a><small> · Image NASA : libre de droits, crédit « NASA Earth Observatory »</small></li><li>Nuages de la Terre : illustration calculée pour ce projet (tools/nuages.mjs), pas une observation<small> · CC BY-NC-SA 4.0 (comme le site)</small></li><li><a href="https://svs.gsfc.nasa.gov/4720" rel="noopener" target="_blank">NASA Scientific Visualization Studio — CGI Moon Kit (données LRO/LROC ; E. Wright, N. Petro)</a><small> · Image NASA : libre de droits, crédit « NASA’s Scientific Visualization Studio »</small></li><li><a href="https://eyes.nasa.gov/apps/solar-system/" rel="noopener" target="_blank">NASA/JPL-Caltech — NASA’s Eyes on the Solar System (vue intégrée, en ligne)</a><small> · Service public de la NASA, intégré sans modification ; crédit NASA/JPL-Caltech</small></li></ul></details>
+<details class="u-src"><summary>Sources de cette page</summary><ul><li><a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html" rel="noopener" target="_blank">NASA NSSDCA — Earth Fact Sheet (D. R. Williams)</a><small> · Données publiques de la NASA</small></li><li><a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html" rel="noopener" target="_blank">NASA NSSDCA — Moon Fact Sheet (D. R. Williams)</a><small> · Données publiques de la NASA</small></li><li><a href="https://science.nasa.gov/moon/" rel="noopener" target="_blank">NASA Science — Earth’s Moon : en profondeur (éloignement de 3,8 cm par an, mesuré par laser)</a><small> · Données publiques de la NASA</small></li><li><a href="https://pubs.usgs.gov/gip/geotime/age.html" rel="noopener" target="_blank">USGS — Âge de la Terre (4,54 milliards d’années, ± 1 %)</a><small> · Domaine public (gouvernement des États-Unis)</small></li><li>J. Meeus, Astronomical Algorithms (2e éd., 1998) — positions du Soleil et de la Lune<small> · Méthodes publiées, réimplémentées</small></li><li><a href="https://doi.org/10.1007/s10686-005-9002-5" rel="noopener" target="_blank">M. Sh. Odeh, « New Criterion for Lunar Crescent Visibility », Experimental Astronomy 18, 39–64 (2004) — premier soir où le fin croissant devrait se voir à l’œil nu</a><small> · Méthode publiée, réimplémentée</small></li><li>Escale sur la Lune (le tour de la Lune, vue d’en haut, phases, premier croissant, lumière cendrée) : illustration calculée pour ce projet (src/anims/lune.js) avec la carte NASA de la Lune et la loi de Lommel-Seeliger ; vue d’en haut pas à l’échelle, lumière cendrée renforcée<small> · CC BY-NC-SA 4.0 (comme le site)</small></li><li><a href="https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-topography-bathymetry/" rel="noopener" target="_blank">NASA Earth Observatory — Blue Marble Next Generation, avril 2004 (R. Stöckli)</a><small> · Image NASA : libre de droits, crédit « NASA Earth Observatory »</small></li><li><a href="https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/" rel="noopener" target="_blank">NASA Earth Observatory — Black Marble 2016 (lumières nocturnes, Suomi NPP VIIRS)</a><small> · Image NASA : libre de droits, crédit « NASA Earth Observatory »</small></li><li>Nuages de la Terre : illustration calculée pour ce projet (tools/nuages.mjs), pas une observation<small> · CC BY-NC-SA 4.0 (comme le site)</small></li><li><a href="https://svs.gsfc.nasa.gov/4720" rel="noopener" target="_blank">NASA Scientific Visualization Studio — CGI Moon Kit (données LRO/LROC ; E. Wright, N. Petro)</a><small> · Image NASA : libre de droits, crédit « NASA’s Scientific Visualization Studio »</small></li><li><a href="https://eyes.nasa.gov/apps/solar-system/" rel="noopener" target="_blank">NASA/JPL-Caltech — NASA’s Eyes on the Solar System (vue intégrée, en ligne)</a><small> · Service public de la NASA, intégré sans modification ; crédit NASA/JPL-Caltech</small></li></ul></details>
 <footer class="u-foot"><span>Voyage dans l’Univers · version 0.1 · textes sous licence <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr" rel="license noopener">CC BY-NC-SA 4.0</a></span><span>Images : NASA. Détail des sources et licences dans <a href="a-propos.html">À propos</a>.</span></footer>
 </main>
 <noscript><p style="padding:24px">Activez JavaScript pour voir les animations.</p></noscript>
@@ -1806,7 +1844,8 @@ function initRoute(){
      #fin : ouvrir le film à son dernier plan (quand on recule depuis l'étape suivante). Mode Auto : à la fin du film, le voyage continue. */
   var armed=false,wait=0;
   if(!isVoy){
-    var onEsc=function(e){var f=film();if(!f)return;
+    var onEsc=function(e){var f=film();if(!f||(e.type==='keydown'&&e.target.closest&&e.target.closest('input')))return;   /* curseur (escale sur la Lune) : ses flèches restent à lui */
+     
       if(fwd(e)&&f.i===f.n-1)take(e,'voyage.html#'+RESUME[cur]);
       else if(bwd(e)&&f.i===0)take(e,backFrom(RESUME[cur]));};
     scene.addEventListener('click',onEsc,true);scene.addEventListener('keydown',onEsc,true);
@@ -2135,11 +2174,11 @@ HF.cinema=function(host,opt){
   /* ----- Les plans de la caméra -----
      o : orbite (dist, rel = angle depuis la direction du Soleil, lat, fov) ; h : à l'horizon (dist, rel, lat, down = regard vers le bas) ; m : vers la Lune */
   const SHOTS=FOND?[{k:'h',dist:1.24,rel:118,lat:22,down:21,fov:52,dur:1e9}]:[
-    {k:'o',dist:7.5,dist1:3.9,rel:48,lat:18,fov:36,dur:14,t:'La Terre, en ce moment même',s:'Éclairée par le Soleil, à l’heure de votre appareil.'},
-    {k:'o',dist:3.0,rel:92,lat:26,fov:38,dur:14,t:'Une moitié dans le jour, l’autre dans la nuit',s:'Sur cette ligne, le Soleil se lève ou se couche, à cet instant.'},
+    {k:'o',dist:7.5,dist1:3.9,rel:48,lat:18,fov:36,dur:14,t:'La Terre tourne',s:'Éclairée par le Soleil, à partir de l’heure de votre appareil. Le temps est accéléré : regardez l’horloge.'},
+    {k:'o',dist:3.0,rel:92,lat:26,fov:38,dur:14,t:'Une moitié dans le jour, l’autre dans la nuit',s:'Sur cette ligne, le Soleil se lève ou se couche, à l’heure affichée.'},
     {k:'o',dist:2.1,rel:30,lat:-8,fov:40,glint:true,dur:13,t:'Le Soleil se reflète sur l’océan',s:'L’eau couvre environ 71 % de la surface de la Terre.'},
     {k:'o',dist:2.25,rel:150,lat:34,fov:40,dur:14,t:'La nuit, les villes s’allument',s:'Les lumières vues par satellite (NASA, 2016).'},
-    {k:'h',dist:1.24,rel:118,lat:22,down:21,fov:52,dur:15,t:'Un lever de Soleil, vu de l’espace',s:'L’atmosphère s’illumine : une couche d’air très fine, presque tout tient dans les 20 premiers kilomètres.'},
+    {k:'h',dist:1.24,rel:118,lat:22,down:21,fov:52,dur:15,t:'Un lever de Soleil, vu de l’espace',s:'L’atmosphère s’illumine : une couche d’air très fine. Presque tout l’air tient dans les 20 premiers kilomètres.'},
     {k:'m',dur:15,t:'Et la Lune',s:null}];
   const sFrame=()=>{const n=new T.Vector3(0,1,0),e1=SUN.clone().sub(n.clone().multiplyScalar(SUN.y));if(e1.lengthSq()<1e-6)e1.set(1,0,0);e1.normalize();return [e1,new T.Vector3().crossVectors(n,e1),n];};
   function shotCam(S,u){const [e1,e2,n]=sFrame();
@@ -2161,12 +2200,12 @@ HF.cinema=function(host,opt){
     cap=document.createElement('div');cap.className='cin-cap';cap.setAttribute('aria-live','polite');host.appendChild(cap);
     clock=document.createElement('div');clock.className='cin-clock';host.appendChild(clock);
     ui=document.createElement('div');ui.className='cin-ui';
-    ui.innerHTML='<button type="button" class="cin-b" data-a="play" aria-label="Pause du temps"></button><button type="button" class="cin-b wide" data-a="speed"></button><button type="button" class="cin-b wide" data-a="now">Maintenant</button><button type="button" class="cin-b" data-a="next" aria-label="Plan suivant">⏭</button><button type="button" class="cin-b" data-a="fs" aria-label="Plein écran">⛶</button>';
+    ui.innerHTML='<button type="button" class="cin-b" data-a="play" aria-label="Pause du temps"></button><button type="button" class="cin-b wide" data-a="speed"></button><button type="button" class="cin-b wide" data-a="now">Maintenant</button><button type="button" class="cin-b wide cin-lune" data-a="lune" hidden><span aria-hidden="true">☾</span> Les phases de la Lune</button><button type="button" class="cin-b" data-a="next" aria-label="Plan suivant">⏭</button><button type="button" class="cin-b" data-a="fs" aria-label="Plein écran">⛶</button>';
     host.appendChild(ui);
     const note=document.createElement('div');note.className='cin-note';note.textContent='Nuages : illustration calculée. Le reste : images NASA et positions calculées.';host.appendChild(note);
     ui.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
       if(a==='play')playing=!playing;else if(a==='speed'){sp=(sp+1)%SPEEDS.length;playing=true;}else if(a==='now'){simMs=Date.now();sp=0;playing=true;}
-      else if(a==='next'){nextP();offR=offL=0;offD=1;}else if(a==='fs'){HF.immersion();}
+      else if(a==='next'){nextP();offR=offL=0;offD=1;}else if(a==='fs'){HF.immersion();}else if(a==='lune'){openLune(0);}
       paintUI();wake();});
   }
   function paintUI(){if(!ui)return;const q=s=>ui.querySelector(s);q('[data-a=play]').textContent=playing?'❚❚':'▶';q('[data-a=play]').setAttribute('aria-label',playing?'Pause du temps':'Reprendre le temps');q('[data-a=speed]').textContent=SPEEDS[sp][1];}
@@ -2186,15 +2225,23 @@ HF.cinema=function(host,opt){
     const up=e=>{ptr.delete(e.pointerId);pinch0=0;};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
     el.addEventListener('wheel',e=>{e.preventDefault();offD=cl(offD*Math.exp(e.deltaY*.0012),.55,2.6);user=8;wake();},{passive:false});
     host.tabIndex=0;host.setAttribute('role','region');host.setAttribute('aria-label','La Terre en 3D : ← → pour changer de plan, Espace pour le temps');
-    host.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='PageDown'){nextP();e.preventDefault();}
+    host.addEventListener('keydown',e=>{if(LU&&LU.isOpen){LU.key(e);wake();return;}if(e.key==='ArrowRight'||e.key==='PageDown'){nextP();e.preventDefault();}
       else if(e.key==='ArrowLeft'||e.key==='PageUp'){shot=(shot+SHOTS.length-1)%SHOTS.length;st=0;e.preventDefault();}
       else if(e.key===' '){playing=!playing;paintUI();e.preventDefault();}wake();});
   }
 
+  /* ----- Escale sur la Lune (lune.js) : après le dernier plan « Et la Lune », par-dessus le film, qui se met en pause.
+     → / ⏭ ou « ☾ Les phases de la Lune » y entrent (seule en mode Auto) ; ← à sa première partie, ✕ ou Échap ramènent à « Et la Lune » ;
+     → à sa dernière partie : le grand voyage continue (core.js). Adresse directe : terre-lune.html#lune. ----- */
+  const LU=!FOND&&HF.lune?HF.lune(host,{onClose:()=>{shot=SHOTS.length-1;st=0;nx=false;wake();try{host.focus({preventScroll:true});}catch(e){}},
+    onEnd:()=>{LU.close();shot=0;st=0;nx=false;}}):null;
+  const lb=ui&&ui.querySelector('[data-a=lune]');
+  function openLune(i){if(!LU)return;LU.open(i);wake();}
+
   /* ----- Boucle ----- */
   let shot=0,st=0,last=0,visible=true,capKey=-1;const BL=3.2;
   /* ⏭ / → : glisser vers le plan suivant (au lieu d'une coupe) ; si le glissement a déjà commencé, sauter au plan suivant */
-  let nx=false;function nextP(){const he=Math.max(0,SHOTS[shot].dur-BL);if(st<he){st=he;nx=true;}else{shot=(shot+1)%SHOTS.length;st=0;nx=false;}}
+  let nx=false;function nextP(){if(LU&&shot===SHOTS.length-1){openLune(0);return;}const he=Math.max(0,SHOTS[shot].dur-BL);if(st<he){st=he;nx=true;}else{shot=(shot+1)%SHOTS.length;st=0;nx=false;}}
   /* passage d'un plan à l'autre en arc autour de la Terre (direction et distance interpolées séparément) : jamais à travers elle */
   function arc(a,b,k){const la=a.length(),lb=b.length(),ua=a.clone().normalize(),ub=b.clone().normalize(),w=Math.acos(cl(ua.dot(ub),-1,1));
     let u;if(w<1e-3||Math.PI-w<1e-3)u=ua.lerp(ub,k);else u=ua.multiplyScalar(Math.sin((1-k)*w)/Math.sin(w)).add(ub.multiplyScalar(Math.sin(k*w)/Math.sin(w)));
@@ -2202,6 +2249,7 @@ HF.cinema=function(host,opt){
   function size(){const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
   const fmt=ms=>new Date(ms).toLocaleString('fr-FR',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
   function frame(now){if(!visible){raf=0;return;}raf=requestAnimationFrame(frame);
+    if(LU&&LU.isOpen){last=now;return;}   /* escale sur la Lune ouverte : le film est en pause */
     const dt=Math.min(.05,(now-last)/1000||0);last=now;
     if(playing)simMs+=dt*1000*(sp===0?1:SPEEDS[sp][0]);
     G=astro();
@@ -2213,9 +2261,11 @@ HF.cinema=function(host,opt){
     /* mode manuel (HF.auto===false, interrupteur « Auto » de core.js) : le plan reste là, juste avant le glissement vers le suivant ; ⏭ / → lance ce glissement */
     if(HF.auto===false&&!nx&&!FOND)st=Math.min(st,Math.max(0,SHOTS[shot].dur-BL));
     const S=SHOTS[shot],u=cl(st/S.dur,0,1);
-    if(st>=S.dur){shot=(shot+1)%SHOTS.length;st=0;nx=false;}
+    const toLune=LU&&shot===SHOTS.length-1;
+    if(toLune&&HF.auto!==false&&st>=S.dur-BL){openLune(0);return;}
+    if(st>=S.dur&&!toLune){shot=(shot+1)%SHOTS.length;st=0;nx=false;}
     let c=shotCam(S,u);
-    if(st>S.dur-BL&&SHOTS.length>1){const N=SHOTS[(shot+1)%SHOTS.length],k=sm((st-(S.dur-BL))/BL),c2=shotCam(N,0);
+    if(st>S.dur-BL&&SHOTS.length>1&&!toLune){const N=SHOTS[(shot+1)%SHOTS.length],k=sm((st-(S.dur-BL))/BL),c2=shotCam(N,0);
       c={pos:arc(c.pos,c2.pos,k),tgt:c.tgt.clone().lerp(c2.tgt,k),up:c.up.clone().lerp(c2.up,k).normalize(),fov:c.fov+(c2.fov-c.fov)*k};}
     /* reprise en main : rotation autour de la Terre et distance */
     if(offR||offL||offD!==1){const q=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),offR*D),r=c.pos.clone().applyQuaternion(q),ax=new T.Vector3().crossVectors(r,new T.Vector3(0,1,0)).normalize();
@@ -2224,8 +2274,9 @@ HF.cinema=function(host,opt){
     cam.position.copy(c.pos);cam.up.copy(c.up);cam.lookAt(c.tgt);if(Math.abs(cam.fov-c.fov)>.01){cam.fov=c.fov;cam.updateProjectionMatrix();}
     R.render(sc,cam);
     /* légendes et horloge */
-    if(cap){let t=S.t,s=S.s;if(S.k==='m'){const km=MOONP.length()*RE;t='Et la Lune, à '+HF.fr(Math.round(km/1000)*1000)+' km';s='Sa lumière nous parvient en '+HF.fr(km/C,2)+' seconde. Elle est à sa vraie place, ce soir.';}
+    if(cap){let t=S.t,s=S.s;if(S.k==='m'){const km=MOONP.length()*RE;t='Et la Lune, à '+HF.fr(Math.round(km/1000)*1000)+' km';s='Sa lumière nous parvient en '+HF.fr(km/C,2)+' seconde. Elle est à sa vraie place, à l’heure affichée.';}
       const html='<b>'+t+'</b>'+(s?'<span>'+s+'</span>':'');if(shot!==capKey){capKey=shot;cap.innerHTML=html;cap._h=html;cap.classList.remove('in');void cap.offsetWidth;cap.classList.add('in');}else if(cap._h!==html){cap.innerHTML=html;cap._h=html;}
+      if(lb)lb.hidden=!LU||shot!==SHOTS.length-1;
       clock.textContent=fmt(simMs)+(sp?' · accéléré':'');
       idle+=dt;if(idle>3.5&&!host.classList.contains('calm'))host.classList.add('calm');}
   }
@@ -2234,7 +2285,294 @@ HF.cinema=function(host,opt){
   try{new IntersectionObserver(es=>{visible=es[0].isIntersecting&&!document.hidden;kick();}).observe(host);}catch(e){}
   document.addEventListener('visibilitychange',()=>{visible=!document.hidden;kick();});
   kick();
-  return {get shot(){return shot;},n:SHOTS.length,next(){shot=(shot+1)%SHOTS.length;st=0;},state:()=>({shot,simMs,sp,playing}),renderer:R};
+  if(LU&&location.hash==='#lune')setTimeout(()=>openLune(0),0);
+  if(LU)window.addEventListener('hashchange',()=>{if(location.hash==='#lune')openLune(0);});
+  return {get shot(){return LU&&LU.isOpen?SHOTS.length+LU.part:shot;},n:SHOTS.length+(LU?LU.n:0),
+    next(){if(LU&&LU.isOpen){LU.go(LU.part+1);return;}if(LU&&shot===SHOTS.length-1){openLune(0);return;}shot=(shot+1)%SHOTS.length;st=0;},lune:LU,state:()=>LU&&LU.isOpen?{shot:SHOTS.length+LU.part,id:'lune',simMs,sp,playing:LU.playing}:({shot,simMs,sp,playing}),renderer:R};
+};
+})();
+
+/* lune.js — Escale sur la Lune, à la fin de l'étape 1 (après le plan « Et la Lune » du film cinema.js) :
+   comment le Soleil éclaire la Lune, et d'où viennent les phases. Pas d'alunissage.
+   Cinq parties : 1. le tour de la Lune · 2. vue d'en haut · 3. vue d'en haut et vue de la Terre
+   · 4. le premier croissant et la lumière cendrée · 5. le mois en 15 s.
+   Calculé (HF.eph, Meeus) : la lunaison EN COURS (horloge de l'appareil), la part éclairée, la distance, la Terre vue de la Lune,
+   le premier soir où le croissant devrait se voir à l'œil nu près de Paris (critère d'Odeh 2004, comme HF.eph.quick) et son orientation.
+   Illustré (dit à l'écran) : tailles et distances de la vue d'en haut, lumière cendrée renforcée ; libration ignorée.
+   Rendu : carte NASA (HF.MOON_SRC) projetée sur un disque, loi de Lommel-Seeliger (sinon le fin croissant est invisible).
+   HF.lune(hôte, {onClose, onEnd}) → {open(i), close(), go(i), key(e), isOpen, part, n, playing}.
+   Surcouche plein écran par-dessus le film, qui se met en pause (cinema.js). En mode Auto, les parties défilent seules, puis onEnd. */
+(function(){
+'use strict';
+const HF=window.HF;if(!HF||!HF.eph)return;
+const E=HF.eph,TAU=Math.PI*2,D=Math.PI/180,DAY=864e5,LAT=48.857,LON=2.352;
+const cl=(x,a,b)=>Math.max(a,Math.min(b,x)),sm=(a,b,x)=>{const t=cl((x-a)/(b-a),0,1);return t*t*(3-2*t);};
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],mul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s],dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+  cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],len=a=>Math.hypot(a[0],a[1],a[2]),unit=a=>{const l=len(a);return l>0?mul(a,1/l):[0,0,1];};
+const n360=x=>((x%360)+360)%360,nf=(x,d)=>HF.fr(x,d||0);
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const fmtDate=ms=>new Date(ms).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short',timeZone:'Europe/Paris'});
+const fmtHour=ms=>new Date(ms).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Paris'}).replace(':',' h ');
+const fmtAge=a=>a<2?nf(Math.round(a*24))+' h':nf(a,1)+' jours';
+const fmtLight=km=>{const s=Math.round(km/299792.458);return Math.floor(s/60)+' min '+String(s%60).padStart(2,'0')+' s';};
+function phaseName(o){const d=o.d;if(d<10||d>350)return 'Nouvelle Lune';if(d<80)return 'Premier croissant';if(d<100)return 'Premier quartier';if(d<168)return 'Lune gibbeuse croissante';
+  if(d<192)return 'Pleine Lune';if(d<260)return 'Lune gibbeuse décroissante';if(d<280)return 'Dernier quartier';return 'Dernier croissant';}
+
+/* ====================================================================== Cartes (lues une fois, réduites à 1024 × 512) */
+function pixels(src,cb){if(!src)return;const im=new Image();im.onload=function(){try{const c=document.createElement('canvas');c.width=1024;c.height=512;const g=c.getContext('2d');g.drawImage(im,0,0,1024,512);
+  cb({d:g.getImageData(0,0,1024,512).data,w:1024,h:512});}catch(e){}};im.src=src;}
+
+HF.lune=function(cinHost,opt){
+  opt=opt||{};
+  /* ---------------------------------------------------------------- la lunaison en cours (calculée) */
+  const now=Date.now();let C0=E.conj(now);if(C0>now)C0=E.conj(C0-29.53*DAY);
+  const C1=E.conj(C0+29.53*DAY),SYN=(C1-C0)/DAY,AGE_NOW=cl((now-C0)/DAY,0,SYN);
+  const memo=new Map();
+  function at(age){const key=age.toFixed(3);if(memo.has(key))return memo.get(key);
+    const ms=C0+age*DAY,g=E.geo(ms),mv=g.moon,sv=g.sun,rm=len(mv),rs=len(sv),psi=Math.acos(cl(dot(mv,sv)/(rm*rs),-1,1));
+    const i=Math.atan2(rs*Math.sin(psi),rm-rs*Math.cos(psi));   /* angle de phase (Soleil–Lune–Terre) */
+    const d=n360(g.mlam-g.slam),side=d<180?1:-1;
+    const o={age,ms,g,d,side,i,k:(1+Math.cos(i))/2,kE:(1-Math.cos(i))/2,moonKm:rm,sunMoonKm:len(add(sv,mul(mv,-1)))};
+    if(memo.size>300)memo.clear();memo.set(key,o);return o;}
+  /* table des élongations (pour glisser la Lune sur son orbite et placer les quartiers) */
+  const TAB=[];for(let a=0;a<=SYN+1e-9;a+=.05)TAB.push([a,at(a).d]);memo.clear();
+  const MARKS=(function(){const out=[[0,'Nouvelle Lune','Nouvelle']],want=[[90,'Premier quartier',''],[180,'Pleine Lune','Pleine'],[270,'Dernier quartier','']];
+    for(let j=1;j<TAB.length;j++)want.forEach(w=>{if(TAB[j-1][1]<w[0]&&TAB[j][1]>=w[0])out.push([TAB[j][0],w[1],w[2]]);});out.push([SYN,'Nouvelle Lune','Nouvelle']);return out;})();
+  /* le premier soir du croissant près de Paris : premier coucher du Soleil après la nouvelle Lune où il devrait se voir à l'œil nu */
+  const CR=(function(){const d0=new Date(C0);let best=null;
+    for(let k=0;k<5&&!best;k++){const day=Date.UTC(d0.getUTCFullYear(),d0.getUTCMonth(),d0.getUTCDate()+k),src=E.realSource(day,LAT,LON);if(!src.ok||src.ss<C0+6*36e5)continue;
+      const q=E.quick(day,LAT,LON);if(q&&q.zone===0&&q.lag>0)best={src,T0:q.lag*4/9,eye:true};}
+    if(!best){/* repli : le soir où la Lune a environ un jour et demi */const t=C0+1.5*DAY,d1=new Date(t),src=E.realSource(Date.UTC(d1.getUTCFullYear(),d1.getUTCMonth(),d1.getUTCDate()),LAT,LON);best={src,T0:30,eye:false};}
+    const s=E.state(best.src,best.T0),m=s.moon,su=s.sun,dAz=n360(su.az-m.az+180)-180,dAlt=su.alt-m.alt;
+    /* angle à l'écran (y vers le bas) de la direction du Soleil vue depuis la Lune : vraie orientation du croissant ce soir-là */
+    return {ms:s.ms,age:(s.ms-C0)/DAY,k:s.k,lit:Math.atan2(-dAlt,dAz*Math.cos(m.alt*D)),eye:best.eye,alt:m.alt};})();
+
+  /* ---------------------------------------------------------------- disques éclairés */
+  let MOONPX=null,EARTHPX=null,need=true;
+  const MC=new Map(),EC=new Map();
+  pixels(HF.MOON_SRC,p=>{MOONPX=p;MC.clear();need=true;});
+  pixels(HF.EARTH_SRC,p=>{EARTHPX=p;EC.clear();need=true;});
+  /* Lune : lv = longitude du point vu de face (0 = face tournée vers la Terre) ; ls = longitude du point sous le Soleil (degrés) ; ash = lumière cendrée */
+  function moonDisc(n,lv,ls,ash){const key=n+'|'+lv.toFixed(0)+'|'+ls.toFixed(1)+'|'+ash.toFixed(3);if(MC.has(key))return MC.get(key);
+    const P=MOONPX,c=document.createElement('canvas');c.width=c.height=n;const g=c.getContext('2d'),im=g.createImageData(n,n),dd=im.data,r=n/2-1;
+    const sx=Math.sin((ls-lv)*D),sz=Math.cos((ls-lv)*D),L0=lv*D;
+    for(let y=0;y<n;y++){const ny=-(y+.5-n/2)/r;for(let x=0;x<n;x++){const nx=(x+.5-n/2)/r,q=nx*nx+ny*ny;if(q>1)continue;
+      const z=Math.sqrt(1-q),dl=nx*sx+z*sz,lit=cl(dl*12+.5,0,1);let base=175;
+      if(P){const lon=L0+Math.atan2(nx,z),u=((lon/TAU+.5)%1+1)%1,v=.5-Math.asin(ny)/Math.PI;base=P.d[(Math.min(P.h-1,Math.floor(v*P.h))*P.w+Math.min(P.w-1,Math.floor(u*P.w)))*4];}
+      /* loi de Lommel-Seeliger : la Lune reste brillante jusqu'au bord (pleine Lune « plate », fin croissant lumineux) */
+      const k=(y*n+x)*4,mu0=Math.max(0,dl),ls2=Math.min(1.3,2*mu0/(mu0+z+1e-3)),b=(ash*(1-lit)+lit*(.12+.88*ls2))*base*1.25;
+      dd[k]=Math.min(255,b+(1-lit)*ash*14);dd[k+1]=Math.min(255,b*.99+(1-lit)*ash*20);dd[k+2]=Math.min(255,b*.95+(1-lit)*ash*34);dd[k+3]=Math.min(1,(1-Math.sqrt(q))*r)*255;}}
+    g.putImageData(im,0,0);if(MC.size>60)MC.clear();MC.set(key,c);return c;}
+  /* Terre vue de la Lune, à l'instant de l'état o (repère équatorial, nord en haut) */
+  function earthDisc(n,o){const key=n+'|'+o.age.toFixed(2);if(EC.has(key))return EC.get(key);
+    const c=document.createElement('canvas');c.width=c.height=n;const g=c.getContext('2d'),im=g.createImageData(n,n),dd=im.data,r=n/2-1,P=EARTHPX;
+    const Z=unit(o.g.moon),N0=[0,0,1],Y=unit(add(N0,mul(Z,-dot(Z,N0)))),X=cross(Y,Z),s=unit(o.g.sun),gm=o.g.lst0*D;
+    for(let y=0;y<n;y++){const v=-(y+.5-n/2)/r;for(let x=0;x<n;x++){const u=(x+.5-n/2)/r,q=u*u+v*v;if(q>1)continue;const w=Math.sqrt(1-q),
+        px=X[0]*u+Y[0]*v+Z[0]*w,py=X[1]*u+Y[1]*v+Z[1]*w,pz=X[2]*u+Y[2]*v+Z[2]*w,l=px*s[0]+py*s[1]+pz*s[2],day=sm(-.08,.18,l),limb=.6+.4*Math.pow(w,.4),k=(y*n+x)*4;
+      let R0=40,G0=80,B0=160;if(P){const lat=Math.asin(cl(pz,-1,1)),lon=Math.atan2(py,px)-gm,tu=((lon/TAU+.5)%1+1)%1,tv=.5-lat/Math.PI,ti=(Math.min(P.h-1,Math.floor(tv*P.h))*P.w+Math.min(P.w-1,Math.floor(tu*P.w)))*4;R0=P.d[ti];G0=P.d[ti+1];B0=P.d[ti+2];}
+      const haze=Math.pow(1-w,2.5)*day;dd[k]=Math.min(255,3+(R0*limb)*day+haze*50);dd[k+1]=Math.min(255,6+(G0*limb)*day+haze*85);dd[k+2]=Math.min(255,14+(B0*limb)*day+haze*150);dd[k+3]=Math.min(1,(1-Math.sqrt(q))*r)*255;}}
+    g.putImageData(im,0,0);if(EC.size>30)EC.clear();EC.set(key,c);return c;}
+
+  /* ---------------------------------------------------------------- les cinq parties */
+  const ST=[
+   {id:'tour',r:'Le tour',lay:'near',dur:13,t:'La Lune ne brille pas',x:'Elle renvoie la lumière du Soleil. Une moitié est toujours au jour, l’autre dans la nuit. Glissez pour en faire le tour.',
+    f:o=>['Lumière du Soleil : '+fmtLight(o.sunMoonKm)+' pour venir','Elle en renvoie environ 12 %']},
+   {id:'orbite',r:'D’en haut',lay:'top',dur:12,t:'Toujours une moitié éclairée',x:'La Lune fait le tour de la Terre. Où qu’elle soit, son côté tourné vers le Soleil est éclairé. Faites-la tourner du doigt.',
+    f:o=>[phaseName(o),'à '+nf(Math.round(o.moonKm/1000)*1000)+' km de la Terre']},
+   {id:'phase',r:'Vue d’ici',lay:'both',dur:12,t:'La phase : la part du côté jour qu’on voit',x:'De la Terre, on voit une part plus ou moins grande du côté jour : c’est la phase. Ce n’est pas l’ombre de la Terre.',
+    f:o=>[phaseName(o),nf(o.k*100,0)+' % éclairée',fmtAge(o.age)+' après la nouvelle Lune']},
+   {id:'croissant',r:'Croissant',lay:'cresc',dur:13,t:'Le premier croissant et la lumière cendrée',
+    x:'Juste après la nouvelle Lune, seul un fil du côté jour est tourné vers nous, bas sur l’horizon après le coucher du Soleil. Le reste du disque n’est pas noir : la Terre, presque pleine vue de là-bas, l’éclaire.',
+    f:o=>{const ce=Math.abs(o.age-CR.age)<.01;return [ce?fmtDate(CR.ms)+', '+fmtHour(CR.ms)+', près de Paris':fmtDate(o.ms),'Croissant : '+nf((ce?CR.k:o.k)*100,1)+' % · '+fmtAge(o.age),
+      'Terre vue de la Lune : '+nf(o.kE*100,0)+' %'].concat(CR.eye&&ce?['À l’œil nu par ciel clair (calcul)']:[]);}},
+   {id:'mois',r:'Un mois',lay:'both',play:true,t:'Un mois en quinze secondes',x:'D’une nouvelle Lune à la suivante : '+nf(SYN,1)+' jours. Croissant du soir, pleine Lune, croissant du matin, puis la Lune disparaît dans la lumière du Soleil.',
+    f:o=>[phaseName(o),fmtDate(o.ms)]}];
+  const N=ST.length;
+
+  /* ---------------------------------------------------------------- l'interface */
+  const marks=MARKS.map(([a,t,s],j)=>`<span style="left:${(a/SYN*100).toFixed(2)}%"${j===MARKS.length-1?' class="end"':j===0?' class="start"':''}><em>${t}</em><i>${s}</i></span>`).join('');
+  const el=document.createElement('div');el.className='u-lu';el.hidden=true;el.setAttribute('role','region');el.setAttribute('aria-label','Escale sur la Lune : les phases');
+  el.innerHTML=`<canvas class="u-lu-cv" role="img" aria-label="Escale sur la Lune"></canvas>
+<div class="u-lu-cap"><div class="u-lu-eye"></div><h2 class="u-lu-t"></h2><p class="u-lu-x"></p><div class="u-lu-facts"></div></div>
+<div class="u-lu-note">Calculé : positions du jour (Meeus). Illustré : vue d’en haut (pas à l’échelle), lumière cendrée renforcée.</div>
+<div class="u-lu-bot">
+<div class="u-lu-age"><input type="range" class="u-lu-range" min="0" max="${SYN.toFixed(2)}" step="0.01" aria-label="Âge de la Lune, en jours depuis la nouvelle Lune"><b class="u-lu-now" style="left:${(AGE_NOW/SYN*100).toFixed(2)}%" aria-hidden="true">aujourd’hui</b><div class="u-lu-marks" aria-hidden="true">${marks}</div><span class="u-lu-val" aria-hidden="true"></span></div>
+<div class="u-lu-row"><div class="u-lu-steps" role="group" aria-label="Les cinq parties de l’escale">${ST.map((s,i)=>`<button type="button" class="cin-b" aria-label="Partie ${i+1} : ${s.t}"><b>${i+1}</b><span> ${s.r}</span></button>`).join('')}</div>
+<div class="u-lu-ctl"><button type="button" class="cin-b" data-a="prev" aria-label="Partie précédente">⏮</button><button type="button" class="cin-b u-lu-play"></button><button type="button" class="cin-b" data-a="next" aria-label="Partie suivante">⏭</button><button type="button" class="cin-b wide u-lu-close"><span aria-hidden="true">✕</span> Revenir au film</button></div></div></div>
+<p class="sr u-lu-live" aria-live="polite"></p>`;
+  cinHost.appendChild(el);
+  const q=s=>el.querySelector(s),cv=q('canvas'),g=cv.getContext('2d');
+  const ui={cap:q('.u-lu-cap'),eye:q('.u-lu-eye'),tt:q('.u-lu-t'),tx:q('.u-lu-x'),facts:q('.u-lu-facts'),bot:q('.u-lu-bot'),range:q('.u-lu-range'),val:q('.u-lu-val'),
+    play:q('.u-lu-play'),steps:[...el.querySelectorAll('.u-lu-steps button')],live:q('.u-lu-live')};
+
+  /* ---------------------------------------------------------------- état */
+  let Wpx=800,Hpx=600,dpr=1,tNow=0,lastDraw=0,raf=0,open=false;
+  let cur=0,from=0,fadeT0=-1e9,age=AGE_NOW,ageTo=AGE_NOW,lv=0,lvTo=0,playing=false,paused=false,tPart=0,hold=0,touchT=0,AREA={x:0,y:0,w:800,h:600};
+  const reduce=HF.reduced(),FADE=700,auto=()=>HF.auto!==false;
+  const STARS=(function(){const r=rng(7),a=[];for(let i=0;i<260;i++)a.push([r(),r(),Math.pow(r(),3)*1.4+.3,.25+r()*.6]);return a;})();
+  const nearDefault=o=>o.side*o.i/D-90*o.side;   /* vue de côté : le Soleil à droite (croissant) ou à gauche (décroissant) */
+  const lsOf=o=>o.side*o.i/D;
+  const FS=()=>(document.documentElement.classList.contains('present')?1.3:1)*(Wpx>=1600?1.15:1);
+
+  /* ---------------------------------------------------------------- dessin */
+  function drawStars(){g.save();STARS.forEach(s=>{g.globalAlpha=s[3];g.fillStyle='#dfe9ff';g.beginPath();g.arc(s[0]*Wpx,s[1]*Hpx,s[2],0,TAU);g.fill();});g.restore();}
+  function label(x,y,t,o){o=o||{};g.save();g.font=(o.w||700)+' '+((o.s||12.5)*FS()).toFixed(1)+'px Roboto,system-ui,sans-serif';g.textAlign=o.al||'center';g.textBaseline='middle';g.globalAlpha=o.a==null?1:o.a;
+    g.lineWidth=3;g.strokeStyle='rgba(1,4,10,.85)';g.strokeText(t,x,y);g.fillStyle=o.c||'#dbe6f4';g.fillText(t,x,y);g.restore();}
+  function sunRays(x0,y0,x1,y1,dir,a){/* rayons parallèles du Soleil, venant du côté dir (+1 : de la droite) */
+    if(a<.01)return;g.save();g.globalAlpha=a;g.strokeStyle='#F4B860';g.lineWidth=1;g.setLineDash([10,14]);g.lineDashOffset=dir*(reduce?0:(tNow/40)%24);
+    for(let y=y0+14;y<y1;y+=26){g.beginPath();g.moveTo(dir>0?x1:x0,y);g.lineTo(dir>0?x0:x1,y);g.stroke();}g.restore();}
+  function disc(c,x,y,r,rot){g.save();g.translate(x,y);if(rot)g.rotate(rot);g.drawImage(c,-r,-r,2*r,2*r);g.restore();}
+  function halfLit(x,y,r,a,col){/* petit astre vu d'en haut : moitié tournée vers le Soleil (à droite) éclairée */
+    g.save();g.globalAlpha=a;g.fillStyle='#1a2233';g.beginPath();g.arc(x,y,r,0,TAU);g.fill();g.fillStyle=col||'#f1ead8';g.beginPath();g.arc(x,y,r,-Math.PI/2,Math.PI/2);g.closePath();g.fill();g.restore();}
+  const resN=r=>Math.min(HF.coarse()?420:560,Math.max(48,Math.round(2*r*dpr)));
+
+  /* 1. La Lune de près : on en fait le tour */
+  function layNear(a,o){const A=AREA,cx=A.x+A.w*.5,cy=A.y+A.h*.47,r=Math.min(A.w*.3,A.h*.3),ls=lsOf(o),rel=(ls-lv)*D,sx=Math.sin(rel),sz=Math.cos(rel);
+    g.save();g.globalAlpha=a;
+    if(Math.abs(sx)>.05){const ex=sx>0?A.x+A.w:A.x,gr=g.createRadialGradient(ex,cy,0,ex,cy,A.w*.45);gr.addColorStop(0,'rgba(255,214,130,'+(.28*Math.abs(sx))+')');gr.addColorStop(1,'rgba(255,214,130,0)');g.fillStyle=gr;g.fillRect(A.x,A.y,A.w,A.h);}
+    sunRays(sx>0?cx+r*1.08:A.x,A.y,sx>0?A.x+A.w:cx-r*1.08,A.y+A.h*.9,sx>0?1:-1,.22*Math.abs(sx)*a);
+    disc(moonDisc(resN(r),lv,ls,.035),cx,cy,r,0);
+    g.restore();
+    const al=a*sm(.35,.6,Math.abs(sx));if(al>.01){label(cx+Math.sign(sx)*r*.55,cy-r-16,'Côté jour',{c:'#FFD58A',a:al});label(cx-Math.sign(sx)*r*.55,cy-r-16,'Côté nuit',{c:'#BFD0FF',a:al});}
+    const ki=(1+sz)/2,seen=ki<.03?'le côté nuit : rien à voir':ki<.35?'un croissant':ki<.65?'un quartier':ki<.97?'une Lune gibbeuse':'la pleine Lune';
+    label(cx,cy+r+24,'D’ici, vous voyez '+seen,{a,s:15,w:800,c:'#fff'});
+    if(sz>.9)label(cx,cy+r+46,'Le Soleil est dans votre dos',{a,c:'#FFD58A'});else if(sz<-.9)label(cx,cy+r+46,'Le Soleil est derrière la Lune',{a,c:'#FFD58A'});
+    /* boussole : la scène vue d'en haut (Lune au centre, Soleil à droite, vous, la Terre) */
+    const narrow=Wpx<900,br=narrow?Math.min(32,A.w*.09):Math.min(48,A.w*.11),bx=A.x+A.w-br-22,by=narrow?A.y+br+18:A.y+A.h-br-34;
+    g.save();g.globalAlpha=a*.95;g.fillStyle='rgba(3,10,22,.7)';g.strokeStyle='rgba(191,208,255,.3)';g.beginPath();g.arc(bx,by,br+14,0,TAU);g.fill();g.stroke();g.restore();
+    sunRays(bx,by-br,bx+br+12,by+br,1,.35*a);halfLit(bx,by,7,a);
+    const pv=(lv-ls)*D,ex=bx+Math.cos(pv)*br,ey=by-Math.sin(pv)*br;g.save();g.globalAlpha=a;g.fillStyle='#F4B860';g.beginPath();g.arc(ex,ey,4.5,0,TAU);g.fill();
+    g.strokeStyle='rgba(244,184,96,.6)';g.setLineDash([2,3]);g.beginPath();g.moveTo(ex,ey);g.lineTo(bx,by);g.stroke();g.setLineDash([]);
+    const pe=-ls*D,tx=bx+Math.cos(pe)*(br*.72),ty=by-Math.sin(pe)*(br*.72);g.fillStyle='#5b9be0';g.beginPath();g.arc(tx,ty,4,0,TAU);g.fill();g.restore();
+    label(bx,by+br+24,'● vous',{a,s:11,c:'#FFD58A'});label(bx,by+br+24+15*FS(),'● Terre',{a,s:11,c:'#7fb2ee'});
+    label(bx,by-br-24,'vu d’en haut',{a:a*.8,s:10.5,c:'#929FCC'});}
+
+  /* 2. Vue d'en haut : l'orbite */
+  function topView(cx,cy,R,a,o,full){
+    sunRays(cx-R*1.5,cy-R*1.35,cx+R*1.9,cy+R*1.35,1,.16*a);
+    if(full)label(AREA.x+AREA.w-8,AREA.y+12,'Lumière du Soleil ←',{a:a*.9,c:'#FFD58A',s:11.5,al:'right'});
+    else label(cx+R*1.7,cy-R*1.25,'Lumière du Soleil ←',{a:a*.9,c:'#FFD58A',s:11.5,al:'right'});
+    g.save();g.globalAlpha=a*.5;g.strokeStyle='#BFD0FF';g.lineWidth=1;g.setLineDash([2,5]);g.beginPath();g.arc(cx,cy,R,0,TAU);g.stroke();g.restore();
+    halfLit(cx,cy,R*.14,a,'#5b9be0');label(cx,cy+R*.14+13,'Terre',{a,s:11.5,c:'#BFD0FF'});
+    if(full){for(let j=0;j<8;j++){const t=j*45*D,x=cx+R*Math.cos(t),y=cy-R*Math.sin(t);halfLit(x,y,R*.06,a*.45);
+        const ir=R*.085,xo=cx+R*1.3*Math.cos(t),yo=cy-R*1.3*Math.sin(t);g.save();g.globalAlpha=a*.95;disc(moonDisc(resN(ir),0,180-j*45,.06),xo,yo,ir,0);g.restore();}
+      [[0,'Nouvelle Lune'],[90,'Premier quartier'],[180,'Pleine Lune'],[270,'Dernier quartier']].forEach(([dg,t])=>{const tt=dg*D,xo=cx+R*1.3*Math.cos(tt),yo=cy-R*1.3*Math.sin(tt),dy=dg===90?-R*.17:R*.18;label(xo,yo+dy,t,{a:a*.9,s:11});});}
+    const t=o.d*D,mx=cx+R*Math.cos(t),my=cy-R*Math.sin(t);
+    g.save();g.globalAlpha=a*.7;g.strokeStyle='#F4B860';g.setLineDash([4,4]);g.beginPath();g.moveTo(cx,cy);g.lineTo(mx,my);g.stroke();g.restore();
+    g.save();g.globalAlpha=a*.5;const gl=g.createRadialGradient(mx,my,0,mx,my,R*.2);gl.addColorStop(0,'rgba(255,240,200,.6)');gl.addColorStop(1,'rgba(255,240,200,0)');g.fillStyle=gl;g.beginPath();g.arc(mx,my,R*.2,0,TAU);g.fill();g.restore();
+    halfLit(mx,my,R*.085,a);return [mx,my];}
+  const topGeo=()=>{const A=AREA;return {R:Math.min(A.w/3.9,A.h/3.7),cx:A.x+A.w*.47,cy:A.y+A.h*.47};};
+  function layTop(a,o){const A=AREA,T=topGeo();topView(T.cx,T.cy,T.R,a,o,true);
+    label(A.x+A.w/2,A.y+A.h-10,'Vue du dessus · tailles et distances pas à l’échelle',{a:a*.8,s:11,c:'#929FCC'});}
+
+  /* 3 et 5. Vue d'en haut + vue de la Terre */
+  function layBoth(a,o){const A=AREA,wide=A.w>A.h*1.15;let R,cx,cy,mx,my,mr;
+    if(wide){R=Math.min(A.w*.42/2.9,A.h/3.1);cx=A.x+A.w*.26;cy=A.y+A.h*.5;mr=Math.min(A.w*.21,A.h*.33);mx=A.x+A.w*.72;my=A.y+A.h*.47;}
+    else{R=Math.min(A.w/3.6,A.h*.42/2.5);cx=A.x+A.w*.5;cy=A.y+A.h*.25;mr=Math.min(A.w*.3,A.h*.2);mx=A.x+A.w*.5;my=A.y+A.h*.71;}
+    topView(cx,cy,R,a,o,false);
+    /* ce qu'on voit depuis la Terre (orientation illustrée : le croissant penche un peu selon la saison et l'heure) */
+    const rot=.6*Math.cos(o.d*D/2),ash=.01+.05*o.kE;
+    g.save();g.globalAlpha=a;disc(moonDisc(resN(mr),0,lsOf(o),ash),mx,my,mr,rot);g.restore();
+    label(mx,my+mr+20,'Vue de la Terre',{a,s:12.5,c:'#BFD0FF'});
+    label(cx,wide?cy+R*1.32:cy+R*1.28,'Vue d’en haut (pas à l’échelle)',{a,s:12,c:'#BFD0FF'});
+    if(o.k<.004)label(mx,my,'La Lune est perdue dans la lumière du Soleil',{a,s:13,c:'#FFD58A'});}
+
+  /* 4. Le premier croissant et la lumière cendrée */
+  function layCresc(a,o){const A=AREA,wide=A.w>A.h*1.15,mr=Math.min(wide?A.w*.26:A.w*.4,A.h*(wide?.38:.31)),mx=A.x+A.w*(wide?.42:.5),my=A.y+A.h*(wide?.52:.62);
+    const la=CR.lit+(o.side>0?0:Math.PI),ash=.02+.08*o.kE;
+    g.save();g.globalAlpha=a;disc(moonDisc(resN(mr),0,lsOf(o),ash),mx,my,mr,la);g.restore();
+    /* la Terre vue de la Lune, presque pleine : c'est elle qui éclaire le côté nuit */
+    const er=mr*(wide?.36:.3),ex=wide?A.x+A.w*.84:A.x+A.w*.8,ey=wide?A.y+A.h*.26:A.y+A.h*.14;
+    g.save();g.globalAlpha=a;const gl=g.createRadialGradient(ex,ey,er*.8,ex,ey,er*1.8);gl.addColorStop(0,'rgba(120,170,255,.25)');gl.addColorStop(1,'rgba(120,170,255,0)');g.fillStyle=gl;g.beginPath();g.arc(ex,ey,er*1.8,0,TAU);g.fill();
+    disc(earthDisc(resN(er),o),ex,ey,er,0);
+    g.strokeStyle='rgba(191,208,255,.55)';g.setLineDash([3,5]);g.lineWidth=1.2;g.beginPath();g.moveTo(ex-er*.9,ey+er*.6);g.quadraticCurveTo((ex+mx)/2-mr*.2,(ey+my)/2-mr*.1,mx-mr*.25,my-mr*.55);g.stroke();g.restore();
+    label(ex,ey+er+16,'La Terre vue de la Lune',{a,s:12,c:'#BFD0FF'});
+    const hx=mx+Math.cos(la)*(mr+18),hy=my+Math.sin(la)*(mr+18);
+    label(hx,hy,'le croissant',{a,s:13.5,w:900,c:'#FFD58A',al:Math.cos(la)>.3?'left':Math.cos(la)<-.3?'right':'center'});
+    label(mx-mr*.12,my-9,'La lumière cendrée',{a:a*.9,s:14.5,w:800,c:'#dbe6f4'});label(mx-mr*.12,my+12,'le côté nuit, éclairé par la Terre',{a:a*.8,s:11.5,c:'#BFD0FF'});}
+
+  const LAYS={near:layNear,top:layTop,both:layBoth,cresc:layCresc};
+  function frame(){g.setTransform(dpr,0,0,dpr,0,0);g.fillStyle='#01040a';g.fillRect(0,0,Wpx,Hpx);drawStars();
+    const o=at(age),k=reduce?1:cl((tNow-fadeT0)/FADE,0,1);
+    if(k<1&&ST[from].lay!==ST[cur].lay)LAYS[ST[from].lay](1-k,o);
+    LAYS[ST[cur].lay](ST[from].lay===ST[cur].lay?1:k,o);need=k<1;}
+
+  /* ---------------------------------------------------------------- commandes */
+  function setFacts(){const o=at(age),s=ST[cur],h=s.f(o).map(f=>'<span>'+f+'</span>').join('');if(ui.facts._h!==h){ui.facts._h=h;ui.facts.innerHTML=h;}
+    const v=fmtDate(o.ms)+' · '+phaseName(o);if(ui.val._v!==v){ui.val._v=v;ui.val.textContent=v;ui.range.setAttribute('aria-valuetext',fmtAge(age)+' après la nouvelle Lune, '+fmtDate(o.ms)+', '+phaseName(o)+', '+nf(o.k*100,0)+' % éclairée');}
+    const rv=age.toFixed(2);if(ui.range.value!==rv&&document.activeElement!==ui.range)ui.range.value=rv;
+    cv.setAttribute('aria-label',s.t+'. '+phaseName(o)+', '+nf(o.k*100,0)+' % éclairée.');}
+  function paintPlay(){const s=ST[cur];let h,l;
+    if(s.play&&!playing&&age>=SYN-.05){h='↺';l='Rejouer le mois';}
+    else if(s.play){h=playing&&!paused?'❚❚':'▶';l=playing&&!paused?'Pause':'Lancer le mois';}
+    else{h=paused?'▶':'❚❚';l=paused?'Reprendre':'Pause';}
+    if(ui.play.textContent!==h)ui.play.textContent=h;ui.play.setAttribute('aria-label',l);
+    /* place gardée même cachée : les boutons ne bougent pas d'une partie à l'autre */
+    const off=!s.play&&!auto();ui.play.style.visibility=off?'hidden':'';ui.play.tabIndex=off?-1:0;}
+  function go(i,instant){i=cl(i,0,N-1);if(i===cur)return;from=cur>=0?cur:i;cur=i;fadeT0=instant?-1e9:tNow;tPart=0;hold=0;const s=ST[i];
+    if(s.lay==='cresc')ageTo=CR.age;else if(!s.play&&ST[from].play)ageTo=AGE_NOW;
+    if(instant||s.lay==='cresc')age=ageTo;
+    if(s.lay==='near')lv=lvTo=nearDefault(at(ageTo));
+    if(s.play){age=ageTo=0;playing=true;paused=false;}else playing=false;
+    if(s.lay==='top'&&auto())ageTo=age;
+    ui.cap.classList.remove('in');void ui.cap.offsetWidth;ui.cap.classList.add('in');
+    ui.eye.textContent='Escale sur la Lune';ui.tt.textContent=s.t;ui.tx.textContent=s.x;
+    ui.steps.forEach((b,j)=>{b.classList.toggle('on',j===i);b.setAttribute('aria-current',j===i?'step':'false');});
+    ui.live.textContent='Escale sur la Lune, partie '+(i+1)+' sur '+N+' : '+s.t+'. '+s.x;paintPlay();setFacts();need=true;
+    requestAnimationFrame(area);}
+  function togglePlay(){const s=ST[cur];if(s.play){if(!playing||age>=SYN-.05){if(age>=SYN-.05)age=ageTo=0;playing=true;paused=false;hold=0;}else paused=!paused;}else paused=!paused;paintPlay();}
+  function setAge(a,inst){ageTo=cl(a,0,SYN);if(inst||reduce)age=ageTo;need=true;}
+  function stopMonth(){if(ST[cur].play&&playing){playing=false;paintPlay();}}
+
+  function loop(t){raf=0;if(!open)return;raf=requestAnimationFrame(loop);
+    const dt=Math.min(250,t-(tNow||t)),ef=reduce?1:1-Math.exp(-dt/140),s=ST[cur];tNow=t;
+    if(s.play&&playing&&!paused){age=ageTo=age+dt/1000*SYN/15;if(age>=SYN){age=ageTo=SYN;playing=false;paintPlay();}need=true;}
+    else if(Math.abs(ageTo-age)>.002){age+=(ageTo-age)*ef;if(Math.abs(ageTo-age)<.002)age=ageTo;need=true;}
+    /* mode Auto : on fait seul le tour de la Lune (partie 1), la Lune avance sur son orbite (partie 2), puis la partie suivante */
+    if(auto()&&!paused){const sec=dt/1000;touchT=Math.max(0,touchT-sec);
+      if(!reduce&&!touchT){if(s.lay==='near'){lvTo=lv=lv+sec*26;need=true;}else if(s.lay==='top'){ageTo=age=(age+sec*1.6)%SYN;need=true;}}
+      if(s.play){if(!playing){hold+=sec;if(hold>=4)opt.onEnd&&opt.onEnd();}}
+      else if((tPart+=sec)>=s.dur)go(cur+1);}
+    if(Math.abs(lvTo-lv)>.05){lv+=(lvTo-lv)*ef;need=true;}
+    const vis=!document.hidden&&el.offsetParent!==null;if(vis&&(need||t-lastDraw>500)){lastDraw=t;frame();setFacts();}}
+  function area(){try{const st=el.getBoundingClientRect(),cr=ui.cap.getBoundingClientRect(),bt=ui.bot.getBoundingClientRect();
+    const wide=Wpx>=900;let x0=8,x1=Wpx-8,y0=8,y1=bt.top-st.top-6;if(wide)x0=Math.min(Wpx*.4,cr.right-st.left+12);else y0=cr.bottom-st.top+4;
+    AREA={x:x0,y:y0,w:Math.max(160,x1-x0),h:Math.max(120,y1-y0)};need=true;}catch(e){}}
+  function resize(){const r=el.getBoundingClientRect();if(!r.width)return;dpr=Math.min(2,window.devicePixelRatio||1);Wpx=r.width;Hpx=r.height;
+    cv.width=Math.round(Wpx*dpr);cv.height=Math.round(Hpx*dpr);MC.clear();EC.clear();area();}
+
+  ui.steps.forEach((b,i)=>b.onclick=()=>go(i));
+  ui.play.onclick=togglePlay;q('.u-lu-close').onclick=()=>close(true);
+  /* ⏮ ⏭ : core.js les voit d'abord (à la dernière partie, ⏭ continue le grand voyage) */
+  q('[data-a=prev]').onclick=()=>{if(cur>0)go(cur-1);else close(true);};
+  q('[data-a=next]').onclick=()=>{if(cur<N-1)go(cur+1);};
+  ui.range.addEventListener('input',()=>{stopMonth();touchT=4;setAge(+ui.range.value,true);});
+  /* glisser : faire le tour de la Lune (partie 1), la déplacer sur son orbite (partie 2) */
+  let drag=null;
+  cv.addEventListener('pointerdown',e=>{const lay=ST[cur].lay;if(lay!=='near'&&lay!=='top')return;try{cv.setPointerCapture(e.pointerId);}catch(_){}drag={x:e.clientX};touchT=4;onDrag(e);});
+  function onDrag(e){if(!drag)return;const lay=ST[cur].lay,r=cv.getBoundingClientRect();touchT=4;
+    if(lay==='near'){lvTo=lv=lv-(e.clientX-drag.x)*.45;drag.x=e.clientX;need=true;}
+    else if(lay==='top'){const T=topGeo(),ang=n360(Math.atan2(-(e.clientY-r.top-T.cy),e.clientX-r.left-T.cx)/D);
+      let best=0,bd=1e9;TAB.forEach(([a,d])=>{const dd=Math.abs(n360(d-ang+180)-180);if(dd<bd){bd=dd;best=a;}});setAge(best,true);}}
+  cv.addEventListener('pointermove',onDrag);const up=()=>{drag=null;};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+  try{new ResizeObserver(resize).observe(el);}catch(e){window.addEventListener('resize',resize);}
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&open&&!raf){tNow=0;raf=requestAnimationFrame(loop);}});
+
+  /* clavier (appelé par cinema.js quand l'escale est ouverte) : ← → parties, ↑ ↓ un jour, Espace pause ou lecture, Échap revenir au film */
+  function key(e){const k=e.key;if(e.target&&e.target.closest&&e.target.closest('input'))return;
+    if(k==='ArrowRight'||k==='PageDown'){if(cur<N-1)go(cur+1);}
+    else if(k==='ArrowLeft'||k==='PageUp'){if(cur>0)go(cur-1);else close(true);}
+    else if(k==='ArrowUp'||k==='+'){stopMonth();touchT=4;setAge(ageTo+1);}else if(k==='ArrowDown'||k==='-'){stopMonth();touchT=4;setAge(ageTo-1);}
+    else if(k===' ')togglePlay();else if(k==='Escape')close(true);else if(k==='Home')go(0);else if(k==='End')go(N-1);else return;
+    e.preventDefault();}
+  function openAt(i){const was=open;el.hidden=false;open=true;paused=false;resize();if(!was){cur=-1;age=ageTo=AGE_NOW;}go(i==null?0:i,!was);
+    if(!raf){tNow=0;raf=requestAnimationFrame(loop);}}
+  function close(user){if(!open)return;open=false;el.hidden=true;playing=false;if(raf)cancelAnimationFrame(raf);raf=0;if(user&&opt.onClose)opt.onClose();}
+  /* première image (pour go() avant la première ouverture) */
+  cur=0;from=0;
+  const api={open:openAt,close,go:i=>go(i),key,n:N,get isOpen(){return open;},get part(){return cur;},get playing(){return !paused;},
+    _:{at,SYN,AGE_NOW,C0,CR,MARKS,get age(){return age;},setAge,get area(){return AREA;},frame}};
+  return api;
 };
 })();
 

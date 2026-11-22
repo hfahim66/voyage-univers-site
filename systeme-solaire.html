@@ -1473,6 +1473,44 @@ html.present .u-route ol a{font-size:14px}html.present .u-route-go{font-size:17p
 .vy3-big:hover,.vy3-big:focus-visible{background:#ffd08a}
 @keyframes bigPulse{0%,100%{box-shadow:0 0 0 0 rgba(244,184,96,.45),0 10px 40px rgba(0,0,0,.5)}50%{box-shadow:0 0 0 18px rgba(244,184,96,0),0 10px 40px rgba(0,0,0,.5)}}
 
+/* Escale sur la Lune (lune.js) : surcouche plein écran par-dessus le film de l'étape 1, qui se met en pause */
+.u-lu{position:absolute;inset:0;z-index:6;background:#01040a;color:#fff;animation:luIn .6s ease both}
+.u-lu[hidden]{display:none}
+@keyframes luIn{from{opacity:0}to{opacity:1}}
+.u-lu-cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}.u-lu-cv:active{cursor:grabbing}
+.u-lu-cap{position:absolute;left:22px;top:18px;width:min(380px,34vw);text-shadow:0 2px 14px #000;pointer-events:none}
+.u-lu-cap.in{animation:cinIn 1s cubic-bezier(.2,.7,.2,1) both}
+.u-lu-eye{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--or)}
+.u-lu-t{margin:6px 0 0;font-size:clamp(22px,2.5vw,34px);font-weight:900;line-height:1.1;letter-spacing:-.01em}
+.u-lu-x{margin:8px 0 0;font-size:15.5px;line-height:1.45;color:#E4E8F6}
+.u-lu-facts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.u-lu-facts span{padding:4px 10px;border-radius:999px;background:rgba(4,8,20,.6);border:1px solid rgba(255,255,255,.14);font-size:13px;color:#C5CCE8;text-shadow:none}
+.u-lu-note{position:absolute;right:14px;top:14px;max-width:30%;text-align:right;font-size:11px;color:#929FCC}
+.u-lu-bot{position:absolute;left:0;right:0;bottom:calc(12px + env(safe-area-inset-bottom));padding:0 16px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.u-lu-age{position:relative;width:min(760px,100%);padding-top:16px}
+.u-lu-range{display:block;width:100%;height:44px;margin:0;accent-color:var(--or);cursor:pointer;background:transparent}
+.u-lu-now{position:absolute;top:0;transform:translateX(-50%);font-size:11px;font-weight:700;color:var(--or);white-space:nowrap;pointer-events:none}
+.u-lu-now::after{content:'';position:absolute;left:50%;top:100%;margin-left:-4px;border:4px solid transparent;border-top-color:var(--or)}
+.u-lu-marks{position:relative;height:16px;font-size:11px;color:#929FCC}
+.u-lu-marks span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.u-lu-marks span.start{transform:none}.u-lu-marks span.end{transform:translateX(-100%)}
+.u-lu-marks i{display:none;font-style:normal}.u-lu-marks em{font-style:normal}
+.u-lu-val{display:block;text-align:center;font-size:13px;color:#E4E8F6;margin-top:2px;font-variant-numeric:tabular-nums}
+.u-lu-row{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px 14px}
+.u-lu-steps,.u-lu-ctl{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.u-lu-steps .cin-b{padding:0 14px;font-size:14px}
+.u-lu-steps .cin-b.on{border-color:var(--or);color:var(--or);background:rgba(244,184,96,.14)}
+.u-lu .cin-b:focus-visible{outline:3px solid var(--or);outline-offset:2px}
+.cin-b.cin-lune{border-color:var(--or);color:var(--or)}
+@media(max-width:899px){
+  .u-lu-cap{left:12px;right:12px;top:10px;width:auto}
+  .u-lu-t{font-size:21px}.u-lu-x{font-size:14px;margin-top:5px}.u-lu-facts{margin-top:6px}.u-lu-facts span{font-size:12px;padding:3px 8px}
+  .u-lu-note{display:none}.u-lu-steps span{display:none}.u-lu-steps .cin-b{padding:0;min-width:44px}
+  .u-lu-marks em{display:none}.u-lu-marks i{display:inline}.u-lu-bot{gap:4px}.u-lu-val{display:none}}
+@media(max-width:899px) and (max-height:720px){.u-lu-x{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}}
+html.present .u-lu-t{font-size:clamp(32px,3.4vw,52px)}html.present .u-lu-x{font-size:21px}html.present .u-lu-facts span{font-size:16px}html.present .u-lu-cap{width:min(520px,36vw)}
+@media(prefers-reduced-motion:reduce){.u-lu,.u-lu-cap.in{animation:none}}
+
 </style>
 </head>
 <body class="" data-escale="3">
@@ -1801,7 +1839,8 @@ function initRoute(){
      #fin : ouvrir le film à son dernier plan (quand on recule depuis l'étape suivante). Mode Auto : à la fin du film, le voyage continue. */
   var armed=false,wait=0;
   if(!isVoy){
-    var onEsc=function(e){var f=film();if(!f)return;
+    var onEsc=function(e){var f=film();if(!f||(e.type==='keydown'&&e.target.closest&&e.target.closest('input')))return;   /* curseur (escale sur la Lune) : ses flèches restent à lui */
+     
       if(fwd(e)&&f.i===f.n-1)take(e,'voyage.html#'+RESUME[cur]);
       else if(bwd(e)&&f.i===0)take(e,backFrom(RESUME[cur]));};
     scene.addEventListener('click',onEsc,true);scene.addEventListener('keydown',onEsc,true);
@@ -2175,11 +2214,11 @@ HF.systeme=function(host){
       cam:u=>close('mars',3.4-.35*sm(u),38-8*u,12,32),p:{orb:0,tru:0,off:0,spin:2400}},
     {id:'jupiter',dur:15,t:'Jupiter, la géante',l:()=>fromSun('jupiter'),s:'Plus de 1 300 Terres tiendraient dedans. Sa Grande Tache rouge est une tempête plus large que la Terre.',i:'Image réelle : sonde Cassini (NASA/JPL/SSI). Rotation en accéléré : un tour en 9 h 56 min.',
       cam:u=>close('jupiter',3.3-.35*sm(u),28-10*u,8,32),p:{orb:0,tru:0,off:0,spin:1500}},
-    {id:'saturne',dur:15,t:'Saturne et ses anneaux',l:()=>fromSun('saturne'),s:'Des milliards de morceaux de glace, sur plus de 270 000 km de large, et souvent une dizaine de mètres d’épaisseur seulement.',i:'Saturne et ses anneaux illustrés d’après les sondes (NASA) ; inclinaison du jour.',
+    {id:'saturne',dur:15,t:'Saturne et ses anneaux',l:()=>fromSun('saturne'),s:'Des milliards de morceaux de glace, sur plus de 270 000 km d’un bord à l’autre, mais souvent épais d’une dizaine de mètres seulement.',i:'Saturne et ses anneaux illustrés d’après les sondes (NASA) ; inclinaison du jour.',
       cam:u=>close('saturne',6.4-.6*sm(u),30-14*u,22,32,true,2.5),p:{orb:0,tru:0,off:0,spin:1500}},
     {id:'anneaux',dur:14,t:'Moins dense que l’eau',s:'Saturne est si légère pour sa taille que, dans une baignoire géante, elle flotterait.',i:'Anneaux illustrés : vraies dimensions, de 67 000 à 140 000 km du centre.',
       cam:u=>{const p=PK.saturne,c=close('saturne',3.05-.4*sm(u),62+10*u,3.5,44,true);c.tgt=p.w.clone().add(c.pos.clone().sub(p.w).multiplyScalar(.12));return c;},p:{orb:0,tru:0,off:0,spin:1500}},
-    {id:'neptune',dur:15,t:'Neptune, aux confins',l:()=>fromSun('neptune'),s:'À 4,5 milliards de km du Soleil. D’ici, il n’est plus qu’une étoile éblouissante. Des vents y soufflent à plus de 2 000 km/h.',i:'Neptune illustrée d’après la sonde Voyager 2 (NASA).',
+    {id:'neptune',dur:15,t:'Neptune, aux confins',l:()=>fromSun('neptune'),s:'À 4,5 milliards de km du Soleil. D’ici, le Soleil n’est plus qu’une étoile éblouissante. Des vents y soufflent à plus de 2 000 km/h.',i:'Neptune illustrée d’après la sonde Voyager 2 (NASA).',
       cam:u=>{const c=close('neptune',3.6-.3*sm(u),148-6*u,6,40);c.tgt.add(PK.neptune.w.clone().negate().normalize().multiplyScalar(PK.neptune.R*.85));return c;},p:{orb:0,tru:0,off:0,spin:1500}},
 ];
   const LIGHT=SHOTS.findIndex(s=>s.count);
